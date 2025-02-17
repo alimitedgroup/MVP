@@ -36,5 +36,5 @@ jobs:
           push: true
           build-args: |
             SERVICE=api_gateway
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/api_gateway
+          tags: ${{ vars.DOCKER_USERNAME }}/api_gateway
           platforms: ${{ env.platforms }}
