@@ -36,6 +36,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: api_gateway:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/api_gateway:latest
           build-args: |
             SERVICE=api_gateway
