@@ -1,0 +1,19 @@
+{
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "prettier.useTabs": false,
+    "prettier.tabWidth": 2,
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[go]": {
+        "editor.defaultFormatter": "golang.go"
+    },
+    "[just]": {
+        "editor.defaultFormatter": "TobiasHochguertel.just-formatter"
+    }
+}
