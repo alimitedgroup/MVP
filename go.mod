@@ -2,6 +2,8 @@ module github.com/alimitedgroup/MVP
 
 go 1.24.0
 
+require github.com/gin-gonic/gin v1.10.0
+
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/nats-io/nats.go v1.39.1
