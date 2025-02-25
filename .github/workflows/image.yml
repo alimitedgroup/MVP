@@ -9,7 +9,39 @@ on:
       - main
 
 jobs:
-  build:
+  test:
+    strategy:
+      matrix:
+        service: [api_gateway]
+
+    runs-on: ubuntu-latest
+    env:
+      platforms: linux/amd64,linux/arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+
+      - name: Display Go version
+        run: go version
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build -v ./srv/${{ matrix.service }}
+
+      - name: Test with the Go CLI
+        run: go test -v ./srv/${{ matrix.service }}
+
+  image:
+    strategy:
+      matrix:
+        service: [api_gateway]
+
     runs-on: ubuntu-latest
     env:
       platforms: linux/amd64,linux/arm64
@@ -34,7 +66,6 @@ jobs:
         with:
           context: .
           push: true
-          build-args: |
-            SERVICE=api_gateway
+          build-args: SERVICE=${{ matrix.service }}
           tags: ${{ vars.DOCKER_USERNAME }}/api_gateway
           platforms: ${{ env.platforms }}
