@@ -25,8 +25,7 @@ func NewNatsMessageBroker() MessageBroker {
 func Run(h lib.HTTPHandler, routes router.Routes) {
 	routes.Setup()
 
-	h.Engine.Run(":8080")
-
+	_ = h.Engine.Run(":8080")
 }
 
 var Modules = fx.Options(
