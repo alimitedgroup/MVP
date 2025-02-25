@@ -62,6 +62,7 @@ jobs:
       matrix:
         service: [api_gateway]
 
+    needs: test
     runs-on: ubuntu-latest
     env:
       platforms: linux/amd64
