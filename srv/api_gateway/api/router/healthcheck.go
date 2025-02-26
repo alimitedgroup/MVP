@@ -10,7 +10,7 @@ type HealthCheckRouter struct {
 	controller *controller.HealthCheckController
 }
 
-func NewHealthCheckRouter(http *lib.HTTPHandler, controller *controller.HealthCheckController) lib.Route {
+func NewHealthCheckRouter(http *lib.HTTPHandler, controller *controller.HealthCheckController) *HealthCheckRouter {
 	return &HealthCheckRouter{http, controller}
 }
 

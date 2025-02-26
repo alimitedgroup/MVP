@@ -5,7 +5,6 @@ import (
 )
 
 type HealthCheckController struct {
-	// http *lib.HTTPHandler
 }
 
 func NewHealthCheckController() *HealthCheckController {
