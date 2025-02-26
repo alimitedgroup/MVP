@@ -6,15 +6,15 @@ import (
 	"github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
 )
 
-type StockUpdateRouter struct {
+type StockRouter struct {
 	stockController *controller.StockController
 	broker          *broker.NatsMessageBroker
 }
 
-func NewStockUpdateRouter(stockUpdateController *controller.StockController, n *broker.NatsMessageBroker) *StockUpdateRouter {
-	return &StockUpdateRouter{stockUpdateController, n}
+func NewStockUpdateRouter(stockUpdateController *controller.StockController, n *broker.NatsMessageBroker) *StockRouter {
+	return &StockRouter{stockUpdateController, n}
 }
 
-func (r *StockUpdateRouter) Setup() {
-	r.broker.RequestSubscribe(broker.StockUpdateSubject, constants.ApiGatewayGroup, r.stockController.UpdateHandler)
+func (r *StockRouter) Setup() {
+	_, _ = r.broker.RequestSubscribe(broker.StockUpdateSubject, constants.ApiGatewayGroup, r.stockController.UpdateHandler)
 }

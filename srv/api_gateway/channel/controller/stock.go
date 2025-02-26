@@ -11,7 +11,7 @@ type StockController struct {
 	n *broker.NatsMessageBroker
 }
 
-func NewStockUpdateController(n *broker.NatsMessageBroker) *StockController {
+func NewStockController(n *broker.NatsMessageBroker) *StockController {
 	return &StockController{n}
 }
 

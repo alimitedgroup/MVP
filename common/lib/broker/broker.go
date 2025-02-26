@@ -7,13 +7,17 @@ import (
 type MessageBroker interface {
 }
 
+type BrokerConfig struct {
+	Url string
+}
+
 type NatsMessageBroker struct {
 	Nats *nats.Conn
 	Js   nats.JetStream
 }
 
-func NewNatsMessageBroker() (*NatsMessageBroker, error) {
-	nc, err := nats.Connect(nats.DefaultURL)
+func NewNatsMessageBroker(cfg *BrokerConfig) (*NatsMessageBroker, error) {
+	nc, err := nats.Connect(cfg.Url)
 	if err != nil {
 		return nil, err
 	}

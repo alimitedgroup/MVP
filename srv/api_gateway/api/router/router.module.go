@@ -6,13 +6,17 @@ import (
 )
 
 var Module = fx.Options(
-	fx.Provide(NewRoutes),
+	fx.Provide(NewAPIRoutes),
 	fx.Provide(NewHealthCheckRouter),
 )
 
+type BrokerRoute interface {
+	Setup()
+}
+
 type APIRoutes []lib.APIRoute
 
-func NewRoutes(healthCheckRoutes *HealthCheckRouter) APIRoutes {
+func NewAPIRoutes(healthCheckRoutes *HealthCheckRouter) APIRoutes {
 	return APIRoutes{
 		healthCheckRoutes,
 	}

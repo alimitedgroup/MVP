@@ -2,18 +2,30 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/api"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/api/router"
+	apiRouter "github.com/alimitedgroup/MVP/srv/api_gateway/api/router"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/channel"
+	brokerRouter "github.com/alimitedgroup/MVP/srv/api_gateway/channel/router"
 	"go.uber.org/fx"
 )
 
-func Run(h *lib.HTTPHandler, routes router.APIRoutes) {
-	routes.Setup()
+type APIConfig struct {
+	Host string
+	Port int
+}
 
-	_ = h.Engine.Run(":8080")
+func Run(serverConfig *APIConfig, h *lib.HTTPHandler, apiRoutes apiRouter.APIRoutes, brokerRoutes brokerRouter.BrokerRoutes) {
+	apiRoutes.Setup()
+	brokerRoutes.Setup()
+
+	err := h.Engine.Run(fmt.Sprintf(":%d", serverConfig.Port))
+	if err != nil {
+		log.Fatal("error running the Gin HTTP engine\n", err)
+	}
 }
 
 var Modules = fx.Options(
@@ -25,7 +37,13 @@ var Modules = fx.Options(
 func main() {
 	_ = context.Background()
 
-	opts := fx.Options(Modules)
+	config := loadConfig()
+
+	opts := fx.Options(
+		config,
+		Modules,
+	)
+
 	app := fx.New(
 		opts,
 		fx.Invoke(Run),
