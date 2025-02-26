@@ -1,6 +1,8 @@
 package broker
 
 import (
+	"log"
+
 	"github.com/nats-io/nats.go"
 )
 
@@ -8,7 +10,7 @@ type MessageBroker interface {
 }
 
 type BrokerConfig struct {
-	Url string
+	Url string `mapstructure:"url"`
 }
 
 type NatsMessageBroker struct {
@@ -17,6 +19,8 @@ type NatsMessageBroker struct {
 }
 
 func NewNatsMessageBroker(cfg *BrokerConfig) (*NatsMessageBroker, error) {
+	log.Printf("Connecting to NATS at %s\n", cfg.Url)
+
 	nc, err := nats.Connect(cfg.Url)
 	if err != nil {
 		return nil, err
