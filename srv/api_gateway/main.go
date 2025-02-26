@@ -13,5 +13,5 @@ func main() {
 			"message": "pong",
 		})
 	})
-	r.Run() // listen and serve on localhost:8080
+	_ = r.Run() // listen and serve on localhost:8080
 }
