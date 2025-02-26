@@ -1,7 +1,11 @@
 package lib
 
-import "go.uber.org/fx"
+import (
+	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"go.uber.org/fx"
+)
 
 var Module = fx.Options(
 	fx.Provide(NewHTTPHandler),
+	fx.Provide(broker.NewNatsMessageBroker),
 )

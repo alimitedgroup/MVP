@@ -6,11 +6,11 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/api"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/api/router"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/broker"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/channel"
 	"go.uber.org/fx"
 )
 
-func Run(h *lib.HTTPHandler, routes router.Routes) {
+func Run(h *lib.HTTPHandler, routes router.APIRoutes) {
 	routes.Setup()
 
 	_ = h.Engine.Run(":8080")
@@ -19,7 +19,7 @@ func Run(h *lib.HTTPHandler, routes router.Routes) {
 var Modules = fx.Options(
 	lib.Module,
 	api.Module,
-	broker.Module,
+	channel.Module,
 )
 
 func main() {

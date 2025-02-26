@@ -10,15 +10,15 @@ var Module = fx.Options(
 	fx.Provide(NewHealthCheckRouter),
 )
 
-type Routes []lib.Route
+type APIRoutes []lib.APIRoute
 
-func NewRoutes(healthCheckRoutes *HealthCheckRouter) Routes {
-	return Routes{
+func NewRoutes(healthCheckRoutes *HealthCheckRouter) APIRoutes {
+	return APIRoutes{
 		healthCheckRoutes,
 	}
 }
 
-func (r Routes) Setup() {
+func (r APIRoutes) Setup() {
 	for _, v := range r {
 		v.Setup()
 	}

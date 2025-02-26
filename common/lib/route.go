@@ -1,5 +1,5 @@
 package lib
 
-type Route interface {
+type APIRoute interface {
 	Setup()
 }
