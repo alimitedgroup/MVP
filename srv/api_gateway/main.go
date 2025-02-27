@@ -27,14 +27,16 @@ type RunParams struct {
 	BrokerRoutes brokerRouter.BrokerRoutes
 }
 
-func Run(p RunParams) {
+func Run(p RunParams) error {
 	p.ApiRoutes.Setup()
 	p.BrokerRoutes.Setup()
 
 	err := p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
 	if err != nil {
-		log.Fatal("error running the Gin HTTP engine\n", err)
+		return err
 	}
+
+	return nil
 }
 
 var Modules = fx.Options(
@@ -44,7 +46,7 @@ var Modules = fx.Options(
 )
 
 func main() {
-	_ = context.Background()
+	ctx := context.Background()
 
 	config := loadConfig()
 
@@ -58,5 +60,16 @@ func main() {
 		fx.Invoke(Run),
 	)
 
-	app.Run()
+	err := app.Start(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		err = app.Stop(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 }
