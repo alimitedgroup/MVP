@@ -18,11 +18,20 @@ type APIConfig struct {
 	Port int    `mapstructure:"port"`
 }
 
-func Run(serverConfig *APIConfig, h *lib.HTTPHandler, apiRoutes apiRouter.APIRoutes, brokerRoutes brokerRouter.BrokerRoutes) {
-	apiRoutes.Setup()
-	brokerRoutes.Setup()
+type RunParams struct {
+	fx.In
 
-	err := h.Engine.Run(fmt.Sprintf(":%d", serverConfig.Port))
+	ServerConfig *APIConfig
+	HttpHandler  *lib.HTTPHandler
+	ApiRoutes    apiRouter.APIRoutes
+	BrokerRoutes brokerRouter.BrokerRoutes
+}
+
+func Run(p RunParams) {
+	p.ApiRoutes.Setup()
+	p.BrokerRoutes.Setup()
+
+	err := p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
 	if err != nil {
 		log.Fatal("error running the Gin HTTP engine\n", err)
 	}
