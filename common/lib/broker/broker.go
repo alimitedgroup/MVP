@@ -35,7 +35,7 @@ func NewNatsMessageBroker(cfg *BrokerConfig) (*NatsMessageBroker, error) {
 }
 
 func (n *NatsMessageBroker) RequestSubscribe(subject Subject, queue Queue, handler RequestHandler) (*nats.Subscription, error) {
-	sub, err := n.Nats.QueueSubscribe(subject.Name(), queue.String(), func(msg *nats.Msg) {
+	sub, err := n.Nats.QueueSubscribe(subject.String(), queue.String(), func(msg *nats.Msg) {
 		handler(msg)
 	})
 	if err != nil {
