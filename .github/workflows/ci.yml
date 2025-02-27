@@ -54,6 +54,8 @@ jobs:
 
       - name: Publish coveralls
         uses: coverallsapp/github-action@v2.3.6
+        with:
+          file: covprofile
 
   image:
     strategy:
