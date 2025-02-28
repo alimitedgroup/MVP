@@ -8,7 +8,7 @@ import (
 var ApiGatewayGroup broker.Queue = "api_gateway"
 
 var StockUpdatesStreamConfig = jetstream.StreamConfig{
-	Name:     "stock.updates",
+	Name:     "stock_updates",
 	Subjects: []string{"stock.updates.>"},
 	Storage:  jetstream.FileStorage,
 }

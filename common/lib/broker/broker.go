@@ -59,7 +59,7 @@ func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject
 func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore *RestoreStreamControl, streamCfg jetstream.StreamConfig, handler JsHandler, opts ...JsHandlerOpt) error {
 	s, err := n.Js.CreateStream(ctx, streamCfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create stream: %w", err)
 	}
 
 	consumerCfg := jetstream.ConsumerConfig{}
@@ -69,7 +69,7 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore *Rest
 
 	consumer, err := s.CreateConsumer(ctx, consumerCfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create consumer: %w", err)
 	}
 	restore.Start()
 
