@@ -1,6 +1,8 @@
 package router
 
 import (
+	"context"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/channel/constants"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
@@ -15,6 +17,6 @@ func NewStockUpdateRouter(stockUpdateController *controller.StockController, n *
 	return &StockRouter{stockUpdateController, n}
 }
 
-func (r *StockRouter) Setup() {
-	_, _ = r.broker.RequestSubscribe(broker.StockUpdateSubject, constants.ApiGatewayGroup, r.stockController.UpdateHandler)
+func (r *StockRouter) Setup(ctx context.Context) {
+	_, _ = r.broker.RequestSubscribe(ctx, broker.StockUpdateSubject, constants.ApiGatewayGroup, r.stockController.UpdateHandler)
 }

@@ -27,9 +27,9 @@ type RunParams struct {
 	BrokerRoutes brokerRouter.BrokerRoutes
 }
 
-func Run(p RunParams) error {
-	p.ApiRoutes.Setup()
-	p.BrokerRoutes.Setup()
+func Run(ctx context.Context, p RunParams) error {
+	p.ApiRoutes.Setup(ctx)
+	p.BrokerRoutes.Setup(ctx)
 
 	err := p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
 	if err != nil {
@@ -37,6 +37,18 @@ func Run(p RunParams) error {
 	}
 
 	return nil
+}
+
+func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			err := Run(ctx, p)
+			return err
+		},
+		OnStop: func(ctx context.Context) error {
+			return nil
+		},
+	})
 }
 
 var Modules = fx.Options(
@@ -57,7 +69,7 @@ func main() {
 
 	app := fx.New(
 		opts,
-		fx.Invoke(Run),
+		fx.Invoke(RunLifeCycle),
 	)
 
 	err := app.Start(ctx)

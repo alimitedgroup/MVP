@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib"
@@ -13,7 +12,9 @@ import (
 	"go.uber.org/fx"
 )
 
-func TestRunWithParams(t *testing.T) {
+func TestRunWithBadConfigParams(t *testing.T) {
+	ctx := context.Background()
+
 	config := APIConfig{
 		Host: "localhost",
 		Port: -100,
@@ -28,22 +29,9 @@ func TestRunWithParams(t *testing.T) {
 			assert.Equal(t, p.ServerConfig.Host, config.Host)
 			assert.Equal(t, p.ServerConfig.Port, config.Port)
 		}),
-		fx.Invoke(func(p RunParams) {
-			err := Run(p)
-			assert.Equal(t, err != nil, true, fmt.Sprintf("expected error on listening to port %d", config.Port))
-		}),
+		fx.Invoke(RunLifeCycle),
 	)
 
-	ctx := context.Background()
 	err := app.Start(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer func() {
-		err = app.Stop(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	assert.Equal(t, err != nil, true, fmt.Sprintf("expected error on listening to port %d", config.Port))
 }

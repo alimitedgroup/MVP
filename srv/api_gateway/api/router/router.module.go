@@ -1,6 +1,8 @@
 package router
 
 import (
+	"context"
+
 	"github.com/alimitedgroup/MVP/common/lib"
 	"go.uber.org/fx"
 )
@@ -18,8 +20,8 @@ func NewAPIRoutes(healthCheckRoutes *HealthCheckRouter) APIRoutes {
 	}
 }
 
-func (r APIRoutes) Setup() {
+func (r APIRoutes) Setup(ctx context.Context) {
 	for _, v := range r {
-		v.Setup()
+		v.Setup(ctx)
 	}
 }
