@@ -53,13 +53,7 @@ jobs:
         run: go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 
       - name: Run cyclo
-        run: gocyclo -avg . > cyclo-report.txt
-
-      - name: Upload Cyclo report
-        uses: actions/upload-artifact@v3
-        with:
-          name: cyclo-report
-          path: cyclo-report.txt
+        run: gocyclo -avg
 
       - name: Fail if cyclo exceeds limit
         run: |
