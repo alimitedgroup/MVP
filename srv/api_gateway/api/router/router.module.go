@@ -10,10 +10,6 @@ var Module = fx.Options(
 	fx.Provide(NewHealthCheckRouter),
 )
 
-type BrokerRoute interface {
-	Setup()
-}
-
 type APIRoutes []lib.APIRoute
 
 func NewAPIRoutes(healthCheckRoutes *HealthCheckRouter) APIRoutes {
