@@ -49,6 +49,25 @@ jobs:
         with:
           version: v1.64
 
+      - name: Cyclo Setup
+        run: go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+
+      - name: Run cyclo
+        run: gocyclo -avg . > cyclo-report.txt
+
+      - name: Upload Cyclo report
+        uses: actions/upload-artifact@v3
+        with:
+          name: cyclo-report
+          path: cyclo-report.txt
+
+      - name: Fail if cyclo exceeds limit
+        run: |
+          if [ $(gocyclo -over 15 . | wc -l) -gt 0 ]; then
+            echo "Complexity too high in some functions"
+            exit 1
+          fi
+
       - name: Run tests
         run: go test -race -covermode atomic -coverprofile=covprofile ./...
 
