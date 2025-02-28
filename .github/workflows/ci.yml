@@ -53,7 +53,7 @@ jobs:
         run: go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 
       - name: Run cyclo
-        run: gocyclo -avg
+        run: gocyclo -avg .
 
       - name: Fail if cyclo exceeds limit
         run: |
