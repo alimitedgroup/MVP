@@ -8,4 +8,5 @@ import (
 var Module = fx.Options(
 	fx.Provide(NewHTTPHandler),
 	fx.Provide(broker.NewNatsMessageBroker),
+	fx.Provide(broker.NewRestoreStreamControl),
 )

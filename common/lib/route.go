@@ -7,5 +7,5 @@ type APIRoute interface {
 }
 
 type BrokerRoute interface {
-	Setup(context.Context)
+	Setup(context.Context) error
 }

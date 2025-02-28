@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
@@ -38,28 +37,41 @@ func NewNatsMessageBroker(cfg *BrokerConfig) (*NatsMessageBroker, error) {
 	return &NatsMessageBroker{nc, js}, nil
 }
 
-func (n *NatsMessageBroker) RequestSubscribe(ctx context.Context, subject Subject, queue Queue, handler RequestHandler) (*nats.Subscription, error) {
-	sub, err := n.Nats.QueueSubscribe(subject.String(), queue.String(), func(msg *nats.Msg) {
-		handler(ctx, msg)
+func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject, queue Queue, handler RequestHandler) error {
+	var sub *nats.Subscription
+	var err error
+
+	sub, err = n.Nats.QueueSubscribe(subject.String(), queue.String(), func(msg *nats.Msg) {
+		err = handler(ctx, msg)
+		if err != nil {
+			err = sub.Unsubscribe()
+		}
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return sub, nil
-}
-
-func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, subject Subject, handler JsHandler, wg *sync.WaitGroup) error {
-	n.Js.CreateStream(ctx, jetstream.StreamConfig{
-		Name: subject.String(),
-	})
-
-	cfg := jetstream.ConsumerConfig{}
-	consumer, err := n.Js.CreateConsumer(ctx, subject.String(), cfg)
 	if err != nil {
 		return err
 	}
-	wg.Add(1)
+
+	_ = sub
+
+	return nil
+}
+
+func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore *RestoreStreamControl, streamCfg jetstream.StreamConfig, handler JsHandler, opts ...JsHandlerOpt) error {
+	s, err := n.Js.CreateStream(ctx, streamCfg)
+	if err != nil {
+		return err
+	}
+
+	consumerCfg := jetstream.ConsumerConfig{}
+	for _, opt := range opts {
+		opt(&consumerCfg)
+	}
+
+	consumer, err := s.CreateConsumer(ctx, consumerCfg)
+	if err != nil {
+		return err
+	}
+	restore.Start()
 
 	// Consume all existing messages, and when they are finished unlock the waitgroup and continue listening
 	var cc jetstream.ConsumeContext
@@ -71,6 +83,14 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, subject Subje
 		if msgErr != nil {
 			err = fmt.Errorf("failed to handle message: %w", msgErr)
 			cc.Stop()
+			return
+		} else {
+			err = m.Ack()
+			if err != nil {
+				err = fmt.Errorf("failed to ack message: %w", err)
+				cc.Stop()
+				return
+			}
 		}
 
 		var meta *jetstream.MsgMetadata
@@ -78,9 +98,11 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, subject Subje
 		if msgErr != nil {
 			err = fmt.Errorf("failed to read message metadata: %w", msgErr)
 			cc.Stop()
+			return
 		}
+
 		if msgErr == nil && meta.NumPending == 0 && !isWgUnlocked {
-			wg.Done()
+			restore.Finish()
 			isWgUnlocked = true
 		}
 	})

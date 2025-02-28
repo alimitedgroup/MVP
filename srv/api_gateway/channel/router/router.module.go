@@ -20,8 +20,12 @@ func NewBrokerRoutes(stockRouter *StockRouter) BrokerRoutes {
 	}
 }
 
-func (r BrokerRoutes) Setup(ctx context.Context) {
+func (r BrokerRoutes) Setup(ctx context.Context) error {
 	for _, v := range r {
-		v.Setup(ctx)
+		err := v.Setup(ctx)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }

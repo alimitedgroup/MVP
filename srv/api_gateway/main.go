@@ -28,10 +28,16 @@ type RunParams struct {
 }
 
 func Run(ctx context.Context, p RunParams) error {
-	p.ApiRoutes.Setup(ctx)
-	p.BrokerRoutes.Setup(ctx)
+	var err error
 
-	err := p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
+	err = p.BrokerRoutes.Setup(ctx)
+	if err != nil {
+		return err
+	}
+
+	p.ApiRoutes.Setup(ctx)
+
+	err = p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
 	if err != nil {
 		return err
 	}
