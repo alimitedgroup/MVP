@@ -71,12 +71,24 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore *Rest
 	if err != nil {
 		return fmt.Errorf("failed to create consumer: %w", err)
 	}
+
+	var isWgUnlocked bool = false
 	restore.Start()
+
+	// fetch consumer info
+	info, err := consumer.Info(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get consumer info: %w", err)
+	}
+	// if num pending is zero the stream have just been created and there are no messages to consume
+	if info.NumPending == 0 {
+		restore.Finish()
+		isWgUnlocked = true
+	}
 
 	// Consume all existing messages, and when they are finished unlock the waitgroup and continue listening
 	var cc jetstream.ConsumeContext
 	var msgErr error
-	var isWgUnlocked bool = false
 
 	cc, err = consumer.Consume(func(m jetstream.Msg) {
 		msgErr = handler(ctx, m)
