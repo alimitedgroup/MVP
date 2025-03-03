@@ -6,7 +6,8 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
-	brokerRouter "github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
+	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
+	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
 	"github.com/alimitedgroup/MVP/srv/warehouse/application"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"go.uber.org/fx"
@@ -15,11 +16,19 @@ import (
 type RunParams struct {
 	fx.In
 
-	BrokerRoutes brokerRouter.BrokerRoutes
+	BrokerRoutes   controller.BrokerRoutes
+	ListenerRoutes listener.ListenerRoutes
 }
 
 func Run(ctx context.Context, p RunParams) error {
-	err := p.BrokerRoutes.Setup(ctx)
+	var err error
+
+	err = p.ListenerRoutes.Setup(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = p.BrokerRoutes.Setup(ctx)
 	if err != nil {
 		return err
 	}

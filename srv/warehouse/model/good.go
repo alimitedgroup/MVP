@@ -1,6 +1,6 @@
 package model
 
-type Good struct {
-	ID   string
-	Name string
+type GoodStock struct {
+	ID       string
+	Quantity int64
 }
