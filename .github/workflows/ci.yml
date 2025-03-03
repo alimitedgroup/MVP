@@ -10,10 +10,6 @@ on:
 
 jobs:
   test:
-    strategy:
-      matrix:
-        service: [api_gateway]
-
     runs-on: ubuntu-latest
     env:
       platforms: linux/amd64,linux/arm64
@@ -37,24 +33,42 @@ jobs:
         run: go mod download
 
       - name: Build
-        run: go build -v ./srv/${{ matrix.service }}
+        run: go build -v ./...
 
       - name: Run go vet
-        run: go vet ./srv/${{ matrix.service }}
+        run: go vet ./...
 
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
       - name: Run staticcheck
-        run: staticcheck ./srv/${{ matrix.service }}
+        run: staticcheck ./...
 
       - name: Run lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.64
 
+      - name: Cyclo Setup
+        run: go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+
+      - name: Run cyclo
+        run: gocyclo -avg .
+
+      - name: Fail if cyclo exceeds limit
+        run: |
+          if [ $(gocyclo -over 15 . | wc -l) -gt 0 ]; then
+            echo "Complexity too high in some functions"
+            exit 1
+          fi
+
       - name: Run tests
-        run: go test -race -vet=off ./srv/${{ matrix.service }}
+        run: go test -race -covermode atomic -coverprofile=covprofile ./...
+
+      - name: Publish coveralls
+        uses: coverallsapp/github-action@v2.3.6
+        with:
+          file: covprofile
 
   image:
     strategy:

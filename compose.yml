@@ -1,0 +1,38 @@
+volumes:
+  nats_data:
+
+networks:
+  warehouse:
+    driver: bridge
+
+services:
+  nats:
+    image: nats:alpine
+    ports:
+      - "4222:4222"
+    command:
+      - "--jetstream"
+      - "--store_dir=/data/jetstream"
+    volumes:
+      - nats_data:/data/jetstream
+    networks:
+      - warehouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+    build: { args: { SERVICE: api_gateway } }
+    ports:
+      - "80:8080"
+    environment:
+      - ENV_BROKER_URL=nats://nats:4222
+      - ENV_API_PORT=8080
+    volumes:
+      - ./config.yml:/data/config.yml:ro
+    networks:
+      - warehouse
+    depends_on:
+      - nats

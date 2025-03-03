@@ -4,7 +4,7 @@
 
 # MVP
 
-[![Coverage Status](https://coveralls.io/repos/github/alimitedgroup/MVP/badge.svg?branch=feature/DI)](https://coveralls.io/github/alimitedgroup/MVP?branch=feature/DI)
+[![Coverage Status](https://coveralls.io/repos/github/alimitedgroup/MVP/badge.svg?branch=main)](https://coveralls.io/github/alimitedgroup/MVP?branch=main)
 [![CI](https://github.com/alimitedgroup/MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/alimitedgroup/MVP/actions/workflows/ci.yml)
 
 Questo Repository è stato creato per ospitare il _Minimum Viable Product_ per il progetto di Ingegneria del Software (aa. 2024/2025) dell'Università di Padova, realizzato dall'ottavo gruppo.
