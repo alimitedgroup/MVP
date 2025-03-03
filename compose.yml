@@ -36,3 +36,16 @@ services:
       - warehouse
     depends_on:
       - nats
+
+  warehouse:
+    build: { args: { SERVICE: warehouse } }
+    ports:
+      - "8081:8081"
+    environment:
+      - ENV_BROKER_URL=nats://nats:4222
+    volumes:
+      - ./config.yml:/data/config.yml
+    networks:
+      - warehouse
+    depends_on:
+      - nats

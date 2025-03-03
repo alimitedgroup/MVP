@@ -49,5 +49,6 @@ func LoadConfig() fx.Option {
 	return fx.Options(
 		fx.Supply(&config),
 		fx.Supply(&config.BrokerConfig),
+		fx.Supply(&config.WarehouseConfig),
 	)
 }

@@ -1,6 +1,10 @@
 package controller
 
-import "github.com/gin-gonic/gin"
+import (
+	"context"
+
+	"github.com/nats-io/nats.go"
+)
 
 type ReservationController struct {
 }
@@ -9,5 +13,6 @@ func NewReservationController() *ReservationController {
 	return &ReservationController{}
 }
 
-func (c *ReservationController) CreateReservationHandler(ctx *gin.Context) {
+func (c *ReservationController) CreateReservationHandler(ctx context.Context, msg *nats.Msg) error {
+	return nil
 }

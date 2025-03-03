@@ -14,14 +14,23 @@ type StockRouter struct {
 	broker          *broker.NatsMessageBroker
 }
 
-func NewStockUpdateRouter(config *config.WarehouseConfig, stockUpdateController *StockController, broker *broker.NatsMessageBroker) *StockRouter {
+func NewStockRouter(config *config.WarehouseConfig, stockUpdateController *StockController, broker *broker.NatsMessageBroker) *StockRouter {
 	return &StockRouter{config, stockUpdateController, broker}
 }
 
 func (r *StockRouter) Setup(ctx context.Context) error {
 	// register request/reply handlers
-	r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.stock.add.%s", r.config.ID)), broker.NoQueue, r.stockController.AddStockHandler)
-	r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.stock.remove.%s", r.config.ID)), broker.NoQueue, r.stockController.RemoveStockHandler)
+	var err error
+
+	err = r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.stock.add.%s", r.config.ID)), broker.NoQueue, r.stockController.AddStockHandler)
+	if err != nil {
+		return err
+	}
+
+	err = r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.stock.remove.%s", r.config.ID)), broker.NoQueue, r.stockController.RemoveStockHandler)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -1,7 +1,9 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
+
+	"github.com/nats-io/nats.go"
 )
 
 type HealthcheckController struct {
@@ -11,8 +13,6 @@ func NewHealthcheckController() *HealthcheckController {
 	return &HealthcheckController{}
 }
 
-func (c *HealthcheckController) PingHandler(ctx *gin.Context) {
-	ctx.JSON(200, gin.H{
-		"data": "pong",
-	})
+func (c *HealthcheckController) PingHandler(ctx context.Context, msg *nats.Msg) error {
+	return nil
 }

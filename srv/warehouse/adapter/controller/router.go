@@ -8,9 +8,11 @@ import (
 
 type BrokerRoutes []lib.BrokerRoute
 
-func NewBrokerRoutes(stockRouter *StockRouter) BrokerRoutes {
+func NewBrokerRoutes(stockRouter *StockRouter, reservationRouter *ReservationRouter, healthCheckRouter *HealthCheckRouter) BrokerRoutes {
 	return BrokerRoutes{
 		stockRouter,
+		reservationRouter,
+		healthCheckRouter,
 	}
 }
 
