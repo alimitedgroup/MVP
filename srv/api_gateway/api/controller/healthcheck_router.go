@@ -1,18 +1,17 @@
-package router
+package controller
 
 import (
 	"context"
 
 	"github.com/alimitedgroup/MVP/common/lib"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/api/controller"
 )
 
 type HealthCheckRouter struct {
 	http       *lib.HTTPHandler
-	controller *controller.HealthCheckController
+	controller *HealthCheckController
 }
 
-func NewHealthCheckRouter(http *lib.HTTPHandler, controller *controller.HealthCheckController) *HealthCheckRouter {
+func NewHealthCheckRouter(http *lib.HTTPHandler, controller *HealthCheckController) *HealthCheckRouter {
 	return &HealthCheckRouter{http, controller}
 }
 

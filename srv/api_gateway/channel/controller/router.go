@@ -1,15 +1,9 @@
-package router
+package controller
 
 import (
 	"context"
 
 	"github.com/alimitedgroup/MVP/common/lib"
-	"go.uber.org/fx"
-)
-
-var Module = fx.Options(
-	fx.Provide(NewStockUpdateRouter),
-	fx.Provide(NewBrokerRoutes),
 )
 
 type BrokerRoutes []lib.BrokerRoute

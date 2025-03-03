@@ -17,8 +17,9 @@ type BrokerConfig struct {
 }
 
 type NatsMessageBroker struct {
-	Nats *nats.Conn
-	Js   jetstream.JetStream
+	Nats   *nats.Conn
+	NatsJs nats.JetStream
+	Js     jetstream.JetStream
 }
 
 func NewNatsMessageBroker(cfg *BrokerConfig) (*NatsMessageBroker, error) {
@@ -29,12 +30,17 @@ func NewNatsMessageBroker(cfg *BrokerConfig) (*NatsMessageBroker, error) {
 		return nil, err
 	}
 
+	ncJs, err := nc.JetStream()
+	if err != nil {
+		return nil, err
+	}
+
 	js, err := jetstream.New(nc)
 	if err != nil {
 		return nil, err
 	}
 
-	return &NatsMessageBroker{nc, js}, nil
+	return &NatsMessageBroker{nc, ncJs, js}, nil
 }
 
 func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject, queue Queue, handler RequestHandler) error {
