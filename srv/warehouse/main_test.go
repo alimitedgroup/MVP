@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -12,7 +11,7 @@ import (
 )
 
 func TestRunWithBadConfigParams(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	cfg := broker.BrokerConfig{
 		Url: "nats://localhost:-100",
 	}
