@@ -18,10 +18,22 @@ func NewCatalogRouter(mb *broker.NatsMessageBroker, cc *catalogController, rsc *
 }
 
 func (cr *catalogRouter) Setup(ctx context.Context) error {
-	cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodQuantityRequest)
-	cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodDataRequest) //sistemare con handler giusto
+	err := cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodQuantityRequest)
+	if err != nil {
+		return nil
+	}
+	err = cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodDataRequest)
+	if err != nil {
+		return nil
+	}
 	cr.rsc.Wait()
-	cr.mb.RegisterRequest(ctx, "catalog.getGoods", "catalog", cr.controller.getGoodRequest)
-	cr.mb.RegisterRequest(ctx, "catalog.getWarehouse", "catalog", cr.controller.getWarehouseRequest)
+	err = cr.mb.RegisterRequest(ctx, "catalog.getGoods", "catalog", cr.controller.getGoodRequest)
+	if err != nil {
+		return nil
+	}
+	err = cr.mb.RegisterRequest(ctx, "catalog.getWarehouse", "catalog", cr.controller.getWarehouseRequest)
+	if err != nil {
+		return nil
+	}
 	return nil
 }

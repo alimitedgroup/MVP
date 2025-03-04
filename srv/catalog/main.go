@@ -12,7 +12,10 @@ import (
 
 func Run(ctx context.Context, cr *controller.ControllerRouter) error {
 	//var err error
-	cr.Setup(ctx)
+	err := cr.Setup(ctx)
+	if err != nil {
+		return err
+	}
 	<-ctx.Done()
 	return nil
 }
