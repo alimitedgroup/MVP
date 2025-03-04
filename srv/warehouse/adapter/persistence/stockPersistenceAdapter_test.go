@@ -5,6 +5,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/persistence"
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )
 
@@ -37,7 +38,7 @@ func TestStockPersistanceAdapter(t *testing.T) {
 		fx.Provide(NewStockRepositoryMock),
 		fx.Provide(func(s *stockRepositoryMock) persistence.StockRepository { return s }),
 		fx.Provide(persistence.NewStockPersistanceAdapter),
-		fx.Invoke(func(a *persistence.StockPersistanceAdapter) {
+		fx.Invoke(func(a *persistence.StockPersistanceAdapter, stockRepo persistence.StockRepository, stockRepoMock *stockRepositoryMock) {
 			goods := []model.GoodStock{
 				{ID: "1", Quantity: 10},
 				{ID: "2", Quantity: 20},
@@ -47,6 +48,9 @@ func TestStockPersistanceAdapter(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+
+			assert.Equal(t, stockRepo.GetStock("1"), int64(10))
+			assert.Equal(t, stockRepoMock.M["2"], int64(20))
 		}),
 	)
 
