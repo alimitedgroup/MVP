@@ -1,9 +1,9 @@
 package goodRepository
 
 type CustomError struct {
-	er string
+	err string
 }
 
 func (c CustomError) Error() string {
-	return c.er
+	return c.err
 }

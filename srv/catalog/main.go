@@ -38,7 +38,6 @@ var Modules = fx.Options(
 func main() {
 	ctx := context.Background()
 	config := config.LoadConfig()
-
 	app := fx.New(
 		Modules,
 		config,

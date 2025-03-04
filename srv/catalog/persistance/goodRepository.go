@@ -7,7 +7,7 @@ type catalogRepository struct {
 }
 
 func NewCatalogRepository() *catalogRepository {
-	return &catalogRepository{warehouseMap: make(map[string]*warehouse), goodMap: make(map[string]*good)}
+	return &catalogRepository{warehouseMap: make(map[string]*warehouse), goodMap: make(map[string]*good), goodStockMap: make(map[string]int64)}
 }
 
 func (cr *catalogRepository) GetGoods() map[string]good {
@@ -16,6 +16,10 @@ func (cr *catalogRepository) GetGoods() map[string]good {
 		result[key] = *cr.goodMap[key]
 	}
 	return result
+}
+
+func (cr *catalogRepository) GetGoodsGlobalQuantity() map[string]int64 {
+	return cr.goodStockMap
 }
 
 func (cr *catalogRepository) GetWarehouses() map[string]warehouse {
@@ -35,10 +39,10 @@ func (cr *catalogRepository) SetGoodQuantity(warehouseID string, goodID string, 
 	cr.addWarehouse(warehouseID)
 	_, presence := cr.goodMap[goodID]
 	if !presence {
-		return CustomError{"Not a valid good ID"}
+		return CustomError{"Not a valid goodID"}
 	}
 	cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
-	cr.goodMap[goodID].SetQuantity(newQuantity)
+	cr.goodStockMap[goodID] = newQuantity
 	return nil
 }
 
@@ -59,6 +63,22 @@ func (cr *catalogRepository) AddGood(name string, description string, goodID str
 	if presence {
 		return CustomError{"Provided goodID already exists"}
 	}
-	cr.goodMap[goodID] = NewGood(goodID, name, description, 0)
+	cr.goodMap[goodID] = NewGood(goodID, name, description)
+	return nil
+}
+
+func (cr *catalogRepository) ChangeGoodData(goodID string, newName string, newDescription string) error {
+	_, presence := cr.goodMap[goodID]
+	if !presence {
+		return CustomError{"Not a valid goodID"}
+	}
+	err := cr.goodMap[goodID].SetName(newName)
+	if err != nil {
+		return err
+	}
+	err = cr.goodMap[goodID].SetDescription(newDescription)
+	if err != nil {
+		return err
+	}
 	return nil
 }
