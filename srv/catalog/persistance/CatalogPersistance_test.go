@@ -89,7 +89,7 @@ func TestAddWarehouse(t *testing.T) {
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *catalogRepository) {
 			err1 := cr.AddGood("test-name", "test-description", "test-ID")
-			err2 := cr.SetGoodQuantity("test-warehouse-ID", "test-name", 7)
+			err2 := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
 			_, presence := cr.GetWarehouses()["test-warehouse-ID"]
 			assert.Equal(t, presence, true)
 			assert.Equal(t, err1, nil)
