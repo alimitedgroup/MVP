@@ -10,7 +10,7 @@ func NewCatalogRepositoryAdapter(repo IGoodRepository) *CatalogRepositoryAdapter
 	return &CatalogRepositoryAdapter{repo: repo}
 }
 
-func (cra *CatalogRepositoryAdapter) AddOrChangeGoodData(agc *service.AddGoodCmd) *service.AddOrChangeResponse {
+func (cra *CatalogRepositoryAdapter) AddOrChangeGoodData(agc *service.AddChangeGoodCmd) *service.AddOrChangeResponse {
 	err := cra.repo.AddGood(agc.GetId(), agc.GetName(), agc.GetDescription())
 	if err != nil {
 		return service.NewAddOrChangeResponse(err.Error())
@@ -30,6 +30,6 @@ func (cra *CatalogRepositoryAdapter) GetGoodsQuantity(ggqc *service.GetGoodsQuan
 	return service.NewGetGoodsQuantityResponse(cra.repo.GetGoodsGlobalQuantity())
 }
 
-func (cra *CatalogRepositoryAdapter) GetGoodsInfo(ggqc *service.GetGoodsQuantityCmd) *service.GetGoodsInfoResponse {
+func (cra *CatalogRepositoryAdapter) GetGoodsInfo(ggqc *service.GetGoodsInfoCmd) *service.GetGoodsInfoResponse {
 	return service.NewGetGoodsInfoResponse(cra.repo.GetGoods())
 }

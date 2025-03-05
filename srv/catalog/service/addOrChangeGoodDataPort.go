@@ -1,5 +1,5 @@
 package service
 
 type IAddOrChangeGoodDataPort interface {
-	AddOrChangeGoodData(agc *AddGoodCmd) *AddOrChangeResponse
+	AddOrChangeGoodData(agc *AddChangeGoodCmd) *AddOrChangeResponse
 }
