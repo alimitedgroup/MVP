@@ -13,3 +13,9 @@ down:
 reset:
     docker compose down -v --remove-orphans
     just up
+
+generate:
+     go generate ./...
+
+test: generate
+    go test ./...
