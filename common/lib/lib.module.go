@@ -10,5 +10,5 @@ var Module = fx.Options(
 	fx.Provide(broker.NewNatsConn),
 	fx.Provide(broker.NewNatsMessageBroker),
 	fx.Provide(broker.NewRestoreStreamControl),
-	fx.Provide(broker.NewRestoreStreamControlFactory),
+	fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 )
