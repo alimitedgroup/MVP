@@ -1,18 +1,22 @@
 package business
 
-import "go.uber.org/fx"
+import (
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
+	"go.uber.org/fx"
+)
 
 type Business struct {
+	authAdapter portout.AuthenticationPortOut
 }
 
-func NewBusiness() *Business {
-	return &Business{}
+func NewBusiness(authAdapter portout.AuthenticationPortOut) *Business {
+	return &Business{authAdapter: authAdapter}
 }
 
 var Module = fx.Options(
 	fx.Provide(NewBusiness),
 )
 
-func (*Business) Login(username string) string {
-
+func (b *Business) Login(username string) (portout.UserToken, error) {
+	return b.authAdapter.GetToken(username)
 }

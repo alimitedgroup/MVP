@@ -6,4 +6,6 @@ var Module = fx.Options(
 	fx.Provide(NewHealthCheckController),
 	fx.Provide(NewAPIRoutes),
 	fx.Provide(NewHealthCheckRouter),
+	fx.Provide(NewNatsRouter),
 )
+
