@@ -58,7 +58,7 @@ func (cr *catalogRepository) addWarehouse(warehouseID string) {
 	cr.warehouseMap[warehouseID] = NewWarehouse(warehouseID)
 }
 
-func (cr *catalogRepository) AddGood(name string, description string, goodID string) error {
+func (cr *catalogRepository) AddGood(goodID string, name string, description string) error {
 	_, presence := cr.goodMap[goodID]
 	if presence {
 		return CustomError{"Provided goodID already exists"}

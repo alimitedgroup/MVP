@@ -5,6 +5,6 @@ type IGoodRepository interface {
 	GetGoodsGlobalQuantity() map[string]int64
 	SetGoodQuantity(warehouseID string, goodID string, newQuantity int64) error
 	addWarehouse(warehouseID string)
-	AddGood(name string, description string, goodID string) error
+	AddGood(goodID string, name string, description string) error
 	ChangeGoodData(goodID string, newName string, newDescription string) error
 }

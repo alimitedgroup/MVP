@@ -12,7 +12,7 @@ func TestNotAValidGoodID_ChangeData(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *catalogRepository) {
-			err2 := cr.AddGood("test-name", "test-desc", "test-ID")
+			err2 := cr.AddGood("test-ID","test-name", "test-desc")
 			err := cr.ChangeGoodData("ciao", "test-name", "test-desc2")
 			assert.Equal(t, err.Error(), "Not a valid goodID")
 			assert.Equal(t, err2, nil)
@@ -25,7 +25,7 @@ func TestNotAValidGoodID_SetQt(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *catalogRepository) {
-			err2 := cr.AddGood("test-name", "test-desc", "test-ID")
+			err2 := cr.AddGood("test-ID","test-name", "test-desc")
 			err := cr.SetGoodQuantity("test-name2", "un bell'ID", 7)
 			assert.Equal(t, err.Error(), "Not a valid goodID")
 			assert.Equal(t, err2, nil)
@@ -37,8 +37,8 @@ func TestAlreadyExistentGood(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *catalogRepository) {
-			err2 := cr.AddGood("test-name", "test-desc", "test-ID")
-			err := cr.AddGood("test-name2", "test-desc2", "test-ID")
+			err2 := cr.AddGood("test-ID", "test-name", "test-desc")
+			err := cr.AddGood("test-ID","test-name2", "test-desc2")
 			assert.Equal(t, err.Error(), "Provided goodID already exists")
 			assert.Equal(t, err2, nil)
 		}),
@@ -50,7 +50,7 @@ func TestAddGood(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *catalogRepository) {
-			err2 := cr.AddGood("test-name", "test-description", "test-ID")
+			err2 := cr.AddGood("test-ID","test-name", "test-description")
 			err3 := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
 			resultGoods := cr.GetGoods()
 			assert.Equal(t, err2, nil)
@@ -68,7 +68,7 @@ func TestChangeGoodData(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *catalogRepository) {
-			err1 := cr.AddGood("test-name", "test-description", "test-ID")
+			err1 := cr.AddGood("test-ID","test-name", "test-description")
 			err2 := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
 			err3 := cr.ChangeGoodData("test-ID", "new-test-name", "new-test-description")
 			resultGoods := cr.GetGoods()
@@ -88,7 +88,7 @@ func TestAddWarehouse(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *catalogRepository) {
-			err1 := cr.AddGood("test-name", "test-description", "test-ID")
+			err1 := cr.AddGood("test-ID","test-name", "test-description")
 			err2 := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
 			_, presence := cr.GetWarehouses()["test-warehouse-ID"]
 			assert.Equal(t, presence, true)
