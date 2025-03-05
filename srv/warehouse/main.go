@@ -2,45 +2,38 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/api"
-	apiController "github.com/alimitedgroup/MVP/srv/api_gateway/api/controller"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/channel"
-	brokerController "github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
+	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
+	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
+	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
+	"github.com/alimitedgroup/MVP/srv/warehouse/application"
+	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"go.uber.org/fx"
 )
-
-type APIConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
-}
 
 type RunParams struct {
 	fx.In
 
-	ServerConfig *APIConfig
-	HttpHandler  *lib.HTTPHandler
-	ApiRoutes    apiController.APIRoutes
-	BrokerRoutes brokerController.BrokerRoutes
+	BrokerRoutes   controller.BrokerRoutes
+	ListenerRoutes listener.ListenerRoutes
 }
 
 func Run(ctx context.Context, p RunParams) error {
 	var err error
+
+	err = p.ListenerRoutes.Setup(ctx)
+	if err != nil {
+		return err
+	}
 
 	err = p.BrokerRoutes.Setup(ctx)
 	if err != nil {
 		return err
 	}
 
-	p.ApiRoutes.Setup(ctx)
-
-	err = p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
-	if err != nil {
-		return err
-	}
+	<-ctx.Done()
 
 	return nil
 }
@@ -59,14 +52,14 @@ func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
 
 var Modules = fx.Options(
 	lib.Module,
-	api.Module,
-	channel.Module,
+	adapter.Module,
+	application.Module,
 )
 
 func main() {
 	ctx := context.Background()
 
-	config := loadConfig()
+	config := config.LoadConfig()
 
 	opts := fx.Options(
 		config,

@@ -1,0 +1,80 @@
+package application_test
+
+import (
+	"testing"
+
+	"github.com/alimitedgroup/MVP/srv/warehouse/application"
+	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/magiconair/properties/assert"
+	"go.uber.org/fx"
+)
+
+type applyStockUpdatePortMock struct {
+	M     map[string]int64
+	Total int64
+}
+
+func newApplyStockUpdatePortMock() *applyStockUpdatePortMock {
+	return &applyStockUpdatePortMock{M: make(map[string]int64), Total: 0}
+}
+
+func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) error {
+	for _, v := range goods {
+
+		old, exist := m.M[v.ID]
+		if !exist {
+			old = 0
+		}
+
+		m.M[v.ID] = old + v.Quantity
+		m.Total += v.Quantity
+	}
+	return nil
+}
+
+func TestApplyStockUpdateService(t *testing.T) {
+	ctx := t.Context()
+
+	app := fx.New(
+		fx.Provide(newApplyStockUpdatePortMock, func(s *applyStockUpdatePortMock) port.ApplyStockUpdatePort { return s }),
+		fx.Provide(fx.Annotate(application.NewApplyStockUpdateService, fx.As(new(port.ApplyStockUpdateUseCase)))),
+		fx.Invoke(func(useCase port.ApplyStockUpdateUseCase, saveStockUpdatePortMock *applyStockUpdatePortMock) {
+			cmd := port.StockUpdateCmd{
+				ID: "1",
+				Goods: []port.StockUpdateCmdGood{
+					{
+						GoodID:   "1",
+						Quantity: 10,
+					},
+					{
+						GoodID:   "2",
+						Quantity: 20,
+					},
+				},
+			}
+
+			err := useCase.ApplyStockUpdate(ctx, cmd)
+			if err != nil {
+				t.Errorf("error updating stock: %v", err)
+			}
+
+			assert.Equal(t, saveStockUpdatePortMock.Total, int64(30))
+			assert.Equal(t, saveStockUpdatePortMock.M["1"], int64(10))
+			assert.Equal(t, saveStockUpdatePortMock.M["2"], int64(20))
+		}),
+	)
+
+	err := app.Start(ctx)
+	if err != nil {
+		t.Errorf("error starting app: %v", err)
+	}
+
+	defer func() {
+		err := app.Stop(ctx)
+		if err != nil {
+			t.Errorf("error stopping app: %v", err)
+		}
+	}()
+
+}
