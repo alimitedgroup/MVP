@@ -5,8 +5,10 @@ import (
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib"
+	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
 	"github.com/alimitedgroup/MVP/srv/catalog/config"
 	"github.com/alimitedgroup/MVP/srv/catalog/controller"
+	goodRepository "github.com/alimitedgroup/MVP/srv/catalog/persistance"
 	"go.uber.org/fx"
 )
 
@@ -35,6 +37,8 @@ func RunLifeCycle(lc fx.Lifecycle, cr *controller.ControllerRouter) {
 var Modules = fx.Options(
 	lib.Module,
 	controller.Module,
+	goodRepository.Module,
+	catalogAdapter.Module,
 	//metti tutti altri module
 )
 

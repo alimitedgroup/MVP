@@ -1,17 +1,19 @@
-package goodRepository
+package persistance
+
+import "github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 
 type catalogRepository struct {
 	warehouseMap map[string]*warehouse
-	goodMap      map[string]*good
+	goodMap      map[string]*catalogCommon.Good
 	goodStockMap map[string]int64
 }
 
 func NewCatalogRepository() *catalogRepository {
-	return &catalogRepository{warehouseMap: make(map[string]*warehouse), goodMap: make(map[string]*good), goodStockMap: make(map[string]int64)}
+	return &catalogRepository{warehouseMap: make(map[string]*warehouse), goodMap: make(map[string]*catalogCommon.Good), goodStockMap: make(map[string]int64)}
 }
 
-func (cr *catalogRepository) GetGoods() map[string]good {
-	result := make(map[string]good)
+func (cr *catalogRepository) GetGoods() map[string]catalogCommon.Good {
+	result := make(map[string]catalogCommon.Good)
 	for key := range cr.goodMap {
 		result[key] = *cr.goodMap[key]
 	}
@@ -39,10 +41,12 @@ func (cr *catalogRepository) SetGoodQuantity(warehouseID string, goodID string, 
 	cr.addWarehouse(warehouseID)
 	_, presence := cr.goodMap[goodID]
 	if !presence {
-		return CustomError{"Not a valid goodID"}
+		return catalogCommon.NewCustomError("Not a valid goodID")
 	}
+	oldValue := cr.warehouseMap[warehouseID].GetGoodStock(goodID)
+	delta := newQuantity - oldValue
 	cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
-	cr.goodStockMap[goodID] = newQuantity
+	cr.goodStockMap[goodID] += delta
 	return nil
 }
 
@@ -61,16 +65,16 @@ func (cr *catalogRepository) addWarehouse(warehouseID string) {
 func (cr *catalogRepository) AddGood(goodID string, name string, description string) error {
 	_, presence := cr.goodMap[goodID]
 	if presence {
-		return CustomError{"Provided goodID already exists"}
+		return cr.changeGoodData(goodID, name, description)
 	}
-	cr.goodMap[goodID] = NewGood(goodID, name, description)
+	cr.goodMap[goodID] = catalogCommon.NewGood(goodID, name, description)
 	return nil
 }
 
-func (cr *catalogRepository) ChangeGoodData(goodID string, newName string, newDescription string) error {
+func (cr *catalogRepository) changeGoodData(goodID string, newName string, newDescription string) error {
 	_, presence := cr.goodMap[goodID]
 	if !presence {
-		return CustomError{"Not a valid goodID"}
+		return catalogCommon.NewCustomError("Not a valid goodID")
 	}
 	err := cr.goodMap[goodID].SetName(newName)
 	if err != nil {

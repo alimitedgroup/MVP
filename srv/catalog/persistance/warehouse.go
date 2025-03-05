@@ -1,4 +1,4 @@
-package goodRepository
+package persistance
 
 type warehouse struct {
 	ID    string
@@ -21,6 +21,10 @@ func (w *warehouse) addGood(ID string) {
 	w.stock[ID] = 0
 }
 
-func (w *warehouse) GetStock() map[string]int64 {
-	return w.stock
+func (w *warehouse) GetGoodStock(id string) int64 {
+	value, presence := w.stock[id]
+	if !presence {
+		return int64(0)
+	}
+	return value
 }

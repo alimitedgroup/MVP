@@ -1,28 +1,28 @@
-package goodRepository
+package catalogCommon
 
-type good struct {
+type Good struct {
 	name        string
 	description string
 	ID          string //it is a converted uuid.UUID
 }
 
-func NewGood(ID string, name string, description string) *good {
-	return &good{name, description, ID}
+func NewGood(ID string, name string, description string) *Good {
+	return &Good{name, description, ID}
 }
 
-func (g good) GetID() string {
+func (g Good) GetID() string {
 	return g.ID
 }
 
-func (g good) GetName() string {
+func (g Good) GetName() string {
 	return g.name
 }
 
-func (g good) GetDescription() string {
+func (g Good) GetDescription() string {
 	return g.description
 }
 
-func (g *good) SetDescription(newDescription string) error {
+func (g *Good) SetDescription(newDescription string) error {
 	if newDescription == "" {
 		return CustomError{"Description is empty"}
 	}
@@ -30,7 +30,7 @@ func (g *good) SetDescription(newDescription string) error {
 	return nil
 }
 
-func (g *good) SetName(newName string) error {
+func (g *Good) SetName(newName string) error {
 	if newName == "" {
 		return CustomError{"Name is empty"}
 	}
