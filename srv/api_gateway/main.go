@@ -7,9 +7,9 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/api"
-	apiRouter "github.com/alimitedgroup/MVP/srv/api_gateway/api/router"
+	apiController "github.com/alimitedgroup/MVP/srv/api_gateway/api/controller"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/channel"
-	brokerRouter "github.com/alimitedgroup/MVP/srv/api_gateway/channel/router"
+	brokerController "github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
 	"go.uber.org/fx"
 )
 
@@ -23,8 +23,8 @@ type RunParams struct {
 
 	ServerConfig *APIConfig
 	HttpHandler  *lib.HTTPHandler
-	ApiRoutes    apiRouter.APIRoutes
-	BrokerRoutes brokerRouter.BrokerRoutes
+	ApiRoutes    apiController.APIRoutes
+	BrokerRoutes brokerController.BrokerRoutes
 }
 
 func Run(ctx context.Context, p RunParams) error {
