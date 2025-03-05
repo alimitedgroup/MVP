@@ -8,6 +8,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/api"
 	apiController "github.com/alimitedgroup/MVP/srv/api_gateway/api/controller"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/channel"
 	brokerController "github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
 	"go.uber.org/fx"
@@ -57,24 +58,17 @@ func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
 	})
 }
 
-var Modules = fx.Options(
-	lib.Module,
-	api.Module,
-	channel.Module,
-)
-
 func main() {
 	ctx := context.Background()
 
 	config := loadConfig()
 
-	opts := fx.Options(
-		config,
-		Modules,
-	)
-
 	app := fx.New(
-		opts,
+		lib.Module,
+		api.Module,
+		channel.Module,
+		business.Module,
+		config,
 		fx.Invoke(RunLifeCycle),
 	)
 
