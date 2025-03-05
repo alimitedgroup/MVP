@@ -66,7 +66,7 @@ func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject
 	return nil
 }
 
-func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore *RestoreStreamControl, streamCfg jetstream.StreamConfig, handler JsHandler, opts ...JsHandlerOpt) error {
+func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore IRestoreStreamControl, streamCfg jetstream.StreamConfig, handler JsHandler, opts ...JsHandlerOpt) error {
 	s, err := n.Js.CreateStream(ctx, streamCfg)
 	if err != nil {
 		return fmt.Errorf("failed to create stream: %w", err)
