@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"log"
 
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
@@ -29,8 +28,6 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 	if err != nil {
 		return err
 	}
-
-	log.Printf("loaded stock update %s\n", cmd.ID)
 
 	return nil
 }
