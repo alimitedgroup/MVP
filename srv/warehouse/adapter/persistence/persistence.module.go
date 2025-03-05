@@ -7,7 +7,5 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(fx.Annotate(NewStockRepositoryIml, fx.As(new(StockRepository)))),
-	fx.Provide(fx.Annotate(NewStockPersistanceAdapter,
-		fx.As(new(port.SaveUpdateStockPort))),
-	),
+	fx.Provide(fx.Annotate(NewStockPersistanceAdapter, fx.As(new(port.GetStockPort)), fx.As(new(port.ApplyStockUpdatePort)))),
 )

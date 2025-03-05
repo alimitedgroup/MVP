@@ -10,11 +10,11 @@ import (
 )
 
 type StockUpdateListener struct {
-	updateStockUseCase port.UpdateStockUseCase
+	applyStockUpdateUseCase port.ApplyStockUpdateUseCase
 }
 
-func NewStockUpdateListener(updateStockUseCase port.UpdateStockUseCase) *StockUpdateListener {
-	return &StockUpdateListener{updateStockUseCase}
+func NewStockUpdateListener(applyStockUpdateUseCase port.ApplyStockUpdateUseCase) *StockUpdateListener {
+	return &StockUpdateListener{applyStockUpdateUseCase}
 }
 
 func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstream.Msg) error {
@@ -23,8 +23,8 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 	if err != nil {
 		return err
 	}
-	cmd := StockUpdateEventToUpdateStockCommand(event)
-	err = l.updateStockUseCase.UpdateStock(cmd)
+	cmd := StockUpdateEventToApplyStockUpdateCmd(event)
+	err = l.applyStockUpdateUseCase.ApplyStockUpdate(ctx, cmd)
 	if err != nil {
 		return err
 	}
@@ -32,19 +32,19 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 	return nil
 }
 
-func StockUpdateEventToUpdateStockCommand(event stream.StockUpdate) port.UpdateStockCmd {
-	cmd := port.UpdateStockCmd{
+func StockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
+	cmd := port.StockUpdateCmd{
 		ID:         event.ID,
-		Type:       event.Type,
+		Type:       string(event.Type),
 		OrderID:    event.OrderID,
 		TransferID: event.TransferID,
 		Timestamp:  event.Timestamp,
 	}
 
-	cmd.Goods = make([]port.UpdateStockCommandGood, 0, len(event.Goods))
+	cmd.Goods = make([]port.StockUpdateCmdGood, 0, len(event.Goods))
 
 	for _, good := range event.Goods {
-		cmd.Goods = append(cmd.Goods, port.UpdateStockCommandGood{
+		cmd.Goods = append(cmd.Goods, port.StockUpdateCmdGood{
 			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 			Delta:    good.Delta,

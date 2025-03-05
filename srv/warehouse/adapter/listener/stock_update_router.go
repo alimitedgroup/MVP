@@ -10,11 +10,11 @@ import (
 type StockUpdateRouter struct {
 	stockListener *StockUpdateListener
 	broker        *broker.NatsMessageBroker
-	restore       *broker.RestoreStreamControl
+	restore       broker.IRestoreStreamControl
 }
 
-func NewStockUpdateRouter(restore *broker.RestoreStreamControl, stockUpdateListener *StockUpdateListener, n *broker.NatsMessageBroker) *StockUpdateRouter {
-	return &StockUpdateRouter{stockUpdateListener, n, restore}
+func NewStockUpdateRouter(restoreFactory broker.IRestoreStreamControlFactory, stockUpdateListener *StockUpdateListener, n *broker.NatsMessageBroker) *StockUpdateRouter {
+	return &StockUpdateRouter{stockUpdateListener, n, restoreFactory.Build()}
 }
 
 func (r *StockUpdateRouter) Setup(ctx context.Context) error {

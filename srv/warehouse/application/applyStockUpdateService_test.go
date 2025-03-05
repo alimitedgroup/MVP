@@ -10,16 +10,16 @@ import (
 	"go.uber.org/fx"
 )
 
-type saveUpdateStockPortMock struct {
+type applyStockUpdatePortMock struct {
 	M     map[string]int64
 	Total int64
 }
 
-func newSaveUpdateStockPortMock() *saveUpdateStockPortMock {
-	return &saveUpdateStockPortMock{M: make(map[string]int64), Total: 0}
+func newApplyStockUpdatePortMock() *applyStockUpdatePortMock {
+	return &applyStockUpdatePortMock{M: make(map[string]int64), Total: 0}
 }
 
-func (m *saveUpdateStockPortMock) SaveUpdateStock(goods []model.GoodStock) error {
+func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) error {
 	for _, v := range goods {
 
 		old, exist := m.M[v.ID]
@@ -33,16 +33,16 @@ func (m *saveUpdateStockPortMock) SaveUpdateStock(goods []model.GoodStock) error
 	return nil
 }
 
-func TestUpdateStockService(t *testing.T) {
+func TestApplyStockUpdateService(t *testing.T) {
 	ctx := t.Context()
 
 	app := fx.New(
-		fx.Provide(newSaveUpdateStockPortMock, func(s *saveUpdateStockPortMock) port.SaveUpdateStockPort { return s }),
-		fx.Provide(fx.Annotate(application.NewUpdateStockService, fx.As(new(port.UpdateStockUseCase)))),
-		fx.Invoke(func(useCase port.UpdateStockUseCase, saveStockUpdatePortMock *saveUpdateStockPortMock) {
-			cmd := port.UpdateStockCmd{
+		fx.Provide(newApplyStockUpdatePortMock, func(s *applyStockUpdatePortMock) port.ApplyStockUpdatePort { return s }),
+		fx.Provide(fx.Annotate(application.NewApplyStockUpdateService, fx.As(new(port.ApplyStockUpdateUseCase)))),
+		fx.Invoke(func(useCase port.ApplyStockUpdateUseCase, saveStockUpdatePortMock *applyStockUpdatePortMock) {
+			cmd := port.StockUpdateCmd{
 				ID: "1",
-				Goods: []port.UpdateStockCommandGood{
+				Goods: []port.StockUpdateCmdGood{
 					{
 						GoodID:   "1",
 						Quantity: 10,
@@ -54,7 +54,7 @@ func TestUpdateStockService(t *testing.T) {
 				},
 			}
 
-			err := useCase.UpdateStock(cmd)
+			err := useCase.ApplyStockUpdate(ctx, cmd)
 			if err != nil {
 				t.Errorf("error updating stock: %v", err)
 			}

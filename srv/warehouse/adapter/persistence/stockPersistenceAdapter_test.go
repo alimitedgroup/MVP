@@ -44,7 +44,7 @@ func TestStockPersistanceAdapter(t *testing.T) {
 				{ID: "2", Quantity: 20},
 			}
 
-			err := a.SaveUpdateStock(goods)
+			err := a.ApplyStockUpdate(goods)
 			if err != nil {
 				t.Error(err)
 			}

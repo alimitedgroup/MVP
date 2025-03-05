@@ -1,21 +1,22 @@
 package application
 
 import (
+	"context"
 	"log"
 
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 )
 
-type UpdateStockService struct {
-	saveStockUpdatePort port.SaveUpdateStockPort
+type ApplyStockUpdateService struct {
+	applyStockUpdatePort port.ApplyStockUpdatePort
 }
 
-func NewUpdateStockService(saveStockUpdatePort port.SaveUpdateStockPort) *UpdateStockService {
-	return &UpdateStockService{saveStockUpdatePort}
+func NewApplyStockUpdateService(applyStockUpdatePort port.ApplyStockUpdatePort) *ApplyStockUpdateService {
+	return &ApplyStockUpdateService{applyStockUpdatePort}
 }
 
-func (s *UpdateStockService) UpdateStock(cmd port.UpdateStockCmd) error {
+func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port.StockUpdateCmd) error {
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
@@ -24,7 +25,7 @@ func (s *UpdateStockService) UpdateStock(cmd port.UpdateStockCmd) error {
 		})
 	}
 
-	err := s.saveStockUpdatePort.SaveUpdateStock(goods)
+	err := s.applyStockUpdatePort.ApplyStockUpdate(goods)
 	if err != nil {
 		return err
 	}
