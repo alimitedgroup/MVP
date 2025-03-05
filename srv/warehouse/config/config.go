@@ -30,7 +30,7 @@ func LoadConfig() fx.Option {
 
 	// BUG: need to fix the default values or else viper doesn't the env vars inside the config variable if the config file is not present
 	viper.SetDefault("broker.url", nats.DefaultURL)
-	viper.SetDefault("warehouse.id", 1)
+	viper.SetDefault("warehouse.id", "1")
 
 	viper.SetTypeByDefaultValue(true)
 
@@ -45,6 +45,8 @@ func LoadConfig() fx.Option {
 	if err != nil {
 		log.Fatal("fatal error unmarshalling config: %w", err)
 	}
+
+	log.Printf("config: %+v", config)
 
 	return fx.Options(
 		fx.Supply(&config),

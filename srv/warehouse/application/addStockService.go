@@ -21,6 +21,7 @@ func (s *AddStockService) AddStock(ctx context.Context, cmd port.AddStockCmd) er
 	quantity := currentQuantity + cmd.Quantity
 
 	createCmd := port.CreateStockUpdateCmd{
+		Type: port.CreateStockUpdateCmdTypeAdd,
 		Goods: []port.CreateStockUpdateCmdGood{
 			{
 				Good: model.GoodStock{

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
@@ -33,6 +34,8 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 		})
 	}
 
+	log.Printf("CreateStockUpdate: %+v\n", cmd)
+
 	var stockUpdateType stream.StockUpdateType
 	switch cmd.Type {
 	case port.CreateStockUpdateCmdTypeAdd:
@@ -56,6 +59,8 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 	if err != nil {
 		return err
 	}
+
+	log.Printf("Publishing stock update %s\n", payload)
 
 	resp, err := a.broker.Js.Publish(ctx, fmt.Sprintf("stock.update.%s", a.warehouseCfg.ID), payload)
 	if err != nil {

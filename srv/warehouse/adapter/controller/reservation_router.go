@@ -20,7 +20,7 @@ func NewReservationRouter(config *config.WarehouseConfig, reservationController 
 
 func (r *ReservationRouter) Setup(ctx context.Context) error {
 	// register request/reply handlers
-	err := r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.reservation.add.%s", r.config.ID)), broker.NoQueue, r.reservationController.CreateReservationHandler)
+	err := r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.%s.reservation.add", r.config.ID)), broker.NoQueue, r.reservationController.CreateReservationHandler)
 	if err != nil {
 		return err
 	}

@@ -11,31 +11,36 @@ func NewStockRepositoryIml() *StockRepositoryIml {
 	return &StockRepositoryIml{goodToStock: make(map[string]int64)}
 }
 
-func (s *StockRepositoryIml) GetStock(string string) int64 {
+func (s *StockRepositoryIml) GetStock(goodId string) int64 {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	return s.goodToStock[string]
+	stock, exist := s.goodToStock[goodId]
+	if !exist {
+		return 0
+	}
+
+	return stock
 }
 
-func (s *StockRepositoryIml) SetStock(string string, stock int64) bool {
+func (s *StockRepositoryIml) SetStock(goodId string, stock int64) bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	_, exist := s.goodToStock[string]
+	_, exist := s.goodToStock[goodId]
 
-	s.goodToStock[string] = stock
+	s.goodToStock[goodId] = stock
 
 	return exist
 }
 
-func (s *StockRepositoryIml) AddStock(string string, stock int64) bool {
+func (s *StockRepositoryIml) AddStock(goodId string, stock int64) bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	prev, exist := s.goodToStock[string]
+	prev, exist := s.goodToStock[goodId]
 
-	s.goodToStock[string] = prev + stock
+	s.goodToStock[goodId] = prev + stock
 
 	return exist
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
+	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
 	"github.com/nats-io/nats.go"
@@ -37,6 +38,15 @@ func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) er
 		return err
 	}
 
+	resp := response.ResponseDTO[string]{
+		Message: "Stock added",
+	}
+
+	err = broker.RespondToMsg(msg, resp)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -53,6 +63,24 @@ func (c *StockController) RemoveStockHandler(ctx context.Context, msg *nats.Msg)
 	}
 
 	err = c.removeStockUseCase.RemoveStock(ctx, cmd)
+	if err != nil {
+		resp := response.ResponseDTO[any]{
+			Error: err.Error(),
+		}
+
+		err = broker.RespondToMsg(msg, resp)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	resp := response.ResponseDTO[string]{
+		Message: "Stock removed",
+	}
+
+	err = broker.RespondToMsg(msg, resp)
 	if err != nil {
 		return err
 	}

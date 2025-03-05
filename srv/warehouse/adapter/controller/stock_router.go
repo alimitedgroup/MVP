@@ -22,12 +22,12 @@ func (r *StockRouter) Setup(ctx context.Context) error {
 	// register request/reply handlers
 	var err error
 
-	err = r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.stock.add.%s", r.config.ID)), broker.NoQueue, r.stockController.AddStockHandler)
+	err = r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.%s.stock.add", r.config.ID)), broker.NoQueue, r.stockController.AddStockHandler)
 	if err != nil {
 		return err
 	}
 
-	err = r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.stock.remove.%s", r.config.ID)), broker.NoQueue, r.stockController.RemoveStockHandler)
+	err = r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.%s.stock.remove", r.config.ID)), broker.NoQueue, r.stockController.RemoveStockHandler)
 	if err != nil {
 		return err
 	}

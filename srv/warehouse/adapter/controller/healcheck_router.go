@@ -20,7 +20,7 @@ func NewHealthCheckRouter(config *config.WarehouseConfig, healthCheckController 
 
 func (r *HealthCheckRouter) Setup(ctx context.Context) error {
 	// register request/reply handlers
-	err := r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.ping.%s", r.config.ID)), broker.NoQueue, r.healthCheckController.PingHandler)
+	err := r.broker.RegisterRequest(ctx, broker.Subject(fmt.Sprintf("warehouse.%s.ping", r.config.ID)), broker.NoQueue, r.healthCheckController.PingHandler)
 	if err != nil {
 		return err
 	}

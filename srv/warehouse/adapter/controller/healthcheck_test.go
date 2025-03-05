@@ -35,7 +35,7 @@ func TestHealthCheckController(t *testing.T) {
 						t.Error(err)
 					}
 
-					resp, err := ns.Request(fmt.Sprintf("warehouse.ping.%s", cfg.ID), []byte{}, 1*time.Second)
+					resp, err := ns.Request(fmt.Sprintf("warehouse.%s.ping", cfg.ID), []byte{}, 1*time.Second)
 					if err != nil {
 						t.Error(err)
 					}

@@ -27,6 +27,7 @@ func (s *RemoveStockService) RemoveStock(ctx context.Context, cmd port.RemoveSto
 	quantity := currentQuantity - cmd.Quantity
 
 	createCmd := port.CreateStockUpdateCmd{
+		Type: port.CreateStockUpdateCmdTypeRemove,
 		Goods: []port.CreateStockUpdateCmdGood{
 			{
 				Good: model.GoodStock{
