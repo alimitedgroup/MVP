@@ -10,7 +10,7 @@ import (
 func TestGetGoodsGlobalQt(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
-		fx.Invoke(func(cr *catalogRepository) {
+		fx.Invoke(func(cr *CatalogRepository) {
 			err := cr.AddGood("test-ID", "test-name", "test-desc")
 			err2 := cr.AddGood("2test-ID", "2test-name", "2test-desc")
 			err3 := cr.AddGood("3test-ID", "3test-name", "3test-desc")
@@ -41,7 +41,7 @@ func TestNotAValidGoodID_SetQt(t *testing.T) {
 	// Se si modifica la quantità di una merce non esistente ritorna un errore
 	fx.New(
 		fx.Provide(NewCatalogRepository),
-		fx.Invoke(func(cr *catalogRepository) {
+		fx.Invoke(func(cr *CatalogRepository) {
 			err2 := cr.AddGood("test-ID", "test-name", "test-desc")
 			err := cr.SetGoodQuantity("test-name2", "un bell'ID", 7)
 			assert.Equal(t, err.Error(), "Not a valid goodID")
@@ -54,7 +54,7 @@ func TestAddGood(t *testing.T) {
 	// Testa l'aggiunta di una merce
 	fx.New(
 		fx.Provide(NewCatalogRepository),
-		fx.Invoke(func(cr *catalogRepository) {
+		fx.Invoke(func(cr *CatalogRepository) {
 			err2 := cr.AddGood("test-ID", "test-name", "test-description")
 			err3 := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
 			resultGoods := cr.GetGoods()
@@ -72,7 +72,7 @@ func TestChangeGoodData(t *testing.T) {
 	// Testa la modifica di una merce
 	fx.New(
 		fx.Provide(NewCatalogRepository),
-		fx.Invoke(func(cr *catalogRepository) {
+		fx.Invoke(func(cr *CatalogRepository) {
 			err1 := cr.AddGood("test-ID", "test-name", "test-description")
 			err2 := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
 			err3 := cr.AddGood("test-ID", "new-test-name", "new-test-description")
@@ -92,7 +92,7 @@ func TestAddWarehouse(t *testing.T) {
 	//testa se l'arrivo di un messaggio con un warehouse non memorizzato determina l'aggiunta del warehouse
 	fx.New(
 		fx.Provide(NewCatalogRepository),
-		fx.Invoke(func(cr *catalogRepository) {
+		fx.Invoke(func(cr *CatalogRepository) {
 			err1 := cr.AddGood("test-ID", "test-name", "test-description")
 			err2 := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
 			_, presence := cr.GetWarehouses()["test-warehouse-ID"]

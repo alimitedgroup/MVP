@@ -9,6 +9,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/catalog/config"
 	"github.com/alimitedgroup/MVP/srv/catalog/controller"
 	goodRepository "github.com/alimitedgroup/MVP/srv/catalog/persistance"
+	"github.com/alimitedgroup/MVP/srv/catalog/service"
 	"go.uber.org/fx"
 )
 
@@ -39,6 +40,7 @@ var Modules = fx.Options(
 	controller.Module,
 	goodRepository.Module,
 	catalogAdapter.Module,
+	service.Module,
 	//metti tutti altri module
 )
 
