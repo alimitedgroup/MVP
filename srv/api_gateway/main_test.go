@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib"
-	apiController "github.com/alimitedgroup/MVP/srv/api_gateway/api/controller"
 	brokerController "github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
+	apiController "github.com/alimitedgroup/MVP/srv/api_gateway/controller"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )
