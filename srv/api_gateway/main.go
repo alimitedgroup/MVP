@@ -7,7 +7,6 @@ import (
 	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterout"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/controller"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
 	"go.uber.org/fx"
 	"log"
 )
@@ -55,9 +54,7 @@ func main() {
 	app := fx.New(
 		lib.Module,
 		business.Module,
-		fx.Provide(
-			fx.Annotate(adapterout.NewAuthenticationAdapter, fx.As(new(portout.AuthenticationPortOut))),
-		),
+		adapterout.Module,
 		controller.Module,
 		config,
 		fx.Invoke(RunLifeCycle),
@@ -74,5 +71,4 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-
 }
