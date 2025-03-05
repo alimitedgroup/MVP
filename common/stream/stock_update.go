@@ -11,13 +11,21 @@ var StockUpdateStreamConfig = jetstream.StreamConfig{
 }
 
 type StockUpdate struct {
-	ID         string            `json:"id"`
-	Type       string            `json:"type"`
-	Goods      []StockUpdateGood `json:"goods"`
-	OrderID    string            `json:"order_id"`
-	TransferID string            `json:"transfer_id"`
-	Timestamp  int64             `json:"timestamp"`
+	ID          string            `json:"id"`
+	WarehouseID string            `json:"warehouse_id"`
+	Type        StockUpdateType   `json:"type"`
+	Goods       []StockUpdateGood `json:"goods"`
+	OrderID     string            `json:"order_id"`
+	TransferID  string            `json:"transfer_id"`
+	Timestamp   int64             `json:"timestamp"`
 }
+
+type StockUpdateType string
+
+const (
+	StockUpdateTypeAdd    StockUpdateType = "add"
+	StockUpdateTypeRemove StockUpdateType = "remove"
+)
 
 type StockUpdateGood struct {
 	GoodID   string `json:"id"`
