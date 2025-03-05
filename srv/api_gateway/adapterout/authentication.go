@@ -39,6 +39,6 @@ func (*AuthenticationAdapter) GetRole(token portout.UserToken) (portout.UserRole
 	return 0, nil
 }
 
-func NewAuthenticationAdapter(broker *broker.NatsMessageBroker) *AuthenticationAdapter {
+func NewAuthenticationAdapter(broker *broker.NatsMessageBroker) portout.AuthenticationPortOut {
 	return &AuthenticationAdapter{Broker: broker}
 }
