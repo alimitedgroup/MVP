@@ -7,11 +7,10 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterout"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/api"
-	apiController "github.com/alimitedgroup/MVP/srv/api_gateway/api/controller"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/channel"
 	brokerController "github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/controller"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
 	"go.uber.org/fx"
 )
@@ -26,9 +25,7 @@ type RunParams struct {
 
 	ServerConfig *APIConfig
 	HttpHandler  *lib.HTTPHandler
-	ApiRoutes    apiController.APIRoutes
 	BrokerRoutes brokerController.BrokerRoutes
-	NatsRouter   *apiController.NatsRouter
 }
 
 func Run(ctx context.Context, p RunParams) error {
@@ -38,9 +35,6 @@ func Run(ctx context.Context, p RunParams) error {
 	if err != nil {
 		return err
 	}
-
-	p.ApiRoutes.Setup(ctx)
-	p.NatsRouter.Setup()
 
 	err = p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
 	if err != nil {
@@ -69,13 +63,12 @@ func main() {
 
 	app := fx.New(
 		lib.Module,
-		api.Module,
 		channel.Module,
 		business.Module,
 		fx.Provide(
 			fx.Annotate(adapterout.NewAuthenticationAdapter, fx.As(new(portout.AuthenticationPortOut))),
 		),
-
+		controller.Module,
 		config,
 		fx.Invoke(RunLifeCycle),
 	)
