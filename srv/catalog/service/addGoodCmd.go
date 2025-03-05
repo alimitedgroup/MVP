@@ -6,7 +6,7 @@ type AddGoodCmd struct {
 	description string
 }
 
-func NewAddGoodCmd(id string, name string, description string) {
+func NewAddGoodCmd(id string, name string, description string) *AddGoodCmd{
 	return AddGoodCmd{id: id, name: name, description: description}
 }
 
