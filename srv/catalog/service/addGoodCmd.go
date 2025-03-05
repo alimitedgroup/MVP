@@ -7,7 +7,7 @@ type AddGoodCmd struct {
 }
 
 func NewAddGoodCmd(id string, name string, description string) *AddGoodCmd{
-	return AddGoodCmd{id: id, name: name, description: description}
+	return &AddGoodCmd{id: id, name: name, description: description}
 }
 
 func (agc *AddGoodCmd)GetId() string {
