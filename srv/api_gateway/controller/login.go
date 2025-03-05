@@ -24,7 +24,7 @@ func (c *LoginController) Handler() gin.HandlerFunc {
 			return
 		}
 
-		if token == "" {
+		if token.Token == "" {
 			ctx.JSON(401, gin.H{"error": "unauthorized"})
 			return
 		}
