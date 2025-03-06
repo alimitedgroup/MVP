@@ -1,6 +1,7 @@
 package business
 
 import (
+	"fmt"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -15,9 +16,9 @@ func TestLogin(t *testing.T) {
 		string
 		portout.UserRole
 	}{
-		{"client", portout.Client},
-		{"local_admin", portout.LocalAdmin},
-		{"global_admin", portout.GlobalAdmin},
+		{"client", portout.RoleClient},
+		{"local_admin", portout.RoleLocalAdmin},
+		{"global_admin", portout.RoleGlobalAdmin},
 	}
 
 	for _, c := range cases {
@@ -40,13 +41,35 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLoginNoSuchUser(t *testing.T) {
-	// TODO
+	ctrl := gomock.NewController(t)
+	mock := NewMockAuthenticationPortOut(ctrl)
+
+	mock.EXPECT().GetToken(gomock.Any()).Return(portout.TokenNone, nil)
+
+	business := NewBusiness(mock)
+	_, err := business.Login("user")
+	require.ErrorIs(t, err, ErrorInvalidCredentials)
 }
 
 func TestLoginGetTokenError(t *testing.T) {
-	// TODO
+	ctrl := gomock.NewController(t)
+	mock := NewMockAuthenticationPortOut(ctrl)
+
+	mock.EXPECT().GetToken(gomock.Any()).Return(portout.TokenNone, fmt.Errorf("some error"))
+
+	business := NewBusiness(mock)
+	_, err := business.Login("user")
+	require.ErrorIs(t, err, ErrorGetToken)
 }
 
 func TestLoginGetRoleError(t *testing.T) {
-	// TODO
+	ctrl := gomock.NewController(t)
+	mock := NewMockAuthenticationPortOut(ctrl)
+
+	mock.EXPECT().GetToken(gomock.Any()).Return(portout.UserToken("some.secure.jwt"), nil)
+	mock.EXPECT().GetRole(portout.UserToken("some.secure.jwt")).Return(portout.RoleNone, fmt.Errorf("some error"))
+
+	business := NewBusiness(mock)
+	_, err := business.Login("user")
+	require.ErrorIs(t, err, ErrorGetRole)
 }

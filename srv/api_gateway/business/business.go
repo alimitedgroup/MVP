@@ -2,6 +2,7 @@ package business
 
 import (
 	"errors"
+	"fmt"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
 	"go.uber.org/fx"
 	"time"
@@ -9,6 +10,8 @@ import (
 
 var (
 	ErrorInvalidCredentials = errors.New("invalid credentials")
+	ErrorGetToken           = errors.New("error getting token for given credentials")
+	ErrorGetRole            = errors.New("error getting role for given token")
 )
 
 type Business struct {
@@ -26,7 +29,7 @@ var Module = fx.Options(
 func (b *Business) Login(username string) (LoginResult, error) {
 	token, err := b.authAdapter.GetToken(username)
 	if err != nil {
-		return LoginResult{}, err
+		return LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 	}
 	if token == "" {
 		return LoginResult{}, ErrorInvalidCredentials
@@ -34,7 +37,7 @@ func (b *Business) Login(username string) (LoginResult, error) {
 
 	role, err := b.authAdapter.GetRole(token)
 	if err != nil {
-		return LoginResult{}, err
+		return LoginResult{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 	}
 
 	// TODO: bisognerebbe prendere la scadenza dall'output del servizio di Authentication
