@@ -19,15 +19,18 @@ func NewCatalogController(getGoodsInfoUseCase service_portIn.IGetGoodsInfoUseCas
 	return &catalogController{getGoodsInfoUseCase: getGoodsInfoUseCase, getGoodsQuantityUseCase: getGoodsQuantityUseCase, setMultipleGoodsQuantityUseCase: setMultipleGoodsQuantityUseCase, updateGoodDataUseCase: updateGoodDataUseCase}
 }
 
-func (cc *catalogController) getGoodRequest(ctx context.Context, msg *nats.Msg) {
-
+func (cc *catalogController) getGoodRequest(ctx context.Context, msg *nats.Msg) error {
+	return nil
 }
 
-func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.Msg) {
+func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.Msg) error {
+	return nil
 }
 
-func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstream.Msg) {
+func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstream.Msg) error {
+	return nil
 }
 
-func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jetstream.Msg) {
+func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jetstream.Msg) error {
+	return nil
 }
