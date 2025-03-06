@@ -6,4 +6,5 @@ type AuthLoginRequest struct {
 
 type AuthLoginResponse struct {
 	Token string `json:"token"`
+	Role  string `json:"role"`
 }
