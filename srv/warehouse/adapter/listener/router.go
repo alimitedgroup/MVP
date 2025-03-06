@@ -8,9 +8,10 @@ import (
 
 type ListenerRoutes []lib.BrokerRoute
 
-func NewListenerRoutes(stockUpdateRouter *StockUpdateRouter) ListenerRoutes {
+func NewListenerRoutes(stockUpdateRouter *StockUpdateRouter, catalogRouter *CatalogRouter) ListenerRoutes {
 	return ListenerRoutes{
 		stockUpdateRouter,
+		catalogRouter,
 	}
 }
 
