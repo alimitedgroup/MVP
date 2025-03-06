@@ -10,4 +10,5 @@ type IService interface {
 	SetMultipleGoodsQuantity(cmd *service_Cmd.MultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse
 	GetGoodsQuantity(ggqc *service_Cmd.GetGoodsQuantityCmd)
 	GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd)
+	GetWarehouses(gwc *service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse
 }

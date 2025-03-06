@@ -36,3 +36,7 @@ func (cra *CatalogRepositoryAdapter) GetGoodsQuantity(ggqc *service_Cmd.GetGoods
 func (cra *CatalogRepositoryAdapter) GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd) *service_Response.GetGoodsInfoResponse {
 	return service_Response.NewGetGoodsInfoResponse(cra.repo.GetGoods())
 }
+
+func (cra *CatalogRepositoryAdapter) GetWarehouses(*service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse {
+	return service_Response.NewGetWarehousesResponse(cra.repo.GetWarehouses())
+}

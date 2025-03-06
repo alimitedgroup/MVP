@@ -11,5 +11,6 @@ var Module = fx.Options(
 			fx.As(new(service_portOut.IAddOrChangeGoodDataPort)),
 			fx.As(new(service_portOut.ISetGoodQuantityPort)),
 			fx.As(new(service_portOut.IGetGoodsQuantityPort)),
-			fx.As(new(service_portOut.IGetGoodsInfoPort)))),
+			fx.As(new(service_portOut.IGetGoodsInfoPort)),
+			fx.As(new(service_portOut.IGetWarehousesInfoPort)))),
 )

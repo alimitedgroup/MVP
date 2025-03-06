@@ -11,10 +11,11 @@ type CatalogService struct {
 	setGoodQuantityPort     service_portOut.ISetGoodQuantityPort
 	getGoodsQuantityPort    service_portOut.IGetGoodsQuantityPort
 	getGoodsInfoPort        service_portOut.IGetGoodsInfoPort
+	getWarehousesPort       service_portOut.IGetWarehousesInfoPort
 }
 
-func NewCatalogService(AddOrChangeGoodDataPort service_portOut.IAddOrChangeGoodDataPort, SetGoodQuantityPort service_portOut.ISetGoodQuantityPort, GetGoodsQuantityPort service_portOut.IGetGoodsQuantityPort, GetGoodsInfoPort service_portOut.IGetGoodsInfoPort) *CatalogService {
-	return &CatalogService{addOrChangeGoodDataPort: AddOrChangeGoodDataPort, setGoodQuantityPort: SetGoodQuantityPort, getGoodsQuantityPort: GetGoodsQuantityPort, getGoodsInfoPort: GetGoodsInfoPort}
+func NewCatalogService(AddOrChangeGoodDataPort service_portOut.IAddOrChangeGoodDataPort, SetGoodQuantityPort service_portOut.ISetGoodQuantityPort, GetGoodsQuantityPort service_portOut.IGetGoodsQuantityPort, GetGoodsInfoPort service_portOut.IGetGoodsInfoPort, getWarehousesPort service_portOut.IGetWarehousesInfoPort) *CatalogService {
+	return &CatalogService{addOrChangeGoodDataPort: AddOrChangeGoodDataPort, setGoodQuantityPort: SetGoodQuantityPort, getGoodsQuantityPort: GetGoodsQuantityPort, getGoodsInfoPort: GetGoodsInfoPort, getWarehousesPort: getWarehousesPort}
 }
 
 func (cs *CatalogService) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd) *service_Response.AddOrChangeResponse {
@@ -60,4 +61,8 @@ func (cs *CatalogService) GetGoodsQuantity(ggqc *service_Cmd.GetGoodsQuantityCmd
 
 func (cs *CatalogService) GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd) *service_Response.GetGoodsInfoResponse {
 	return cs.getGoodsInfoPort.GetGoodsInfo(ggqc)
+}
+
+func (cs *CatalogService) GetWarehouses(gwc *service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse {
+	return cs.getWarehousesPort.GetWarehouses(gwc)
 }

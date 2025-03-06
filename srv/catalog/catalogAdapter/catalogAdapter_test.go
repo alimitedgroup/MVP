@@ -44,7 +44,30 @@ func (fr *fakeRepo) AddGood(goodID string, name string, description string) erro
 	return nil
 }
 
+func (fr *fakeRepo) GetWarehouses() map[string]catalogCommon.Warehouse {
+	warehouses := make(map[string]catalogCommon.Warehouse)
+	warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+	return warehouses
+}
+
 //FINE DESCRIZIONE MOCK REPO
+
+func TestGetWarehouses(t *testing.T) {
+	fx.New(
+		fx.Provide(
+			fx.Annotate(NewFakeRepo,
+				fx.As(new(IGoodRepository))),
+		),
+		fx.Provide(NewCatalogRepositoryAdapter),
+		fx.Invoke(func(a *CatalogRepositoryAdapter) {
+			cmd := service_Cmd.NewGetWarehousesCmd()
+			response := a.GetWarehouses(cmd)
+			warehouses := make(map[string]catalogCommon.Warehouse)
+			warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+			assert.Equal(t, response.GetWarehouseMap(), warehouses)
+		}),
+	)
+}
 
 func TestAddChangeGoodData(t *testing.T) {
 	fx.New(

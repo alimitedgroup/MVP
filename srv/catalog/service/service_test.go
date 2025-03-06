@@ -26,6 +26,9 @@ type fakeGetGoodsQuantityPort struct {
 type fakeGetGoodsInfoPort struct {
 }
 
+type fakeGetWarehousesPort struct {
+}
+
 func NewFakeAddOrChangeGoodDataPort() *fakeAddOrChangeGoodDataPort {
 	return &fakeAddOrChangeGoodDataPort{}
 }
@@ -40,6 +43,10 @@ func NewFakeGetGoodsQuantityPort() *fakeGetGoodsQuantityPort {
 
 func NewFakeGetGoodsInfoPort() *fakeGetGoodsInfoPort {
 	return &fakeGetGoodsInfoPort{}
+}
+
+func NewFakeGetWarehousesPort() *fakeGetWarehousesPort {
+	return &fakeGetWarehousesPort{}
 }
 
 func (fp *fakeAddOrChangeGoodDataPort) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd) *service_Response.AddOrChangeResponse {
@@ -68,7 +75,45 @@ func (fp *fakeGetGoodsInfoPort) GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd) 
 	return service_Response.NewGetGoodsInfoResponse(goods)
 }
 
+func (fp *fakeGetWarehousesPort) GetWarehouses(gwc *service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse {
+	warehouses := make(map[string]catalogCommon.Warehouse)
+	warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+	return service_Response.NewGetWarehousesResponse(warehouses)
+}
+
 // FINE DESCRIZIONE PORTE MOCK
+
+func TestGetWarehouses(t *testing.T) {
+	fx.New(
+		fx.Provide(
+			fx.Annotate(NewFakeAddOrChangeGoodDataPort,
+				fx.As(new(service_portOut.IAddOrChangeGoodDataPort)),
+			),
+			fx.Annotate(NewFakeGetGoodsInfoPort,
+				fx.As(new(service_portOut.IGetGoodsInfoPort)),
+			),
+			fx.Annotate(NewFakeGetGoodsQuantityPort,
+				fx.As(new(service_portOut.IGetGoodsQuantityPort)),
+			),
+			fx.Annotate(
+				NewFakeSetGoodQuantityPort,
+				fx.As(new(service_portOut.ISetGoodQuantityPort)),
+			),
+			fx.Annotate(
+				NewFakeGetWarehousesPort,
+				fx.As(new(service_portOut.IGetWarehousesInfoPort)),
+			),
+		),
+		fx.Provide(NewCatalogService),
+		fx.Invoke(func(cs *CatalogService) {
+			warehouses := make(map[string]catalogCommon.Warehouse)
+			warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+			cmd := service_Cmd.NewGetWarehousesCmd()
+			response := cs.GetWarehouses(cmd)
+			assert.Equal(t, response.GetWarehouseMap(), warehouses)
+		}),
+	)
+}
 
 func TestAddOrChangeGoodData(t *testing.T) {
 	fx.New(
@@ -85,6 +130,10 @@ func TestAddOrChangeGoodData(t *testing.T) {
 			fx.Annotate(
 				NewFakeSetGoodQuantityPort,
 				fx.As(new(service_portOut.ISetGoodQuantityPort)),
+			),
+			fx.Annotate(
+				NewFakeGetWarehousesPort,
+				fx.As(new(service_portOut.IGetWarehousesInfoPort)),
 			),
 		),
 		fx.Provide(NewCatalogService),
@@ -111,6 +160,10 @@ func TestAddOrChangeGoodData_WrongID(t *testing.T) {
 				NewFakeSetGoodQuantityPort,
 				fx.As(new(service_portOut.ISetGoodQuantityPort)),
 			),
+			fx.Annotate(
+				NewFakeGetWarehousesPort,
+				fx.As(new(service_portOut.IGetWarehousesInfoPort)),
+			),
 		),
 		fx.Provide(NewCatalogService),
 		fx.Invoke(func(cs *CatalogService) {
@@ -135,6 +188,10 @@ func TestSetMultipleGoodsQuantity(t *testing.T) {
 			fx.Annotate(
 				NewFakeSetGoodQuantityPort,
 				fx.As(new(service_portOut.ISetGoodQuantityPort)),
+			),
+			fx.Annotate(
+				NewFakeGetWarehousesPort,
+				fx.As(new(service_portOut.IGetWarehousesInfoPort)),
 			),
 		),
 		fx.Provide(NewCatalogService),
@@ -165,6 +222,10 @@ func TestSetMultipleGoodsQuantityWithWrongID(t *testing.T) {
 			fx.Annotate(
 				NewFakeSetGoodQuantityPort,
 				fx.As(new(service_portOut.ISetGoodQuantityPort)),
+			),
+			fx.Annotate(
+				NewFakeGetWarehousesPort,
+				fx.As(new(service_portOut.IGetWarehousesInfoPort)),
 			),
 		),
 		fx.Provide(NewCatalogService),
@@ -197,6 +258,10 @@ func TestGetGoodsQuantity(t *testing.T) {
 				NewFakeSetGoodQuantityPort,
 				fx.As(new(service_portOut.ISetGoodQuantityPort)),
 			),
+			fx.Annotate(
+				NewFakeGetWarehousesPort,
+				fx.As(new(service_portOut.IGetWarehousesInfoPort)),
+			),
 		),
 		fx.Provide(NewCatalogService),
 		fx.Invoke(func(cs *CatalogService) {
@@ -221,6 +286,10 @@ func TestGetGoodsInfo(t *testing.T) {
 			fx.Annotate(
 				NewFakeSetGoodQuantityPort,
 				fx.As(new(service_portOut.ISetGoodQuantityPort)),
+			),
+			fx.Annotate(
+				NewFakeGetWarehousesPort,
+				fx.As(new(service_portOut.IGetWarehousesInfoPort)),
 			),
 		),
 		fx.Provide(NewCatalogService),

@@ -3,13 +3,13 @@ package persistance
 import "github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 
 type CatalogRepository struct {
-	warehouseMap map[string]*warehouse
+	warehouseMap map[string]*catalogCommon.Warehouse
 	goodMap      map[string]*catalogCommon.Good
 	goodStockMap map[string]int64
 }
 
 func NewCatalogRepository() *CatalogRepository {
-	return &CatalogRepository{warehouseMap: make(map[string]*warehouse), goodMap: make(map[string]*catalogCommon.Good), goodStockMap: make(map[string]int64)}
+	return &CatalogRepository{warehouseMap: make(map[string]*catalogCommon.Warehouse), goodMap: make(map[string]*catalogCommon.Good), goodStockMap: make(map[string]int64)}
 }
 
 func (cr *CatalogRepository) GetGoods() map[string]catalogCommon.Good {
@@ -24,8 +24,8 @@ func (cr *CatalogRepository) GetGoodsGlobalQuantity() map[string]int64 {
 	return cr.goodStockMap
 }
 
-func (cr *CatalogRepository) GetWarehouses() map[string]warehouse {
-	result := make(map[string]warehouse)
+func (cr *CatalogRepository) GetWarehouses() map[string]catalogCommon.Warehouse {
+	result := make(map[string]catalogCommon.Warehouse)
 	for key := range cr.warehouseMap {
 		result[key] = *cr.warehouseMap[key]
 	}
@@ -59,7 +59,7 @@ func (cr *CatalogRepository) addWarehouse(warehouseID string) {
 	if presence {
 		return
 	}
-	cr.warehouseMap[warehouseID] = NewWarehouse(warehouseID)
+	cr.warehouseMap[warehouseID] = catalogCommon.NewWarehouse(warehouseID)
 }
 
 func (cr *CatalogRepository) AddGood(goodID string, name string, description string) error {

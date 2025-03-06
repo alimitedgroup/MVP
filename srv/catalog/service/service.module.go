@@ -10,5 +10,7 @@ var Module = fx.Options(
 		fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
 		fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
 		fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-		fx.As(new(service_portIn.IUpdateGoodDataUseCase)))),
+		fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+		fx.As(new(service_portIn.IGetWarehousesUseCase)),
+	)),
 )
