@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,8 +30,20 @@ func (c *LoginController) Handler() gin.HandlerFunc {
 			ctx.JSON(401, gin.H{"error": "unauthorized"})
 			return
 		}
+		var role string
+		switch token.Role {
+		case portout.RoleClient:
+			role = "client"
+		case portout.RoleLocalAdmin:
+			role = "local admin"
+		case portout.RoleGlobalAdmin:
+			role = "global admin"
+		default:
+			ctx.JSON(500, gin.H{"error": "unknown role"})
+			return
+		}
 
-		ctx.JSON(200, gin.H{"token": token})
+		ctx.JSON(200, dto.AuthLoginResponse{Token: string(token.Token), Role: role})
 	}
 }
 
