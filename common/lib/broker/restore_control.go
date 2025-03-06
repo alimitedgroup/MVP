@@ -2,6 +2,26 @@ package broker
 
 import "sync"
 
+type IRestoreStreamControlFactory interface {
+	Build() IRestoreStreamControl
+}
+
+type RestoreStreamControlFactory struct{}
+
+func NewRestoreStreamControlFactory() *RestoreStreamControlFactory {
+	return &RestoreStreamControlFactory{}
+}
+
+func (r *RestoreStreamControlFactory) Build() IRestoreStreamControl {
+	return NewRestoreStreamControl()
+}
+
+type IRestoreStreamControl interface {
+	Start()
+	Finish()
+	Wait()
+}
+
 type RestoreStreamControl struct {
 	Wg sync.WaitGroup
 }

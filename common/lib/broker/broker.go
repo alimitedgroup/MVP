@@ -49,12 +49,14 @@ func NewNatsMessageBroker(nc *nats.Conn) (*NatsMessageBroker, error) {
 
 func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject, queue Queue, handler RequestHandler) error {
 	var sub *nats.Subscription
-	var err error
 
-	sub, err = n.Nats.QueueSubscribe(subject.String(), queue.String(), func(msg *nats.Msg) {
-		err = handler(ctx, msg)
+	sub, err := n.Nats.QueueSubscribe(subject.String(), queue.String(), func(msg *nats.Msg) {
+		err := handler(ctx, msg)
 		if err != nil {
-			err = sub.Unsubscribe()
+			if errUnsub := sub.Unsubscribe(); errUnsub != nil {
+				log.Fatalf("Error unsubscribing: %v\nafter error %v\n", errUnsub, err)
+			}
+			log.Fatalf("Error handling request: %v\n", err)
 		}
 	})
 	if err != nil {
@@ -66,7 +68,7 @@ func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject
 	return nil
 }
 
-func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore *RestoreStreamControl, streamCfg jetstream.StreamConfig, handler JsHandler, opts ...JsHandlerOpt) error {
+func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore IRestoreStreamControl, streamCfg jetstream.StreamConfig, handler JsHandler, opts ...JsHandlerOpt) error {
 	s, err := n.Js.CreateStream(ctx, streamCfg)
 	if err != nil {
 		return fmt.Errorf("failed to create stream: %w", err)
@@ -98,36 +100,35 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore *Rest
 
 	// Consume all existing messages, and when they are finished unlock the waitgroup and continue listening
 	var cc jetstream.ConsumeContext
-	var msgErr error
 
 	cc, err = consumer.Consume(func(m jetstream.Msg) {
-		msgErr = handler(ctx, m)
+		msgErr := handler(ctx, m)
 		if msgErr != nil {
-			err = fmt.Errorf("failed to handle message: %w", msgErr)
 			cc.Stop()
-			return
+			log.Fatalf("failed to handle message: %v\n", msgErr)
 		} else {
-			err = m.Ack()
-			if err != nil {
-				err = fmt.Errorf("failed to ack message: %w", err)
+			if errAck := m.Ack(); errAck != nil {
 				cc.Stop()
-				return
+				log.Fatalf("failed to ack message: %v\nafter error: %v\n", errAck, err)
 			}
 		}
 
 		var meta *jetstream.MsgMetadata
 		meta, msgErr = m.Metadata()
 		if msgErr != nil {
-			err = fmt.Errorf("failed to read message metadata: %w", msgErr)
 			cc.Stop()
-			return
+			log.Fatalf("failed to read message metadata: %v\n", msgErr)
 		}
 
-		if msgErr == nil && meta.NumPending == 0 && !isWgUnlocked {
+		if meta.NumPending == 0 && !isWgUnlocked {
 			restore.Finish()
 			isWgUnlocked = true
 		}
 	})
+
+	if err != nil {
+		return fmt.Errorf("failed to consume messages: %w", err)
+	}
 
 	return nil
 }
