@@ -1,7 +1,11 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/alimitedgroup/MVP/common/lib"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -30,4 +34,24 @@ func AsController(f any) any {
 		fx.As(new(Controller)),
 		fx.ResultTags(`group:"routes"`),
 	)
+}
+
+func CheckRole(ctx *gin.Context, b *business.Business, roles []portout.UserRole) {
+	auth := ctx.GetHeader("Authorization")
+	auth, found := strings.CutPrefix(auth, "Bearer ")
+	if !found {
+		ctx.AbortWithStatusJSON(401, gin.H{"error": "unauthorized", "message": "No token provided"})
+		return
+	}
+	data, err := b.ValidateToken(auth)
+	if err != nil {
+		ctx.AbortWithStatusJSON(401, gin.H{"error": "unauthorized", "message": err.Error()})
+		return
+	}
+	for _, role := range roles {
+		if role == data.Role {
+			return
+		}
+	}
+	ctx.AbortWithStatusJSON(403, gin.H{"error": "forbidden", "message": "You don't have the required role"})
 }

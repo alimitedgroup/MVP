@@ -51,6 +51,14 @@ func (b *Business) Login(username string) (LoginResult, error) {
 	}, nil
 }
 
+func (b *Business) ValidateToken(token string) (UserData, error) {
+	return UserData{
+		Username: "admin",
+		Role:     portout.RoleGlobalAdmin,
+	}, nil
+
+}
+
 // LoginResult è il risultato di un login avvenuto con successo.
 type LoginResult struct {
 	// Token è una stringa opaca che il client dovrà fornire per autenticarsi.
@@ -58,6 +66,12 @@ type LoginResult struct {
 	// TokenExpiration è un tempo nel futuro in cui Token scadrà.
 	// Quando ciò avviene, sarà necessario autenticarsi di nuovo.
 	TokenExpiration time.Time
+	// Role è il ruolo che è assegnato all'utente.
+	Role portout.UserRole
+}
+
+type UserData struct {
+	Username string
 	// Role è il ruolo che è assegnato all'utente.
 	Role portout.UserRole
 }
