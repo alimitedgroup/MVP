@@ -3,8 +3,8 @@ package stream
 import "github.com/nats-io/nats.go/jetstream"
 
 var AddOrChangeGoodDataStream = jetstream.StreamConfig{
-	Name:     "stock_data_update",
-	Subjects: []string{"stock.update"},
+	Name:     "good_data_update",
+	Subjects: []string{"good.update"},
 	Storage:  jetstream.FileStorage,
 }
 
