@@ -22,7 +22,7 @@ func (cr *catalogRouter) Setup(ctx context.Context) error {
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodDataRequest)
+	err = cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.AddOrChangeGoodDataStream, cr.controller.setGoodDataRequest)
 	if err != nil {
 		return nil
 	}
