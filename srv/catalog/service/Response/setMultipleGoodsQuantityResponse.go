@@ -8,3 +8,11 @@ type SetMultipleGoodsQuantityResponse struct {
 func NewSetMultipleGoodsQuantityResponse(result string, wrongID []string) *SetMultipleGoodsQuantityResponse {
 	return &SetMultipleGoodsQuantityResponse{result: result, wrongID: wrongID}
 }
+
+func (smgqr *SetMultipleGoodsQuantityResponse) GetOperationResult() string {
+	return smgqr.result
+}
+
+func (smgqr *SetMultipleGoodsQuantityResponse) GetWrongIDSlice() []string {
+	return smgqr.wrongID
+}
