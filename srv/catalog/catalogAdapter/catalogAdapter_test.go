@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
-	"github.com/alimitedgroup/MVP/srv/catalog/service"
+	service_Cmd "github.com/alimitedgroup/MVP/srv/catalog/service/Cmd"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/fx"
 )
@@ -54,7 +54,7 @@ func TestAddChangeGoodData(t *testing.T) {
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service.NewAddChangeGoodCmd("test-ID", "test-name", "test-desc")
+			cmd := service_Cmd.NewAddChangeGoodCmd("test-ID", "test-name", "test-desc")
 			response := a.AddOrChangeGoodData(cmd)
 			assert.Equal(t, response.GetOperationResult(), "Success")
 		}),
@@ -69,7 +69,7 @@ func TestAddChangeGoodDataWithWrongID(t *testing.T) {
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service.NewAddChangeGoodCmd("test-wrong-ID", "test-name", "test-desc")
+			cmd := service_Cmd.NewAddChangeGoodCmd("test-wrong-ID", "test-name", "test-desc")
 			response := a.AddOrChangeGoodData(cmd)
 			assert.Equal(t, response.GetOperationResult(), "Not a valid goodID")
 		}),
@@ -84,7 +84,7 @@ func TestSetGoodQuantity(t *testing.T) {
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service.NewSetGoodQuantityCmd("warehouse-ID", "test-ID", 7)
+			cmd := service_Cmd.NewSetGoodQuantityCmd("warehouse-ID", "test-ID", 7)
 			response := a.SetGoodQuantity(cmd)
 			assert.Equal(t, response.GetOperationResult(), "Success")
 		}),
@@ -99,7 +99,7 @@ func TestSetGoodQuantityWithWrongID(t *testing.T) {
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service.NewSetGoodQuantityCmd("warehouse-ID", "test-wrong-ID", 7)
+			cmd := service_Cmd.NewSetGoodQuantityCmd("warehouse-ID", "test-wrong-ID", 7)
 			response := a.SetGoodQuantity(cmd)
 			assert.Equal(t, response.GetOperationResult(), "Not a valid goodID")
 		}),
@@ -114,7 +114,7 @@ func TestGetGoodsQuantity(t *testing.T) {
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service.NewGetGoodsQuantityCmd()
+			cmd := service_Cmd.NewGetGoodsQuantityCmd()
 			response := a.GetGoodsQuantity(cmd)
 			assert.Equal(t, response.GetMap()["test-ID"], int64(7))
 		}),
@@ -129,7 +129,7 @@ func TestGetGoodsInfo(t *testing.T) {
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service.NewGetGoodsInfoCmd()
+			cmd := service_Cmd.NewGetGoodsInfoCmd()
 			response := a.GetGoodsInfo(cmd)
 			goods := make(map[string]catalogCommon.Good)
 			goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")

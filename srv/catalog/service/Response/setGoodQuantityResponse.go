@@ -1,4 +1,4 @@
-package service
+package service_Response
 
 type SetGoodQuantityResponse struct {
 	result string

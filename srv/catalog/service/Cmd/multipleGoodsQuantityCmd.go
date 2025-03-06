@@ -1,4 +1,4 @@
-package service
+package service_Cmd
 
 import "github.com/alimitedgroup/MVP/common/stream"
 

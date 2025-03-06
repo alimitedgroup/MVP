@@ -1,4 +1,4 @@
-package service
+package service_Cmd
 
 type GetGoodsQuantityCmd struct {
 }
