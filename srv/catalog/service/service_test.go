@@ -199,7 +199,7 @@ func TestSetMultipleGoodsQuantity(t *testing.T) {
 			goods := []stream.StockUpdateGood{}
 			goods = append(goods, stream.StockUpdateGood{GoodID: "test-ID", Quantity: int64(7), Delta: int64(0)})
 			goods = append(goods, stream.StockUpdateGood{GoodID: "2test-ID", Quantity: int64(9), Delta: int64(1)})
-			cmd := service_Cmd.NewMultipleGoodsQuantityCmd("test-warehouse-ID", goods)
+			cmd := service_Cmd.NewSetMultipleGoodsQuantityCmd("test-warehouse-ID", goods)
 			response := cs.SetMultipleGoodsQuantity(cmd)
 			assert.Equal(t, response.GetOperationResult(), "Success")
 			assert.Equal(t, len(response.GetWrongIDSlice()), 0)
@@ -233,7 +233,7 @@ func TestSetMultipleGoodsQuantityWithWrongID(t *testing.T) {
 			goods := []stream.StockUpdateGood{}
 			goods = append(goods, stream.StockUpdateGood{GoodID: "test-wrong-ID", Quantity: int64(7), Delta: int64(0)})
 			goods = append(goods, stream.StockUpdateGood{GoodID: "2test-ID", Quantity: int64(9), Delta: int64(1)})
-			cmd := service_Cmd.NewMultipleGoodsQuantityCmd("test-warehouse-ID", goods)
+			cmd := service_Cmd.NewSetMultipleGoodsQuantityCmd("test-warehouse-ID", goods)
 			response := cs.SetMultipleGoodsQuantity(cmd)
 			assert.Equal(t, response.GetOperationResult(), "Errors")
 			assert.Equal(t, len(response.GetWrongIDSlice()), 1)

@@ -6,5 +6,5 @@ import (
 )
 
 type ISetMultipleGoodsQuantityUseCase interface {
-	SetMultipleGoodsQuantity(cmd *service_Cmd.MultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse
+	SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse
 }

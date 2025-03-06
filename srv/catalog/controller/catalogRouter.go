@@ -18,20 +18,24 @@ func NewCatalogRouter(mb *broker.NatsMessageBroker, cc *catalogController, rsc *
 }
 
 func (cr *catalogRouter) Setup(ctx context.Context) error {
-	err := cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodQuantityRequest)
+	err := cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodQuantityRequest) //SetMultipleGoodsQuantity
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.AddOrChangeGoodDataStream, cr.controller.setGoodDataRequest)
+	err = cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.AddOrChangeGoodDataStream, cr.controller.setGoodDataRequest) //AddOrChangeGoodData
 	if err != nil {
 		return nil
 	}
 	cr.rsc.Wait()
-	err = cr.mb.RegisterRequest(ctx, "catalog.getGoods", "catalog", cr.controller.getGoodRequest)
+	err = cr.mb.RegisterRequest(ctx, "catalog.getGoods", "catalog", cr.controller.getGoodsRequest) //GetGoodsInfo
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterRequest(ctx, "catalog.getWarehouse", "catalog", cr.controller.getWarehouseRequest)
+	err = cr.mb.RegisterRequest(ctx, "catalog.getWarehouse", "catalog", cr.controller.getWarehouseRequest) //GetWarehouses
+	if err != nil {
+		return nil
+	}
+	err = cr.mb.RegisterRequest(ctx, "catalog.getGoodsGlobalQuantity", "catalog", cr.controller.getGoodsGlobalQuantityRequest) //GetGoodsQuantity
 	if err != nil {
 		return nil
 	}

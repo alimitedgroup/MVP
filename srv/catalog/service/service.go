@@ -32,7 +32,7 @@ func checkErrinSlice(errorSlice []string) []int {
 	return result
 }
 
-func (cs *CatalogService) SetMultipleGoodsQuantity(cmd *service_Cmd.MultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse {
+func (cs *CatalogService) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse {
 	warehouseID := cmd.GetWarehouseID()
 	goodsSlice := cmd.GetGoods()
 	var errorSlice []string
