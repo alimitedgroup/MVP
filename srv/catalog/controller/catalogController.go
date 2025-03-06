@@ -29,7 +29,11 @@ func NewCatalogController(getGoodsInfoUseCase service_portIn.IGetGoodsInfoUseCas
 func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg) error { //GetGoodsInfo
 	request := &request.GetGoodsInfoDTO{}
 
-	json.Unmarshal(msg.Data, request)
+	err := json.Unmarshal(msg.Data, request)
+
+	if err != nil {
+		return nil
+	}
 
 	responseFromService := cc.getGoodsInfoUseCase.GetGoodsInfo(service_Cmd.NewGetGoodsInfoCmd())
 
@@ -50,7 +54,11 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.Msg) error { //GetWarehouses
 	request := &request.GetWarehousesInfoDTO{}
 
-	json.Unmarshal(msg.Data, request)
+	err := json.Unmarshal(msg.Data, request)
+
+	if err != nil {
+		return nil
+	}
 
 	responseFromService := cc.getWarehouseInfoUseCase.GetWarehouses(service_Cmd.NewGetWarehousesCmd())
 
@@ -71,7 +79,11 @@ func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.
 func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, msg *nats.Msg) error { //GetGoodsQuantity
 	request := &request.GetGoodsQuantityDTO{}
 
-	json.Unmarshal(msg.Data, request)
+	err := json.Unmarshal(msg.Data, request)
+
+	if err != nil {
+		return nil
+	}
 
 	responseFromService := cc.getGoodsQuantityUseCase.GetGoodsQuantity(service_Cmd.NewGetGoodsQuantityCmd())
 
@@ -99,9 +111,13 @@ func (cc *catalogController) checkSetGoodDataRequest(request *stream.GoodUpdateD
 func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstream.Msg) error { //AddOrChangeGoodData
 	request := &stream.GoodUpdateData{}
 
-	json.Unmarshal(msg.Data(), request)
+	err := json.Unmarshal(msg.Data(), request)
 
-	err := cc.checkSetGoodDataRequest(request)
+	if err != nil {
+		return nil
+	}
+
+	err = cc.checkSetGoodDataRequest(request)
 
 	if err != nil {
 		return err
@@ -127,9 +143,13 @@ func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jet
 
 	request := &stream.StockUpdate{}
 
-	json.Unmarshal(msg.Data(), request)
+	err := json.Unmarshal(msg.Data(), request)
 
-	err := cc.checkSetGoodQuantityRequest(request)
+	if err != nil {
+		return nil
+	}
+
+	err = cc.checkSetGoodQuantityRequest(request)
 
 	if err != nil {
 		return err
