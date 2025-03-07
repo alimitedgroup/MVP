@@ -67,7 +67,10 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 					}
 
 					js, err := jetstream.New(ns)
-					js.CreateStream(ctx, stream.StockUpdateStreamConfig)
+					if err != nil {
+						return err
+					}
+					_, err = js.CreateStream(ctx, stream.StockUpdateStreamConfig)
 					if err != nil {
 						return err
 					}
@@ -176,7 +179,10 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 					}
 
 					js, err := jetstream.New(ns)
-					js.CreateStream(ctx, stream.StockUpdateStreamConfig)
+					if err != nil {
+						return err
+					}
+					_, err = js.CreateStream(ctx, stream.StockUpdateStreamConfig)
 					if err != nil {
 						return err
 					}
