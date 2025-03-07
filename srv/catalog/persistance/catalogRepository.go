@@ -1,6 +1,10 @@
 package persistance
 
-import "github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
+import (
+	"sync"
+
+	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
+)
 
 type CatalogRepository struct {
 	warehouseMap map[string]*catalogCommon.Warehouse
@@ -32,21 +36,27 @@ func (cr *CatalogRepository) GetWarehouses() map[string]catalogCommon.Warehouse 
 	return result
 }
 
+var mutex sync.Mutex
+
 func (cr *CatalogRepository) SetGoodQuantity(warehouseID string, goodID string, newQuantity int64) error {
 	/*
 		Imposta la quantità di un bene in un magazzino e memorizza il nuovo stato globale della merce.
-		Se il magazzino non esiste viene creato, se la merce non esiste ritorna un errore (le informazioni
-		attuali non bastano per creare autonomamente la nuova merce)
+		Se il magazzino non esiste viene creato, se la merce non esiste viene memorizzata la quantità, ma non le info sulla merce)
 	*/
+	mutex.Lock()
 	cr.addWarehouse(warehouseID)
-	_, presence := cr.goodMap[goodID]
+	_, presence := cr.goodStockMap[goodID]
 	if !presence {
-		return catalogCommon.NewCustomError("Not a valid goodID")
+		//return catalogCommon.NewCustomError("Not a valid goodID")
+		cr.goodStockMap[goodID] = newQuantity
+		cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
+	} else {
+		oldValue := cr.warehouseMap[warehouseID].GetGoodStock(goodID)
+		delta := newQuantity - oldValue
+		cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
+		cr.goodStockMap[goodID] += delta
 	}
-	oldValue := cr.warehouseMap[warehouseID].GetGoodStock(goodID)
-	delta := newQuantity - oldValue
-	cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
-	cr.goodStockMap[goodID] += delta
+	mutex.Unlock()
 	return nil
 }
 

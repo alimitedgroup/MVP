@@ -37,16 +37,15 @@ func TestGetGoodsGlobalQt(t *testing.T) {
 	)
 }
 
-func TestNotAValidGoodID_SetQt(t *testing.T) {
-	// Se si modifica la quantità di una merce non esistente ritorna un errore
+func TestAddGoodQuantity(t *testing.T) {
 	fx.New(
 		fx.Provide(NewCatalogRepository),
 		fx.Invoke(func(cr *CatalogRepository) {
-			err2 := cr.AddGood("test-ID", "test-name", "test-desc")
-			err := cr.SetGoodQuantity("test-name2", "un bell'ID", 7)
-			assert.Equal(t, err.Error(), "Not a valid goodID")
-			assert.Equal(t, err2, nil)
-		}),
+			err := cr.SetGoodQuantity("test-warehouse-ID", "test-ID", 7)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, cr.GetGoodsGlobalQuantity()["test-ID"], int64(7))
+		},
+		),
 	)
 }
 

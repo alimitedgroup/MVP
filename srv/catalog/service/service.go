@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	service_Cmd "github.com/alimitedgroup/MVP/srv/catalog/service/Cmd"
 	service_Response "github.com/alimitedgroup/MVP/srv/catalog/service/Response"
 	service_portOut "github.com/alimitedgroup/MVP/srv/catalog/service/portOut"
@@ -52,6 +54,7 @@ func (cs *CatalogService) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultipleG
 	for i := range errors {
 		wrongID = append(wrongID, goodsSlice[i].GoodID)
 	}
+	fmt.Println("LOL ", errorSlice)
 	return service_Response.NewSetMultipleGoodsQuantityResponse("Errors", wrongID)
 }
 
