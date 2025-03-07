@@ -3,6 +3,7 @@ package business
 import (
 	"errors"
 	"fmt"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
@@ -54,24 +55,23 @@ func (b *Business) Login(username string) (LoginResult, error) {
 func (b *Business) ValidateToken(token string) (UserData, error) {
 	return UserData{
 		Username: "admin",
-		Role:     portout.RoleGlobalAdmin,
+		Role:     types.RoleGlobalAdmin,
 	}, nil
-
 }
 
 // LoginResult è il risultato di un login avvenuto con successo.
 type LoginResult struct {
 	// Token è una stringa opaca che il client dovrà fornire per autenticarsi.
-	Token portout.UserToken
+	Token types.UserToken
 	// TokenExpiration è un tempo nel futuro in cui Token scadrà.
 	// Quando ciò avviene, sarà necessario autenticarsi di nuovo.
 	TokenExpiration time.Time
 	// Role è il ruolo che è assegnato all'utente.
-	Role portout.UserRole
+	Role types.UserRole
 }
 
 type UserData struct {
 	Username string
 	// Role è il ruolo che è assegnato all'utente.
-	Role portout.UserRole
+	Role types.UserRole
 }
