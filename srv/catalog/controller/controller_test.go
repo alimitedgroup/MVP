@@ -3,43 +3,54 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 	service_Cmd "github.com/alimitedgroup/MVP/srv/catalog/service/Cmd"
 	service_Response "github.com/alimitedgroup/MVP/srv/catalog/service/Response"
 	service_portIn "github.com/alimitedgroup/MVP/srv/catalog/service/portIn"
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/fx"
 )
 
 // INIZIO MOCK PORTE CONTROLLER
 
-var setData bool            //if true, setDataRequest had effect
-var updateDataQuantity bool //if true, setMultipleGoodQuantityRequest had effect
-
-type fakeControllerUC struct {
+type FakeControllerUC struct {
+	A bool
 }
 
-func NewFakeControllerUC() *fakeControllerUC {
-	setData = false
-	updateDataQuantity = false
-	return &fakeControllerUC{}
+var (
+	test *FakeControllerUC
+	once sync.Once
+)
+
+func NewFakeControllerUC() *FakeControllerUC {
+	once.Do(func() {
+		test = &FakeControllerUC{}
+	})
+	return test
 }
 
-func (f *fakeControllerUC) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd) *service_Response.AddOrChangeResponse {
-	setData = true
+func (f *FakeControllerUC) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd) *service_Response.AddOrChangeResponse {
+	f.A = true
 	if agc.GetId() == "wrong-test-ID" {
 		return service_Response.NewAddOrChangeResponse("Not a valid goodID")
 	}
 	return service_Response.NewAddOrChangeResponse("Success")
 }
 
-func (f *fakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse {
+func (f *FakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse {
+	fmt.Println("LOL ", f.A)
+	f.A = true
+	fmt.Println("LOL ", f.A)
 	errorSlice := []int{}
 	for i := range cmd.GetGoods() {
 		if cmd.GetGoods()[i].GoodID == "wrong-test-ID" {
@@ -52,7 +63,6 @@ func (f *fakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultiple
 	}
 
 	returnErrorSlice := []string{}
-	updateDataQuantity = true
 	for range errorSlice {
 		returnErrorSlice = append(returnErrorSlice, "wrong-test-ID")
 	}
@@ -61,25 +71,181 @@ func (f *fakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultiple
 
 }
 
-func (f *fakeControllerUC) GetGoodsQuantity(ggqc *service_Cmd.GetGoodsQuantityCmd) *service_Response.GetGoodsQuantityResponse {
+func (f *FakeControllerUC) GetGoodsQuantity(ggqc *service_Cmd.GetGoodsQuantityCmd) *service_Response.GetGoodsQuantityResponse {
 	goodMap := map[string]int64{}
 	goodMap["test-ID"] = int64(7)
 	return service_Response.NewGetGoodsQuantityResponse(goodMap)
 }
 
-func (f *fakeControllerUC) GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd) *service_Response.GetGoodsInfoResponse {
+func (f *FakeControllerUC) GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd) *service_Response.GetGoodsInfoResponse {
 	goods := make(map[string]catalogCommon.Good)
 	goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")
 	return service_Response.NewGetGoodsInfoResponse(goods)
 }
 
-func (f *fakeControllerUC) GetWarehouses(gwc *service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse {
+func (f *FakeControllerUC) GetWarehouses(gwc *service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse {
 	warehouses := make(map[string]catalogCommon.Warehouse)
 	warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
 	return service_Response.NewGetWarehousesResponse(warehouses)
 }
 
 // FINE MOCK PORTE CONTROLLER
+
+func TestSetMultipleGoodQuantityRequest(t *testing.T) {
+
+	ctx := t.Context()
+
+	ns := broker.NewInProcessNATSServer(t)
+
+	app := fx.New(
+		fx.Supply(ns),
+		fx.Provide(
+			fx.Annotate(NewFakeControllerUC,
+				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
+				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
+				fx.As(new(service_portIn.IGetWarehousesUseCase)),
+				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
+				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+			),
+		),
+		fx.Provide(NewFakeControllerUC),
+		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(NewCatalogController),
+		fx.Provide(NewCatalogRouter),
+		fx.Provide(NewControllerRouter),
+		fx.Provide(broker.NewRestoreStreamControl),
+		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter, f *FakeControllerUC) {
+			lc.Append(fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					f.A = false
+
+					err := r.Setup(ctx)
+					if err != nil {
+						t.Error(err)
+					}
+					goods := &stream.StockUpdateGood{GoodID: "test-ID", Quantity: 7, Delta: 0}
+
+					goodsSlice := []stream.StockUpdateGood{}
+					goodsSlice = append(goodsSlice, *goods)
+
+					var request = &stream.StockUpdate{ID: "update-ID", WarehouseID: "test-warehouse-ID", Type: stream.StockUpdateTypeAdd, Goods: goodsSlice, OrderID: "test-order-ID", TransferID: "test-transfer-ID", Timestamp: 1}
+
+					data, err := json.Marshal(request)
+
+					if err != nil {
+						return err
+					}
+
+					js, err := jetstream.New(ns)
+
+					if err != nil {
+						return err
+					}
+					_, err = js.Publish(ctx, "stock.update.test", data)
+
+					if err != nil {
+						return err
+					}
+					time.Sleep(1 * time.Second)
+					if f.A == false {
+						t.Errorf("Expected true returned false")
+					}
+					return nil
+				},
+				OnStop: func(ctx context.Context) error {
+					return nil
+				},
+			})
+		}),
+	)
+	err := app.Start(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		err = app.Stop(ctx)
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+}
+func TestSetGoodDataRequest(t *testing.T) {
+	ctx := t.Context()
+
+	ns := broker.NewInProcessNATSServer(t)
+
+	app := fx.New(
+		fx.Supply(ns),
+		fx.Provide(
+			fx.Annotate(NewFakeControllerUC,
+				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
+				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
+				fx.As(new(service_portIn.IGetWarehousesUseCase)),
+				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
+				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+			),
+		),
+		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(NewCatalogController),
+		fx.Provide(NewCatalogRouter),
+		fx.Provide(NewControllerRouter),
+		fx.Provide(broker.NewRestoreStreamControl),
+		fx.Provide(NewFakeControllerUC),
+		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter, f *FakeControllerUC) {
+			lc.Append(fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					err := r.Setup(ctx)
+					if err != nil {
+						t.Error(err)
+					}
+
+					f.A = false
+
+					var request = &stream.GoodUpdateData{GoodID: "test-ID", GoodNewName: "test-name", GoodNewDescription: "test-description"}
+
+					data, err := json.Marshal(request)
+
+					if err != nil {
+						return err
+					}
+
+					js, err := jetstream.New(ns)
+
+					if err != nil {
+						return err
+					}
+
+					_, err = js.Publish(ctx, "good.update.test", data)
+
+					if err != nil {
+						return err
+					}
+					time.Sleep(1 * time.Second)
+					if f.A == false {
+						t.Errorf("Expected true returned false")
+					}
+					return nil
+				},
+				OnStop: func(ctx context.Context) error {
+					return nil
+				},
+			})
+		}),
+	)
+
+	err := app.Start(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		err = app.Stop(ctx)
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+}
 
 func TestGetGoodsRequest(t *testing.T) {
 	ctx := t.Context()
@@ -317,83 +483,3 @@ func TestGetGoodsGlobalQuantityRequest(t *testing.T) {
 		}
 	}()
 }
-
-/*func TestSetGoodDataRequest(t *testing.T) {
-	ctx := t.Context()
-
-	//ns := broker.NewInProcessNATSServer(t)
-	ns, err := nats.Connect(nats.DefaultURL)
-
-	app := fx.New(
-		fx.Supply(ns),
-		fx.Provide(
-			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
-				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IGetWarehousesUseCase)),
-				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
-			),
-		),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewCatalogController),
-		fx.Provide(NewCatalogRouter),
-		fx.Provide(NewControllerRouter),
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
-			lc.Append(fx.Hook{
-				OnStart: func(ctx context.Context) error {
-					err := r.Setup(ctx)
-					if err != nil {
-						t.Error(err)
-					}
-
-					var request = &stream.GoodUpdateData{GoodID: "test-ID", GoodNewName: "test-name", GoodNewDescription: "test-description"}
-
-					data, err := json.Marshal(request)
-
-					if err != nil {
-						return err
-					}
-
-					js, err := jetstream.New(ns)
-
-					if err != nil {
-						return err
-					}
-
-					_, err = js.CreateStream(ctx, stream.AddOrChangeGoodDataStream)
-
-					fmt.Println("KJCDSAKSAN ", err)
-
-					_, err = js.Publish(ctx, "good.update.test", data)
-
-					if err != nil {
-						return err
-					}
-
-					assert.Equal(t, setData, true)
-
-					setData = false
-
-					return nil
-				},
-				OnStop: func(ctx context.Context) error {
-					return nil
-				},
-			})
-		}),
-	)
-
-	err = app.Start(ctx)
-	if err != nil {
-		t.Error(err)
-	}
-
-	defer func() {
-		err = app.Stop(ctx)
-		if err != nil {
-			t.Error(err)
-		}
-	}()
-}*/

@@ -109,15 +109,10 @@ func (cc *catalogController) checkSetGoodDataRequest(request *stream.GoodUpdateD
 }
 
 func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstream.Msg) error { //AddOrChangeGoodData
-	err := msg.Ack()
-
-	if err != nil {
-		return nil
-	}
 
 	request := &stream.GoodUpdateData{}
 
-	err = json.Unmarshal(msg.Data(), request)
+	err := json.Unmarshal(msg.Data(), request)
 
 	if err != nil {
 		return nil
@@ -131,7 +126,7 @@ func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstre
 
 	responseFromService := cc.updateGoodDataUseCase.AddOrChangeGoodData(service_Cmd.NewAddChangeGoodCmd(request.GoodID, request.GoodNewName, request.GoodNewDescription))
 
-	if responseFromService.GetOperationResult() != "Errors" {
+	if responseFromService.GetOperationResult() == "Errors" {
 		return catalogCommon.NewCustomError("An error occured")
 	}
 
@@ -163,7 +158,7 @@ func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jet
 
 	responseFromService := cc.setMultipleGoodsQuantityUseCase.SetMultipleGoodsQuantity(service_Cmd.NewSetMultipleGoodsQuantityCmd(request.WarehouseID, request.Goods))
 
-	if responseFromService.GetOperationResult() != "Errors" {
+	if responseFromService.GetOperationResult() == "Errors" {
 		return catalogCommon.NewCustomError("An error occured")
 	}
 
