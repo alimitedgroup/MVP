@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -23,24 +22,33 @@ import (
 
 // INIZIO MOCK PORTE CONTROLLER
 
-type FakeControllerUC struct {
-	A bool
-}
-
 var (
-	test *FakeControllerUC
-	once sync.Once
+	a     bool
+	mutex sync.Mutex
 )
 
+func changeA(value bool) {
+	mutex.Lock()
+	a = value
+	mutex.Unlock()
+}
+
+func getA() bool {
+	mutex.Lock()
+	value := a
+	mutex.Unlock()
+	return value
+}
+
+type FakeControllerUC struct {
+}
+
 func NewFakeControllerUC() *FakeControllerUC {
-	once.Do(func() {
-		test = &FakeControllerUC{}
-	})
-	return test
+	return &FakeControllerUC{}
 }
 
 func (f *FakeControllerUC) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd) *service_Response.AddOrChangeResponse {
-	f.A = true
+	changeA(true)
 	if agc.GetId() == "wrong-test-ID" {
 		return service_Response.NewAddOrChangeResponse("Not a valid goodID")
 	}
@@ -48,9 +56,7 @@ func (f *FakeControllerUC) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd
 }
 
 func (f *FakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse {
-	fmt.Println("LOL ", f.A)
-	f.A = true
-	fmt.Println("LOL ", f.A)
+	changeA(true)
 	errorSlice := []int{}
 	for i := range cmd.GetGoods() {
 		if cmd.GetGoods()[i].GoodID == "wrong-test-ID" {
@@ -108,16 +114,15 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
 			),
 		),
-		fx.Provide(NewFakeControllerUC),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewCatalogController),
 		fx.Provide(NewCatalogRouter),
 		fx.Provide(NewControllerRouter),
 		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter, f *FakeControllerUC) {
+		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
-					f.A = false
+					changeA(false)
 
 					err := r.Setup(ctx)
 					if err != nil {
@@ -147,7 +152,7 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 						return err
 					}
 					time.Sleep(1 * time.Second)
-					if f.A == false {
+					if getA() == false {
 						t.Errorf("Expected true returned false")
 					}
 					return nil
@@ -191,8 +196,7 @@ func TestSetGoodDataRequest(t *testing.T) {
 		fx.Provide(NewCatalogRouter),
 		fx.Provide(NewControllerRouter),
 		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Provide(NewFakeControllerUC),
-		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter, f *FakeControllerUC) {
+		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)
@@ -200,7 +204,7 @@ func TestSetGoodDataRequest(t *testing.T) {
 						t.Error(err)
 					}
 
-					f.A = false
+					changeA(false)
 
 					var request = &stream.GoodUpdateData{GoodID: "test-ID", GoodNewName: "test-name", GoodNewDescription: "test-description"}
 
@@ -222,7 +226,7 @@ func TestSetGoodDataRequest(t *testing.T) {
 						return err
 					}
 					time.Sleep(1 * time.Second)
-					if f.A == false {
+					if getA() == false {
 						t.Errorf("Expected true returned false")
 					}
 					return nil
