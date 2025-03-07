@@ -7,6 +7,8 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(NewHTTPHandler),
+	fx.Provide(broker.NewNatsConn),
 	fx.Provide(broker.NewNatsMessageBroker),
 	fx.Provide(broker.NewRestoreStreamControl),
+	fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 )
