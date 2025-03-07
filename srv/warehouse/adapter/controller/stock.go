@@ -48,7 +48,7 @@ func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) er
 	}
 
 	resp := response.ResponseDTO[string]{
-		Message: "Stock added",
+		Message: "ok",
 	}
 
 	err = broker.RespondToMsg(msg, resp)
@@ -86,7 +86,7 @@ func (c *StockController) RemoveStockHandler(ctx context.Context, msg *nats.Msg)
 	}
 
 	resp := response.ResponseDTO[string]{
-		Message: "Stock removed",
+		Message: "ok",
 	}
 
 	err = broker.RespondToMsg(msg, resp)
