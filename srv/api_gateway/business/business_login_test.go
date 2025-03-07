@@ -2,7 +2,7 @@ package business
 
 import (
 	"fmt"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"testing"
@@ -14,11 +14,11 @@ import (
 func TestLogin(t *testing.T) {
 	cases := []struct {
 		string
-		portout.UserRole
+		types.UserRole
 	}{
-		{"client", portout.RoleClient},
-		{"local_admin", portout.RoleLocalAdmin},
-		{"global_admin", portout.RoleGlobalAdmin},
+		{"client", types.RoleClient},
+		{"local_admin", types.RoleLocalAdmin},
+		{"global_admin", types.RoleGlobalAdmin},
 	}
 
 	for _, c := range cases {
@@ -26,13 +26,13 @@ func TestLogin(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mock := NewMockAuthenticationPortOut(ctrl)
 
-			mock.EXPECT().GetToken(c.string).Return(portout.UserToken("some.secure.jwt"), nil)
-			mock.EXPECT().GetRole(portout.UserToken("some.secure.jwt")).Return(c.UserRole, nil)
+			mock.EXPECT().GetToken(c.string).Return(types.UserToken("some.secure.jwt"), nil)
+			mock.EXPECT().GetRole(types.UserToken("some.secure.jwt")).Return(c.UserRole, nil)
 
 			business := NewBusiness(mock)
 			result, err := business.Login(c.string)
 			require.NoError(t, err)
-			require.Equal(t, portout.UserToken("some.secure.jwt"), result.Token)
+			require.Equal(t, types.UserToken("some.secure.jwt"), result.Token)
 			require.Equal(t, c.UserRole, result.Role)
 			require.True(t, time.Now().Add(6*24*time.Hour).Before(result.TokenExpiration))
 			require.True(t, time.Now().Add(8*24*time.Hour).After(result.TokenExpiration))
@@ -44,7 +44,7 @@ func TestLoginNoSuchUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 
-	mock.EXPECT().GetToken(gomock.Any()).Return(portout.TokenNone, nil)
+	mock.EXPECT().GetToken(gomock.Any()).Return(types.TokenNone, nil)
 
 	business := NewBusiness(mock)
 	_, err := business.Login("user")
@@ -55,7 +55,7 @@ func TestLoginGetTokenError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 
-	mock.EXPECT().GetToken(gomock.Any()).Return(portout.TokenNone, fmt.Errorf("some error"))
+	mock.EXPECT().GetToken(gomock.Any()).Return(types.TokenNone, fmt.Errorf("some error"))
 
 	business := NewBusiness(mock)
 	_, err := business.Login("user")
@@ -66,8 +66,8 @@ func TestLoginGetRoleError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 
-	mock.EXPECT().GetToken(gomock.Any()).Return(portout.UserToken("some.secure.jwt"), nil)
-	mock.EXPECT().GetRole(portout.UserToken("some.secure.jwt")).Return(portout.RoleNone, fmt.Errorf("some error"))
+	mock.EXPECT().GetToken(gomock.Any()).Return(types.UserToken("some.secure.jwt"), nil)
+	mock.EXPECT().GetRole(types.UserToken("some.secure.jwt")).Return(types.RoleNone, fmt.Errorf("some error"))
 
 	business := NewBusiness(mock)
 	_, err := business.Login("user")

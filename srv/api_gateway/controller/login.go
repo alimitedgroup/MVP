@@ -4,7 +4,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,11 +32,11 @@ func (c *LoginController) Handler() gin.HandlerFunc {
 		}
 		var role string
 		switch token.Role {
-		case portout.RoleClient:
+		case types.RoleClient:
 			role = "client"
-		case portout.RoleLocalAdmin:
+		case types.RoleLocalAdmin:
 			role = "local admin"
-		case portout.RoleGlobalAdmin:
+		case types.RoleGlobalAdmin:
 			role = "global admin"
 		default:
 			ctx.JSON(500, gin.H{"error": "unknown role"})

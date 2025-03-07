@@ -1,13 +1,12 @@
 package controller
 
 import (
-	"strings"
-
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
+	"strings"
 )
 
 var Module = fx.Options(
@@ -36,7 +35,7 @@ func AsController(f any) any {
 	)
 }
 
-func CheckRole(ctx *gin.Context, b *business.Business, roles []portout.UserRole) {
+func CheckRole(ctx *gin.Context, b *business.Business, roles []types.UserRole) {
 	auth := ctx.GetHeader("Authorization")
 	auth, found := strings.CutPrefix(auth, "Bearer ")
 	if !found {

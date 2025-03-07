@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/nats-io/nats.go"
@@ -17,9 +16,9 @@ func main() {
 
 	_, err = nc.Subscribe("auth.login", func(msg *nats.Msg) {
 		var req dto.AuthLoginRequest
-		json.Unmarshal(msg.Data, &req)
+		_ = json.Unmarshal(msg.Data, &req)
 		if req.Username == "admin" {
-			jsonBoh, err := json.Marshal(dto.AuthLoginResponse{"abc123abc123"})
+			jsonBoh, err := json.Marshal(dto.AuthLoginResponse{Token: "abc123abc123", Role: "local_admin"})
 			if err != nil {
 				panic(err)
 			}

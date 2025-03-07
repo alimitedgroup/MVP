@@ -3,6 +3,7 @@ package adapterout
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -14,7 +15,7 @@ type AuthenticationAdapter struct {
 	Broker *broker.NatsMessageBroker
 }
 
-func (aa *AuthenticationAdapter) GetToken(username string) (portout.UserToken, error) {
+func (aa *AuthenticationAdapter) GetToken(username string) (types.UserToken, error) {
 	req := dto.AuthLoginRequest{Username: username}
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -32,10 +33,10 @@ func (aa *AuthenticationAdapter) GetToken(username string) (portout.UserToken, e
 		return "", fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
-	return portout.UserToken(respBody.Token), nil
+	return types.UserToken(respBody.Token), nil
 }
 
-func (*AuthenticationAdapter) GetRole(token portout.UserToken) (portout.UserRole, error) {
+func (*AuthenticationAdapter) GetRole(token types.UserToken) (types.UserRole, error) {
 	return 0, nil
 }
 
