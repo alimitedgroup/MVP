@@ -19,6 +19,7 @@ func TestRunWithBadConfigParams(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(brokerRouter.BrokerRoutes{}),
+		fx.Provide(broker.NewNatsConn),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Invoke(func(config *broker.BrokerConfig, broker *broker.NatsMessageBroker) {
 			assert.Equal(t, cfg.Url, config.Url)

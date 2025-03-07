@@ -34,11 +34,12 @@ func (s *stockRepositoryMock) AddStock(id string, quantity int64) bool {
 func TestStockPersistanceAdapter(t *testing.T) {
 	ctx := t.Context()
 
+	mock := NewStockRepositoryMock()
+
 	app := fx.New(
-		fx.Provide(NewStockRepositoryMock),
-		fx.Provide(func(s *stockRepositoryMock) persistence.StockRepository { return s }),
+		fx.Supply(fx.Annotate(mock, fx.As(new(persistence.StockRepository)))),
 		fx.Provide(persistence.NewStockPersistanceAdapter),
-		fx.Invoke(func(a *persistence.StockPersistanceAdapter, stockRepo persistence.StockRepository, stockRepoMock *stockRepositoryMock) {
+		fx.Invoke(func(a *persistence.StockPersistanceAdapter, stockRepo persistence.StockRepository) {
 			goods := []model.GoodStock{
 				{ID: "1", Quantity: 10},
 				{ID: "2", Quantity: 20},
@@ -50,7 +51,7 @@ func TestStockPersistanceAdapter(t *testing.T) {
 			}
 
 			assert.Equal(t, stockRepo.GetStock("1"), int64(10))
-			assert.Equal(t, stockRepoMock.M["2"], int64(20))
+			assert.Equal(t, mock.M["2"], int64(20))
 		}),
 	)
 

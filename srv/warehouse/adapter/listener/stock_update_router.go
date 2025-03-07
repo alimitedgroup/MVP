@@ -11,6 +11,7 @@ type StockUpdateRouter struct {
 	stockListener *StockUpdateListener
 	broker        *broker.NatsMessageBroker
 	restore       broker.IRestoreStreamControl
+	// StockUpdateConsumer jetstream.Consumer
 }
 
 func NewStockUpdateRouter(restoreFactory broker.IRestoreStreamControlFactory, stockUpdateListener *StockUpdateListener, n *broker.NatsMessageBroker) *StockUpdateRouter {
@@ -23,6 +24,7 @@ func (r *StockUpdateRouter) Setup(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// r.StockUpdateConsumer = consumer
 
 	// wait restoring of the state before starting the server
 	r.restore.Wait()

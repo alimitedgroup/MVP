@@ -18,10 +18,13 @@ func (s *CatalogPersistanceAdapter) ApplyCatalogUpdate(good model.GoodInfo) erro
 	return nil
 }
 
-func (s *CatalogPersistanceAdapter) GetGood(goodId string) model.GoodInfo {
+func (s *CatalogPersistanceAdapter) GetGood(goodId string) *model.GoodInfo {
 	good := s.catalogRepo.GetGood(goodId)
+	if good == nil {
+		return nil
+	}
 
-	return model.GoodInfo{
+	return &model.GoodInfo{
 		ID:          good.Id,
 		Name:        good.Name,
 		Description: good.Description,

@@ -35,7 +35,16 @@ func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) er
 
 	err = c.addStockUseCase.AddStock(ctx, cmd)
 	if err != nil {
-		return err
+		resp := response.ResponseDTO[any]{
+			Error: err.Error(),
+		}
+
+		err = broker.RespondToMsg(msg, resp)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	resp := response.ResponseDTO[string]{

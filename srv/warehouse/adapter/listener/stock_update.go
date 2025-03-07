@@ -3,6 +3,7 @@ package listener
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
@@ -33,9 +34,19 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 }
 
 func StockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
+	var cmdType port.StockUpdateCmdType
+	switch event.Type {
+	case stream.StockUpdateTypeAdd:
+		cmdType = port.StockUpdateCmdTypeAdd
+	case stream.StockUpdateTypeRemove:
+		cmdType = port.StockUpdateCmdTypeRemove
+	default:
+		log.Fatal("unknown stock update type")
+	}
+
 	cmd := port.StockUpdateCmd{
 		ID:         event.ID,
-		Type:       string(event.Type),
+		Type:       cmdType,
 		OrderID:    event.OrderID,
 		TransferID: event.TransferID,
 		Timestamp:  event.Timestamp,

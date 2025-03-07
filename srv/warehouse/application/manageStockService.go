@@ -11,13 +11,18 @@ import (
 type ManageStockService struct {
 	createStockUpdatePort port.CreateStockUpdatePort
 	getStockPort          port.GetStockPort
+	getGoodPort           port.GetGoodPort
 }
 
-func NewManageStockService(createStockUpdatePort port.CreateStockUpdatePort, getStockPort port.GetStockPort) *ManageStockService {
-	return &ManageStockService{createStockUpdatePort, getStockPort}
+func NewManageStockService(createStockUpdatePort port.CreateStockUpdatePort, getStockPort port.GetStockPort, getGoodPort port.GetGoodPort) *ManageStockService {
+	return &ManageStockService{createStockUpdatePort, getStockPort, getGoodPort}
 }
 
 func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd) error {
+	if s.getGoodPort.GetGood(cmd.ID) == nil {
+		return fmt.Errorf("good %s not found", cmd.ID)
+	}
+
 	currentQuantity := s.getStockPort.GetStock(cmd.ID)
 	quantity := currentQuantity + cmd.Quantity
 
@@ -43,6 +48,10 @@ func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd)
 }
 
 func (s *ManageStockService) RemoveStock(ctx context.Context, cmd port.RemoveStockCmd) error {
+	if s.getGoodPort.GetGood(cmd.ID) == nil {
+		return fmt.Errorf("good %s not found", cmd.ID)
+	}
+
 	currentQuantity := s.getStockPort.GetStock(cmd.ID)
 
 	if currentQuantity < cmd.Quantity {

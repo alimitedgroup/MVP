@@ -6,38 +6,35 @@ import (
 
 	"github.com/alimitedgroup/MVP/srv/warehouse/application"
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 	"go.uber.org/fx"
 )
 
-type GetStockPortMock struct {
+type mockPortsImpl struct {
 }
 
-func newGetStockPortMock() *GetStockPortMock {
-	return &GetStockPortMock{}
+func newMockPortsImpl() *mockPortsImpl {
+	return &mockPortsImpl{}
 }
 
-func (g *GetStockPortMock) GetStock(id string) int64 {
+func (m *mockPortsImpl) GetStock(id string) int64 {
 	return 0
 }
 
-type CreateStockUpdatePortMock struct {
+func (m *mockPortsImpl) GetGood(id string) *model.GoodInfo {
+	return nil
 }
 
-func newCreateStockUpdatePortMock() *CreateStockUpdatePortMock {
-	return &CreateStockUpdatePortMock{}
-}
-
-func (c *CreateStockUpdatePortMock) CreateStockUpdate(ctx context.Context, cmd port.CreateStockUpdateCmd) error {
+func (m *mockPortsImpl) CreateStockUpdate(ctx context.Context, cmd port.CreateStockUpdateCmd) error {
 	return nil
 }
 
 func TestManageStockService(t *testing.T) {
 	ctx := t.Context()
+	mock := newMockPortsImpl()
 
 	app := fx.New(
-		fx.Provide(newCreateStockUpdatePortMock, func(s *CreateStockUpdatePortMock) port.CreateStockUpdatePort { return s }),
-		fx.Provide(newGetStockPortMock, func(s *GetStockPortMock) port.GetStockPort { return s }),
-
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.CreateStockUpdatePort)), fx.As(new(port.GetStockPort)), fx.As(new(port.GetGoodPort)))),
 		fx.Provide(fx.Annotate(application.NewManageStockService, fx.As(new(port.AddStockUseCase)), fx.As(new(port.RemoveStockUseCase)))),
 		fx.Invoke(func(addStockUseCase port.AddStockUseCase, removeStockUseCase port.RemoveStockUseCase) {}),
 	)

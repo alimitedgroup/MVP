@@ -36,10 +36,12 @@ func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) err
 func TestApplyStockUpdateService(t *testing.T) {
 	ctx := t.Context()
 
+	mock := newApplyStockUpdatePortMock()
+
 	app := fx.New(
-		fx.Provide(newApplyStockUpdatePortMock, func(s *applyStockUpdatePortMock) port.ApplyStockUpdatePort { return s }),
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.ApplyStockUpdatePort)))),
 		fx.Provide(fx.Annotate(application.NewApplyStockUpdateService, fx.As(new(port.ApplyStockUpdateUseCase)))),
-		fx.Invoke(func(useCase port.ApplyStockUpdateUseCase, saveStockUpdatePortMock *applyStockUpdatePortMock) {
+		fx.Invoke(func(useCase port.ApplyStockUpdateUseCase) {
 			cmd := port.StockUpdateCmd{
 				ID: "1",
 				Goods: []port.StockUpdateCmdGood{
@@ -59,9 +61,9 @@ func TestApplyStockUpdateService(t *testing.T) {
 				t.Errorf("error updating stock: %v", err)
 			}
 
-			assert.Equal(t, saveStockUpdatePortMock.Total, int64(30))
-			assert.Equal(t, saveStockUpdatePortMock.M["1"], int64(10))
-			assert.Equal(t, saveStockUpdatePortMock.M["2"], int64(20))
+			assert.Equal(t, mock.Total, int64(30))
+			assert.Equal(t, mock.M["1"], int64(10))
+			assert.Equal(t, mock.M["2"], int64(20))
 		}),
 	)
 
