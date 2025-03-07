@@ -1,8 +1,8 @@
 package catalogCommon
 
 type Warehouse struct {
-	ID    string
-	stock map[string]int64
+	ID    string           `json:"id"`
+	Stock map[string]int64 `json:"stock"`
 }
 
 func NewWarehouse(ID string) *Warehouse {
@@ -10,19 +10,19 @@ func NewWarehouse(ID string) *Warehouse {
 }
 
 func (w *Warehouse) SetStock(ID string, newQuantity int64) {
-	_, presence := w.stock[ID]
+	_, presence := w.Stock[ID]
 	if !presence {
 		w.addGood(ID)
 	}
-	w.stock[ID] = newQuantity
+	w.Stock[ID] = newQuantity
 }
 
 func (w *Warehouse) addGood(ID string) {
-	w.stock[ID] = 0
+	w.Stock[ID] = 0
 }
 
 func (w *Warehouse) GetGoodStock(id string) int64 {
-	value, presence := w.stock[id]
+	value, presence := w.Stock[id]
 	if !presence {
 		return int64(0)
 	}

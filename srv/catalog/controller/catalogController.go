@@ -109,9 +109,15 @@ func (cc *catalogController) checkSetGoodDataRequest(request *stream.GoodUpdateD
 }
 
 func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstream.Msg) error { //AddOrChangeGoodData
+	err := msg.Ack()
+
+	if err != nil {
+		return nil
+	}
+
 	request := &stream.GoodUpdateData{}
 
-	err := json.Unmarshal(msg.Data(), request)
+	err = json.Unmarshal(msg.Data(), request)
 
 	if err != nil {
 		return nil

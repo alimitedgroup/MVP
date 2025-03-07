@@ -1,9 +1,9 @@
 package catalogCommon
 
 type Good struct {
-	name        string
-	description string
-	ID          string //it is a converted uuid.UUID
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	ID          string `json:"id"` //it is a converted uuid.UUID
 }
 
 func NewGood(ID string, name string, description string) *Good {
@@ -15,18 +15,18 @@ func (g Good) GetID() string {
 }
 
 func (g Good) GetName() string {
-	return g.name
+	return g.Name
 }
 
 func (g Good) GetDescription() string {
-	return g.description
+	return g.Description
 }
 
 func (g *Good) SetDescription(newDescription string) error {
 	if newDescription == "" {
 		return CustomError{"Description is empty"}
 	}
-	g.description = newDescription
+	g.Description = newDescription
 	return nil
 }
 
@@ -34,6 +34,6 @@ func (g *Good) SetName(newName string) error {
 	if newName == "" {
 		return CustomError{"Name is empty"}
 	}
-	g.name = newName
+	g.Name = newName
 	return nil
 }

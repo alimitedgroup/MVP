@@ -31,7 +31,7 @@ func (cr *catalogRouter) Setup(ctx context.Context) error {
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterRequest(ctx, "catalog.getWarehouse", "catalog", cr.controller.getWarehouseRequest) //GetWarehouses
+	err = cr.mb.RegisterRequest(ctx, "catalog.getWarehouses", "catalog", cr.controller.getWarehouseRequest) //GetWarehouses
 	if err != nil {
 		return nil
 	}
