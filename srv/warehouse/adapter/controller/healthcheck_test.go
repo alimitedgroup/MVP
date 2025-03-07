@@ -1,4 +1,4 @@
-package controller_test
+package controller
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
@@ -25,9 +24,9 @@ func TestHealthCheckController(t *testing.T) {
 		fx.Supply(&cfg),
 		fx.Supply(ns),
 		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(controller.NewHealthcheckController),
-		fx.Provide(controller.NewHealthCheckRouter),
-		fx.Invoke(func(lc fx.Lifecycle, r *controller.HealthCheckRouter) {
+		fx.Provide(NewHealthcheckController),
+		fx.Provide(NewHealthCheckRouter),
+		fx.Invoke(func(lc fx.Lifecycle, r *HealthCheckRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)

@@ -1,9 +1,8 @@
-package application_test
+package application
 
 import (
 	"testing"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/application"
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 	"github.com/magiconair/properties/assert"
@@ -40,7 +39,7 @@ func TestApplyStockUpdateService(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.ApplyStockUpdatePort)))),
-		fx.Provide(fx.Annotate(application.NewApplyStockUpdateService, fx.As(new(port.ApplyStockUpdateUseCase)))),
+		fx.Provide(fx.Annotate(NewApplyStockUpdateService, fx.As(new(port.ApplyStockUpdateUseCase)))),
 		fx.Invoke(func(useCase port.ApplyStockUpdateUseCase) {
 			cmd := port.StockUpdateCmd{
 				ID: "1",

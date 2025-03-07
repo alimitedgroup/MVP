@@ -1,31 +1,68 @@
-package application_test
+package application
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/application"
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )
 
+type mockGood struct {
+	info model.GoodInfo
+	qty  int64
+
+	lastUpdateQty int64
+}
+
 type mockPortsImpl struct {
+	info map[string]mockGood
 }
 
 func newMockPortsImpl() *mockPortsImpl {
-	return &mockPortsImpl{}
+	return &mockPortsImpl{info: make(map[string]mockGood)}
 }
 
 func (m *mockPortsImpl) GetStock(id string) int64 {
+	if v, ok := m.info[id]; ok {
+		return v.qty
+	}
 	return 0
 }
 
+func (m *mockPortsImpl) AddGood(id string, name string, description string) {
+	m.info[id] = mockGood{
+		info: model.GoodInfo{
+			ID:          id,
+			Name:        name,
+			Description: description,
+		},
+		qty:           0,
+		lastUpdateQty: 0,
+	}
+}
+
 func (m *mockPortsImpl) GetGood(id string) *model.GoodInfo {
+	if v, ok := m.info[id]; ok {
+		return &v.info
+	}
 	return nil
 }
 
 func (m *mockPortsImpl) CreateStockUpdate(ctx context.Context, cmd port.CreateStockUpdateCmd) error {
+	for _, v := range cmd.Goods {
+		old, ok := m.info[v.Good.ID]
+		if !ok {
+			return fmt.Errorf("good %s not found", v.Good.ID)
+		}
+		old.lastUpdateQty = v.Good.Quantity
+		old.qty = v.Good.Quantity
+		m.info[v.Good.ID] = old
+	}
+
 	return nil
 }
 
@@ -35,8 +72,38 @@ func TestManageStockService(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.CreateStockUpdatePort)), fx.As(new(port.GetStockPort)), fx.As(new(port.GetGoodPort)))),
-		fx.Provide(fx.Annotate(application.NewManageStockService, fx.As(new(port.AddStockUseCase)), fx.As(new(port.RemoveStockUseCase)))),
-		fx.Invoke(func(addStockUseCase port.AddStockUseCase, removeStockUseCase port.RemoveStockUseCase) {}),
+		fx.Provide(fx.Annotate(NewManageStockService, fx.As(new(port.AddStockUseCase)), fx.As(new(port.RemoveStockUseCase)))),
+		fx.Invoke(func(lc fx.Lifecycle, addStockUseCase port.AddStockUseCase, removeStockUseCase port.RemoveStockUseCase) {
+			lc.Append(fx.Hook{OnStart: func(ctx context.Context) error {
+				mock.AddGood("1", "hat", "very nice hat")
+
+				addStockCmd := port.AddStockCmd{
+					ID:       "1",
+					Quantity: 10,
+				}
+				err := addStockUseCase.AddStock(ctx, addStockCmd)
+				if err != nil {
+					t.Error(err)
+				}
+
+				assert.Equal(t, mock.info["1"].lastUpdateQty, int64(10))
+				assert.Equal(t, mock.GetStock("1"), int64(10))
+
+				remStockCmd := port.RemoveStockCmd{
+					ID:       "1",
+					Quantity: 10,
+				}
+				err = removeStockUseCase.RemoveStock(ctx, remStockCmd)
+				if err != nil {
+					t.Error(err)
+				}
+
+				assert.Equal(t, mock.GetStock("1"), int64(0))
+				assert.Equal(t, mock.info["1"].lastUpdateQty, int64(0))
+
+				return nil
+			}})
+		}),
 	)
 
 	err := app.Start(ctx)

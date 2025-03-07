@@ -1,4 +1,4 @@
-package listener_test
+package listener
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
 	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/nats-io/nats.go/jetstream"
@@ -69,9 +68,9 @@ func TestStockUpdateListener(t *testing.T) {
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.ApplyStockUpdateUseCase)))),
-		fx.Provide(listener.NewStockUpdateListener),
-		fx.Provide(listener.NewStockUpdateRouter),
-		fx.Invoke(func(lc fx.Lifecycle, r *listener.StockUpdateRouter) {
+		fx.Provide(NewStockUpdateListener),
+		fx.Provide(NewStockUpdateRouter),
+		fx.Invoke(func(lc fx.Lifecycle, r *StockUpdateRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)

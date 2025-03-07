@@ -11,7 +11,7 @@ type ApplyCatalogUpdateService struct {
 	applyCatalogUpdatePort port.ApplyCatalogUpdatePort
 }
 
-func NewApplyGoodUpdateService(applyGoodUpdatePort port.ApplyCatalogUpdatePort) *ApplyCatalogUpdateService {
+func NewApplyCatalogUpdateService(applyGoodUpdatePort port.ApplyCatalogUpdatePort) *ApplyCatalogUpdateService {
 	return &ApplyCatalogUpdateService{applyGoodUpdatePort}
 }
 

@@ -1,9 +1,8 @@
-package persistence_test
+package persistence
 
 import (
 	"testing"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/persistence"
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
@@ -37,9 +36,9 @@ func TestStockPersistanceAdapter(t *testing.T) {
 	mock := NewStockRepositoryMock()
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(persistence.StockRepository)))),
-		fx.Provide(persistence.NewStockPersistanceAdapter),
-		fx.Invoke(func(a *persistence.StockPersistanceAdapter, stockRepo persistence.StockRepository) {
+		fx.Supply(fx.Annotate(mock, fx.As(new(StockRepository)))),
+		fx.Provide(NewStockPersistanceAdapter),
+		fx.Invoke(func(a *StockPersistanceAdapter, stockRepo StockRepository) {
 			goods := []model.GoodStock{
 				{ID: "1", Quantity: 10},
 				{ID: "2", Quantity: 20},
