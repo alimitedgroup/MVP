@@ -40,7 +40,18 @@ func (b *Business) Login(username string) (LoginResult, error) {
 		return LoginResult{}, ErrorInvalidCredentials
 	}
 
-	role, err := b.authAdapter.GetRole(token)
+	parsed, err := b.authAdapter.VerifyToken(token)
+	if err != nil {
+		if errors.Is(err, portout.ErrTokenExpired) {
+			return LoginResult{}, ErrorTokenExpired
+		} else if errors.Is(err, portout.ErrTokenInvalid) {
+			return LoginResult{}, ErrorTokenInvalid
+		} else {
+			return LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+		}
+	}
+
+	role, err := b.authAdapter.GetRole(parsed)
 	if err != nil {
 		return LoginResult{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 	}

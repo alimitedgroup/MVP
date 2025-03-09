@@ -14,6 +14,7 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
+	"log"
 	"time"
 )
 
@@ -30,7 +31,8 @@ func genJwt(username string, role string) (string, error) {
 		"sub":  username,
 		"role": role,
 		// expiration: 1 week
-		"exp": time.Now().Add(-time.Hour * 24 * 7).Unix(),
+		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(),
+		"iss": issuer,
 	})
 	return token.SignedString(keypair)
 }
@@ -102,11 +104,15 @@ func main() {
 	_, err = nc.Subscribe("auth.login", func(msg *nats.Msg) {
 		var req dto.AuthLoginRequest
 		_ = json.Unmarshal(msg.Data, &req)
+
+		log.Println("received request:", string(msg.Data), req)
+
 		if req.Username == "admin" {
 			token, err := genJwt("admin", "local_admin")
 			if err != nil {
 				panic(err)
 			}
+			fmt.Println(token)
 			jsonBoh, err := json.Marshal(dto.AuthLoginResponse{Token: token})
 			if err != nil {
 				panic(err)
