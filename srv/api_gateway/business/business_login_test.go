@@ -13,6 +13,8 @@ import (
 //go:generate go run go.uber.org/mock/mockgen@latest -destination auth_mock.go -package business github.com/alimitedgroup/MVP/srv/api_gateway/portout AuthenticationPortOut
 
 func TestLogin(t *testing.T) {
+	var token types.ParsedToken = struct{ test int }{}
+
 	cases := []struct {
 		string
 		types.UserRole
@@ -27,8 +29,9 @@ func TestLogin(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mock := NewMockAuthenticationPortOut(ctrl)
 
-			mock.EXPECT().GetToken(c.string).Return(types.UserToken("some.secure.jwt"), nil)
-			mock.EXPECT().GetRole(types.UserToken("some.secure.jwt")).Return(c.UserRole, nil)
+			mock.EXPECT().GetToken(gomock.Any()).Return(types.UserToken("some.secure.jwt"), nil)
+			mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(token, nil)
+			mock.EXPECT().GetRole(token).Return(c.UserRole, nil)
 
 			business := NewBusiness(mock)
 			result, err := business.Login(c.string)
@@ -64,11 +67,14 @@ func TestLoginGetTokenError(t *testing.T) {
 }
 
 func TestLoginGetRoleError(t *testing.T) {
+	var token types.ParsedToken = struct{ test int }{}
+
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 
 	mock.EXPECT().GetToken(gomock.Any()).Return(types.UserToken("some.secure.jwt"), nil)
-	mock.EXPECT().GetRole(types.UserToken("some.secure.jwt")).Return(types.RoleNone, fmt.Errorf("some error"))
+	mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(token, nil)
+	mock.EXPECT().GetRole(token).Return(types.RoleNone, fmt.Errorf("some error"))
 
 	business := NewBusiness(mock)
 	_, err := business.Login("user")
