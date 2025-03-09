@@ -62,21 +62,21 @@ func (*AuthenticationAdapter) GetRole(token types.ParsedToken) (types.UserRole, 
 		return types.RoleNone, portout.ErrTokenInvalid
 	}
 
-	rolenum, ok := token2.Claims.(jwt.MapClaims)["role"]
+	roleraw, ok := token2.Claims.(jwt.MapClaims)["role"]
 	if !ok {
 		return types.RoleNone, portout.ErrTokenInvalid
 	}
 
-	switch rolenum {
-	case "client":
-		return types.RoleClient, nil
-	case "global_admin":
-		return types.RoleGlobalAdmin, nil
-	case "local_admin":
-		return types.RoleLocalAdmin, nil
-	default:
+	rolestr, ok := roleraw.(string)
+	if !ok {
 		return types.RoleNone, portout.ErrTokenInvalid
 	}
+
+	role := types.RoleFromString(rolestr)
+	if role == types.RoleNone {
+		return types.RoleNone, portout.ErrTokenInvalid
+	}
+	return role, nil
 }
 
 func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.ParsedToken, error) {
