@@ -11,9 +11,12 @@ import (
 )
 
 var (
-	ErrorInvalidCredentials = errors.New("invalid credentials")
 	ErrorGetToken           = errors.New("error getting token for given credentials")
 	ErrorGetRole            = errors.New("error getting role for given token")
+	ErrorGetUsername        = errors.New("error getting username")
+	ErrorInvalidCredentials = errors.New("invalid credentials")
+	ErrorTokenInvalid       = errors.New("this token is invalid")
+	ErrorTokenExpired       = errors.New("this token is expired")
 )
 
 type Business struct {
@@ -53,10 +56,40 @@ func (b *Business) Login(username string) (LoginResult, error) {
 }
 
 func (b *Business) ValidateToken(token string) (UserData, error) {
-	return UserData{
-		Username: "admin",
-		Role:     types.RoleGlobalAdmin,
-	}, nil
+	tok, err := b.authAdapter.VerifyToken(types.UserToken(token))
+	if err != nil {
+		if errors.Is(err, portout.ErrTokenExpired) {
+			return UserData{}, ErrorTokenExpired
+		} else if errors.Is(err, portout.ErrTokenInvalid) {
+			return UserData{}, ErrorTokenInvalid
+		} else {
+			return UserData{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+		}
+	}
+
+	username, err := b.authAdapter.GetUsername(tok)
+	if err != nil {
+		if errors.Is(err, portout.ErrTokenInvalid) {
+			return UserData{}, ErrorTokenInvalid
+		} else if errors.Is(err, portout.ErrTokenExpired) {
+			return UserData{}, ErrorTokenExpired
+		} else {
+			return UserData{}, fmt.Errorf("%w: %w", ErrorGetUsername, err)
+		}
+	}
+
+	role, err := b.authAdapter.GetRole(tok)
+	if err != nil {
+		if errors.Is(err, portout.ErrTokenInvalid) {
+			return UserData{}, ErrorTokenInvalid
+		} else if errors.Is(err, portout.ErrTokenExpired) {
+			return UserData{}, ErrorTokenExpired
+		} else {
+			return UserData{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
+		}
+	}
+
+	return UserData{Username: username, Role: role}, err
 }
 
 // LoginResult è il risultato di un login avvenuto con successo.
