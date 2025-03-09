@@ -25,4 +25,8 @@ func (c *HealthCheckController) Method() string {
 	return "GET"
 }
 
+func (c *HealthCheckController) RequiresAuth() bool {
+	return false
+}
+
 var _ Controller = (*HealthCheckController)(nil)

@@ -20,7 +20,7 @@ type RunParams struct {
 	fx.In
 
 	ServerConfig *APIConfig
-	HttpHandler  *lib.HTTPHandler
+	HttpHandler  *controller.HTTPHandler
 }
 
 func Run(p RunParams) error {

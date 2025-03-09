@@ -6,16 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/nats-io/nats.go/jetstream"
-	"log/slog"
-
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
+	"log/slog"
 )
 
 type AuthenticationAdapter struct {
@@ -69,11 +68,11 @@ func (*AuthenticationAdapter) GetRole(token types.ParsedToken) (types.UserRole, 
 	}
 
 	switch rolenum {
-	case types.RoleClient:
+	case "client":
 		return types.RoleClient, nil
-	case types.RoleGlobalAdmin:
+	case "global_admin":
 		return types.RoleGlobalAdmin, nil
-	case types.RoleLocalAdmin:
+	case "local_admin":
 		return types.RoleLocalAdmin, nil
 	default:
 		return types.RoleNone, portout.ErrTokenInvalid
@@ -96,9 +95,14 @@ func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.Parse
 		return key, nil
 	}, jwt.WithValidMethods([]string{"ES256"}))
 	if err != nil {
+		if !errors.Is(err, jwt.ErrTokenSignatureInvalid) {
+			slog.Error("Error parsing token", "error", err)
+		}
+
 		if errors.Is(err, jwt.ErrTokenExpired) {
 			return nil, portout.ErrTokenExpired
 		}
+
 		return nil, portout.ErrTokenInvalid
 	}
 
@@ -107,7 +111,10 @@ func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.Parse
 
 // getValidationKey returns a public key that can be used to verify JWTs signed by the given issuer
 func (aa *AuthenticationAdapter) getValidationKey(ctx context.Context, issuer string) (*ecdsa.PublicKey, error) {
-	stream, err := aa.Broker.Js.CreateStream(ctx, jetstream.StreamConfig{Name: "auth_keys"})
+	stream, err := aa.Broker.Js.CreateStream(
+		ctx,
+		jetstream.StreamConfig{Name: "auth_keys", Subjects: []string{"keys.>"}},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stream: %w", err)
 	}

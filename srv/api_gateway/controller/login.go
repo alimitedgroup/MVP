@@ -41,3 +41,9 @@ func (c *LoginController) Pattern() string {
 func (c *LoginController) Method() string {
 	return "POST"
 }
+
+func (c *LoginController) RequiresAuth() bool {
+	return false
+}
+
+var _ Controller = (*LoginController)(nil)
