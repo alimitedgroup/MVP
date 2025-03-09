@@ -1,3 +1,5 @@
+// TODO: rimpiazzare questo file con la vera implementazione del microservizio `authentication`
+
 package adapterout
 
 import (
