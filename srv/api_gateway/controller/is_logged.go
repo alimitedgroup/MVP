@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +16,7 @@ func NewAuthHealthCheckController(businness *business.Business) *AuthHealthCheck
 
 func (c *AuthHealthCheckController) Handler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(200, gin.H{"role": c.MustGet("user_data").(business.UserData).Role.String()})
+		c.JSON(200, gin.H{"role": c.MustGet("user_data").(portin.UserData).Role.String()})
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
@@ -31,85 +32,71 @@ var Module = fx.Options(
 	fx.Provide(NewBusiness),
 )
 
-func (b *Business) Login(username string) (LoginResult, error) {
+func (b *Business) Login(username string) (portin.LoginResult, error) {
 	token, err := b.authAdapter.GetToken(username)
 	if err != nil {
-		return LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 	}
 	if token == "" {
-		return LoginResult{}, ErrorInvalidCredentials
+		return portin.LoginResult{}, ErrorInvalidCredentials
 	}
 
 	parsed, err := b.authAdapter.VerifyToken(token)
 	if err != nil {
-		return LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 	}
 
 	role, err := b.authAdapter.GetRole(parsed)
 	if err != nil {
-		return LoginResult{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
+		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 	}
 
 	// TODO: bisognerebbe prendere la scadenza dall'output del servizio di Authentication
 	expiration := time.Now().Add(7 * 24 * time.Hour)
 
-	return LoginResult{
+	return portin.LoginResult{
 		Token:           token,
 		TokenExpiration: expiration,
 		Role:            role,
 	}, nil
 }
 
-func (b *Business) ValidateToken(token string) (UserData, error) {
+func (b *Business) ValidateToken(token string) (portin.UserData, error) {
 	tok, err := b.authAdapter.VerifyToken(types.UserToken(token))
 	if err != nil {
 		if errors.Is(err, portout.ErrTokenExpired) {
-			return UserData{}, ErrorTokenExpired
+			return portin.UserData{}, ErrorTokenExpired
 		} else if errors.Is(err, portout.ErrTokenInvalid) {
-			return UserData{}, ErrorTokenInvalid
+			return portin.UserData{}, ErrorTokenInvalid
 		} else {
-			return UserData{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 		}
 	}
 
 	username, err := b.authAdapter.GetUsername(tok)
 	if err != nil {
 		if errors.Is(err, portout.ErrTokenInvalid) {
-			return UserData{}, ErrorTokenInvalid
+			return portin.UserData{}, ErrorTokenInvalid
 		} else if errors.Is(err, portout.ErrTokenExpired) {
-			return UserData{}, ErrorTokenExpired
+			return portin.UserData{}, ErrorTokenExpired
 		} else {
-			return UserData{}, fmt.Errorf("%w: %w", ErrorGetUsername, err)
+			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetUsername, err)
 		}
 	}
 
 	role, err := b.authAdapter.GetRole(tok)
 	if err != nil {
 		if errors.Is(err, portout.ErrTokenInvalid) {
-			return UserData{}, ErrorTokenInvalid
+			return portin.UserData{}, ErrorTokenInvalid
 		} else if errors.Is(err, portout.ErrTokenExpired) {
-			return UserData{}, ErrorTokenExpired
+			return portin.UserData{}, ErrorTokenExpired
 		} else {
-			return UserData{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
+			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 		}
 	}
 
-	return UserData{Username: username, Role: role}, err
+	return portin.UserData{Username: username, Role: role}, err
 }
 
-// LoginResult è il risultato di un login avvenuto con successo.
-type LoginResult struct {
-	// Token è una stringa opaca che il client dovrà fornire per autenticarsi.
-	Token types.UserToken
-	// TokenExpiration è un tempo nel futuro in cui Token scadrà.
-	// Quando ciò avviene, sarà necessario autenticarsi di nuovo.
-	TokenExpiration time.Time
-	// Role è il ruolo che è assegnato all'utente.
-	Role types.UserRole
-}
-
-type UserData struct {
-	Username string
-	// Role è il ruolo che è assegnato all'utente.
-	Role types.UserRole
-}
+// Asserzione a compile time che Business implementi le interfaccie delle porte di input
+var _ portin.Auth = (*Business)(nil)
