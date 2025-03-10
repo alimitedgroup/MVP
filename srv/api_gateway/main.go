@@ -3,14 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/alimitedgroup/MVP/common/lib"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/api"
-	apiRouter "github.com/alimitedgroup/MVP/srv/api_gateway/api/router"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/channel"
-	brokerRouter "github.com/alimitedgroup/MVP/srv/api_gateway/channel/router"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterout"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/controller"
 	"go.uber.org/fx"
+	"log"
 )
 
 type APIConfig struct {
@@ -22,22 +20,11 @@ type RunParams struct {
 	fx.In
 
 	ServerConfig *APIConfig
-	HttpHandler  *lib.HTTPHandler
-	ApiRoutes    apiRouter.APIRoutes
-	BrokerRoutes brokerRouter.BrokerRoutes
+	HttpHandler  *controller.HTTPHandler
 }
 
-func Run(ctx context.Context, p RunParams) error {
-	var err error
-
-	err = p.BrokerRoutes.Setup(ctx)
-	if err != nil {
-		return err
-	}
-
-	p.ApiRoutes.Setup(ctx)
-
-	err = p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
+func Run(p RunParams) error {
+	err := p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
 	if err != nil {
 		return err
 	}
@@ -48,7 +35,7 @@ func Run(ctx context.Context, p RunParams) error {
 func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			err := Run(ctx, p)
+			err := Run(p)
 			return err
 		},
 		OnStop: func(ctx context.Context) error {
@@ -57,24 +44,17 @@ func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
 	})
 }
 
-var Modules = fx.Options(
-	lib.Module,
-	api.Module,
-	channel.Module,
-)
-
 func main() {
 	ctx := context.Background()
 
 	config := loadConfig()
 
-	opts := fx.Options(
-		config,
-		Modules,
-	)
-
 	app := fx.New(
-		opts,
+		lib.Module,
+		business.Module,
+		adapterout.Module,
+		controller.Module,
+		config,
 		fx.Invoke(RunLifeCycle),
 	)
 
@@ -89,5 +69,4 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-
 }
