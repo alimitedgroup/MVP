@@ -15,7 +15,7 @@ func NewAuthHealthCheckController(businness *business.Business) *AuthHealthCheck
 
 func (c *AuthHealthCheckController) Handler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(200, gin.H{"role": c.MustGet("user_data").(business.UserData).Role})
+		c.JSON(200, gin.H{"role": c.MustGet("user_data").(business.UserData).Role.String()})
 	}
 }
 
