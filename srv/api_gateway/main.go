@@ -24,9 +24,7 @@ type RunParams struct {
 }
 
 func Run(p RunParams) error {
-	var err error
-
-	err = p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
+	err := p.HttpHandler.Engine.Run(fmt.Sprintf(":%d", p.ServerConfig.Port))
 	if err != nil {
 		return err
 	}
