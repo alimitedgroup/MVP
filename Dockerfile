@@ -9,13 +9,13 @@ RUN go env -w GOMODCACHE=/root/.cache/go-build
 
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
-    go mod download
+  --mount=type=cache,target=/go/pkg \
+  go mod download
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
-    --mount=target=. \
-    go build -buildvcs=true -ldflags="-s -w" -o /out/service ./srv/$SERVICE
+  --mount=type=cache,target=/go/pkg \
+  --mount=target=. \
+  go build -buildvcs=true -ldflags="-s -w" -o /out/service ./srv/$SERVICE
 
 FROM alpine:3.21.3
 

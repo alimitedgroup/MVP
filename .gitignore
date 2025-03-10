@@ -2,3 +2,4 @@
 main
 config.yml
 covprofile
+*_mock.go
