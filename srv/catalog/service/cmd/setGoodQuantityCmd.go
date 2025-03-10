@@ -1,4 +1,4 @@
-package service_Cmd
+package servicecmd
 
 type SetGoodQuantityCmd struct {
 	warehouseId string

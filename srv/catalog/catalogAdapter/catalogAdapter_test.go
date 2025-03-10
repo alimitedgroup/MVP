@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
-	service_Cmd "github.com/alimitedgroup/MVP/srv/catalog/service/Cmd"
+	persistence "github.com/alimitedgroup/MVP/srv/catalog/persistence"
+	servicecmd "github.com/alimitedgroup/MVP/srv/catalog/service/cmd"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/fx"
 )
@@ -32,14 +33,14 @@ func (fr *fakeRepo) GetGoodsGlobalQuantity() map[string]int64 {
 
 func (fr *fakeRepo) SetGoodQuantity(warehouseID string, goodID string, newQuantity int64) error {
 	if goodID == "test-wrong-ID" {
-		return catalogCommon.NewCustomError("Not a valid goodID")
+		return catalogCommon.ErrGoodIdNotValid
 	}
 	return nil
 }
 
 func (fr *fakeRepo) AddGood(goodID string, name string, description string) error {
 	if goodID == "test-wrong-ID" {
-		return catalogCommon.NewCustomError("Not a valid goodID")
+		return catalogCommon.ErrGoodIdNotValid
 	}
 	return nil
 }
@@ -56,11 +57,11 @@ func TestGetWarehouses(t *testing.T) {
 	fx.New(
 		fx.Provide(
 			fx.Annotate(NewFakeRepo,
-				fx.As(new(IGoodRepository))),
+				fx.As(new(persistence.IGoodRepository))),
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service_Cmd.NewGetWarehousesCmd()
+			cmd := servicecmd.NewGetWarehousesCmd()
 			response := a.GetWarehouses(cmd)
 			warehouses := make(map[string]catalogCommon.Warehouse)
 			warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
@@ -73,13 +74,13 @@ func TestAddChangeGoodData(t *testing.T) {
 	fx.New(
 		fx.Provide(
 			fx.Annotate(NewFakeRepo,
-				fx.As(new(IGoodRepository))),
+				fx.As(new(persistence.IGoodRepository))),
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service_Cmd.NewAddChangeGoodCmd("test-ID", "test-name", "test-desc")
+			cmd := servicecmd.NewAddChangeGoodCmd("test-ID", "test-name", "test-desc")
 			response := a.AddOrChangeGoodData(cmd)
-			assert.Equal(t, response.GetOperationResult(), "Success")
+			assert.Equal(t, response.GetOperationResult(), nil)
 		}),
 	)
 }
@@ -88,13 +89,13 @@ func TestAddChangeGoodDataWithWrongID(t *testing.T) {
 	fx.New(
 		fx.Provide(
 			fx.Annotate(NewFakeRepo,
-				fx.As(new(IGoodRepository))),
+				fx.As(new(persistence.IGoodRepository))),
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service_Cmd.NewAddChangeGoodCmd("test-wrong-ID", "test-name", "test-desc")
+			cmd := servicecmd.NewAddChangeGoodCmd("test-wrong-ID", "test-name", "test-desc")
 			response := a.AddOrChangeGoodData(cmd)
-			assert.Equal(t, response.GetOperationResult(), "Not a valid goodID")
+			assert.Equal(t, response.GetOperationResult(), catalogCommon.ErrGoodIdNotValid)
 		}),
 	)
 }
@@ -103,13 +104,13 @@ func TestSetGoodQuantity(t *testing.T) {
 	fx.New(
 		fx.Provide(
 			fx.Annotate(NewFakeRepo,
-				fx.As(new(IGoodRepository))),
+				fx.As(new(persistence.IGoodRepository))),
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service_Cmd.NewSetGoodQuantityCmd("warehouse-ID", "test-ID", 7)
+			cmd := servicecmd.NewSetGoodQuantityCmd("warehouse-ID", "test-ID", 7)
 			response := a.SetGoodQuantity(cmd)
-			assert.Equal(t, response.GetOperationResult(), "Success")
+			assert.Equal(t, response.GetOperationResult(), nil)
 		}),
 	)
 }
@@ -118,13 +119,13 @@ func TestSetGoodQuantityWithWrongID(t *testing.T) {
 	fx.New(
 		fx.Provide(
 			fx.Annotate(NewFakeRepo,
-				fx.As(new(IGoodRepository))),
+				fx.As(new(persistence.IGoodRepository))),
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service_Cmd.NewSetGoodQuantityCmd("warehouse-ID", "test-wrong-ID", 7)
+			cmd := servicecmd.NewSetGoodQuantityCmd("warehouse-ID", "test-wrong-ID", 7)
 			response := a.SetGoodQuantity(cmd)
-			assert.Equal(t, response.GetOperationResult(), "Not a valid goodID")
+			assert.Equal(t, response.GetOperationResult(), catalogCommon.ErrGoodIdNotValid)
 		}),
 	)
 }
@@ -133,11 +134,11 @@ func TestGetGoodsQuantity(t *testing.T) {
 	fx.New(
 		fx.Provide(
 			fx.Annotate(NewFakeRepo,
-				fx.As(new(IGoodRepository))),
+				fx.As(new(persistence.IGoodRepository))),
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service_Cmd.NewGetGoodsQuantityCmd()
+			cmd := servicecmd.NewGetGoodsQuantityCmd()
 			response := a.GetGoodsQuantity(cmd)
 			assert.Equal(t, response.GetMap()["test-ID"], int64(7))
 		}),
@@ -148,11 +149,11 @@ func TestGetGoodsInfo(t *testing.T) {
 	fx.New(
 		fx.Provide(
 			fx.Annotate(NewFakeRepo,
-				fx.As(new(IGoodRepository))),
+				fx.As(new(persistence.IGoodRepository))),
 		),
 		fx.Provide(NewCatalogRepositoryAdapter),
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
-			cmd := service_Cmd.NewGetGoodsInfoCmd()
+			cmd := servicecmd.NewGetGoodsInfoCmd()
 			response := a.GetGoodsInfo(cmd)
 			goods := make(map[string]catalogCommon.Good)
 			goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")

@@ -1,4 +1,4 @@
-package persistance
+package persistence
 
 import (
 	"sync"
@@ -10,6 +10,7 @@ type CatalogRepository struct {
 	warehouseMap map[string]*catalogCommon.Warehouse
 	goodMap      map[string]*catalogCommon.Good
 	goodStockMap map[string]int64
+	mutex        sync.Mutex
 }
 
 func NewCatalogRepository() *CatalogRepository {
@@ -36,14 +37,12 @@ func (cr *CatalogRepository) GetWarehouses() map[string]catalogCommon.Warehouse 
 	return result
 }
 
-var mutex sync.Mutex
-
 func (cr *CatalogRepository) SetGoodQuantity(warehouseID string, goodID string, newQuantity int64) error {
 	/*
 		Imposta la quantità di un bene in un magazzino e memorizza il nuovo stato globale della merce.
 		Se il magazzino non esiste viene creato, se la merce non esiste viene memorizzata la quantità, ma non le info sulla merce)
 	*/
-	mutex.Lock()
+	cr.mutex.Lock()
 	cr.addWarehouse(warehouseID)
 	_, presence := cr.goodStockMap[goodID]
 	if !presence {
@@ -56,7 +55,7 @@ func (cr *CatalogRepository) SetGoodQuantity(warehouseID string, goodID string, 
 		cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
 		cr.goodStockMap[goodID] += delta
 	}
-	mutex.Unlock()
+	cr.mutex.Unlock()
 	return nil
 }
 
@@ -84,7 +83,7 @@ func (cr *CatalogRepository) AddGood(goodID string, name string, description str
 func (cr *CatalogRepository) changeGoodData(goodID string, newName string, newDescription string) error {
 	_, presence := cr.goodMap[goodID]
 	if !presence {
-		return catalogCommon.NewCustomError("Not a valid goodID")
+		return catalogCommon.ErrGoodIdNotValid
 	}
 	err := cr.goodMap[goodID].SetName(newName)
 	if err != nil {

@@ -1,4 +1,4 @@
-package service_Response
+package serviceresponse
 
 import "github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 

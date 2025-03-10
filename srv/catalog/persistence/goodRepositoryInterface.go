@@ -1,4 +1,4 @@
-package catalogAdapter
+package persistence
 
 import "github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 

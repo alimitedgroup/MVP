@@ -24,7 +24,7 @@ func (g Good) GetDescription() string {
 
 func (g *Good) SetDescription(newDescription string) error {
 	if newDescription == "" {
-		return CustomError{"Description is empty"}
+		return ErrEmptyDescription
 	}
 	g.Description = newDescription
 	return nil
@@ -32,7 +32,7 @@ func (g *Good) SetDescription(newDescription string) error {
 
 func (g *Good) SetName(newName string) error {
 	if newName == "" {
-		return CustomError{"Name is empty"}
+		return ErrEmptyName
 	}
 	g.Name = newName
 	return nil

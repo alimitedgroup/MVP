@@ -12,9 +12,9 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
-	service_Cmd "github.com/alimitedgroup/MVP/srv/catalog/service/Cmd"
-	service_Response "github.com/alimitedgroup/MVP/srv/catalog/service/Response"
-	service_portIn "github.com/alimitedgroup/MVP/srv/catalog/service/portIn"
+	servicecmd "github.com/alimitedgroup/MVP/srv/catalog/service/cmd"
+	serviceportin "github.com/alimitedgroup/MVP/srv/catalog/service/portin"
+	serviceresponse "github.com/alimitedgroup/MVP/srv/catalog/service/response"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/fx"
@@ -47,15 +47,15 @@ func NewFakeControllerUC() *FakeControllerUC {
 	return &FakeControllerUC{}
 }
 
-func (f *FakeControllerUC) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd) *service_Response.AddOrChangeResponse {
+func (f *FakeControllerUC) AddOrChangeGoodData(agc *servicecmd.AddChangeGoodCmd) *serviceresponse.AddOrChangeResponse {
 	changeA(true)
 	if agc.GetId() == "wrong-test-ID" {
-		return service_Response.NewAddOrChangeResponse("Not a valid goodID")
+		return serviceresponse.NewAddOrChangeResponse(catalogCommon.ErrGoodIdNotValid)
 	}
-	return service_Response.NewAddOrChangeResponse("Success")
+	return serviceresponse.NewAddOrChangeResponse(nil)
 }
 
-func (f *FakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultipleGoodsQuantityCmd) *service_Response.SetMultipleGoodsQuantityResponse {
+func (f *FakeControllerUC) SetMultipleGoodsQuantity(cmd *servicecmd.SetMultipleGoodsQuantityCmd) *serviceresponse.SetMultipleGoodsQuantityResponse {
 	changeA(true)
 	errorSlice := []int{}
 	for i := range cmd.GetGoods() {
@@ -65,7 +65,7 @@ func (f *FakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultiple
 	}
 
 	if len(errorSlice) == 0 {
-		return service_Response.NewSetMultipleGoodsQuantityResponse("Success", []string{})
+		return serviceresponse.NewSetMultipleGoodsQuantityResponse(nil, []string{})
 	}
 
 	returnErrorSlice := []string{}
@@ -73,26 +73,26 @@ func (f *FakeControllerUC) SetMultipleGoodsQuantity(cmd *service_Cmd.SetMultiple
 		returnErrorSlice = append(returnErrorSlice, "wrong-test-ID")
 	}
 
-	return service_Response.NewSetMultipleGoodsQuantityResponse("Errors", returnErrorSlice)
+	return serviceresponse.NewSetMultipleGoodsQuantityResponse(catalogCommon.ErrGenericFailure, returnErrorSlice)
 
 }
 
-func (f *FakeControllerUC) GetGoodsQuantity(ggqc *service_Cmd.GetGoodsQuantityCmd) *service_Response.GetGoodsQuantityResponse {
+func (f *FakeControllerUC) GetGoodsQuantity(ggqc *servicecmd.GetGoodsQuantityCmd) *serviceresponse.GetGoodsQuantityResponse {
 	goodMap := map[string]int64{}
 	goodMap["test-ID"] = int64(7)
-	return service_Response.NewGetGoodsQuantityResponse(goodMap)
+	return serviceresponse.NewGetGoodsQuantityResponse(goodMap)
 }
 
-func (f *FakeControllerUC) GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd) *service_Response.GetGoodsInfoResponse {
+func (f *FakeControllerUC) GetGoodsInfo(ggqc *servicecmd.GetGoodsInfoCmd) *serviceresponse.GetGoodsInfoResponse {
 	goods := make(map[string]catalogCommon.Good)
 	goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")
-	return service_Response.NewGetGoodsInfoResponse(goods)
+	return serviceresponse.NewGetGoodsInfoResponse(goods)
 }
 
-func (f *FakeControllerUC) GetWarehouses(gwc *service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse {
+func (f *FakeControllerUC) GetWarehouses(gwc *servicecmd.GetWarehousesCmd) *serviceresponse.GetWarehousesResponse {
 	warehouses := make(map[string]catalogCommon.Warehouse)
 	warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
-	return service_Response.NewGetWarehousesResponse(warehouses)
+	return serviceresponse.NewGetWarehousesResponse(warehouses)
 }
 
 // FINE MOCK PORTE CONTROLLER
@@ -107,11 +107,11 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 		fx.Supply(ns),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
-				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IGetWarehousesUseCase)),
-				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
+				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IGetWarehousesUseCase)),
+				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
 			),
 		),
 		fx.Provide(broker.NewNatsMessageBroker),
@@ -184,11 +184,11 @@ func TestSetGoodDataRequest(t *testing.T) {
 		fx.Supply(ns),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
-				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IGetWarehousesUseCase)),
-				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
+				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IGetWarehousesUseCase)),
+				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
 			),
 		),
 		fx.Provide(broker.NewNatsMessageBroker),
@@ -260,11 +260,11 @@ func TestGetGoodsRequest(t *testing.T) {
 		fx.Supply(ns),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
-				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IGetWarehousesUseCase)),
-				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
+				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IGetWarehousesUseCase)),
+				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
 			),
 		),
 		fx.Provide(broker.NewNatsMessageBroker),
@@ -339,11 +339,11 @@ func TestGetWarehousesRequest(t *testing.T) {
 		fx.Supply(ns),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
-				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IGetWarehousesUseCase)),
-				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
+				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IGetWarehousesUseCase)),
+				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
 			),
 		),
 		fx.Provide(broker.NewNatsMessageBroker),
@@ -418,11 +418,11 @@ func TestGetGoodsGlobalQuantityRequest(t *testing.T) {
 		fx.Supply(ns),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
-				fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IGetWarehousesUseCase)),
-				fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
+				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
+				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IGetWarehousesUseCase)),
+				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
+				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
 			),
 		),
 		fx.Provide(broker.NewNatsMessageBroker),

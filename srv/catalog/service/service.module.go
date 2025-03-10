@@ -1,16 +1,16 @@
 package service
 
 import (
-	service_portIn "github.com/alimitedgroup/MVP/srv/catalog/service/portIn"
+	serviceportin "github.com/alimitedgroup/MVP/srv/catalog/service/portin"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
 	fx.Provide(fx.Annotate(NewCatalogService,
-		fx.As(new(service_portIn.IGetGoodsInfoUseCase)),
-		fx.As(new(service_portIn.IGetGoodsQuantityUseCase)),
-		fx.As(new(service_portIn.ISetMultipleGoodsQuantityUseCase)),
-		fx.As(new(service_portIn.IUpdateGoodDataUseCase)),
-		fx.As(new(service_portIn.IGetWarehousesUseCase)),
+		fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
+		fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
+		fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
+		fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
+		fx.As(new(serviceportin.IGetWarehousesUseCase)),
 	)),
 )

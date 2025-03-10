@@ -1,16 +1,16 @@
 package catalogAdapter
 
 import (
-	service_portOut "github.com/alimitedgroup/MVP/srv/catalog/service/portOut"
+	serviceportout "github.com/alimitedgroup/MVP/srv/catalog/service/portout"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(NewCatalogRepositoryAdapter,
-			fx.As(new(service_portOut.IAddOrChangeGoodDataPort)),
-			fx.As(new(service_portOut.ISetGoodQuantityPort)),
-			fx.As(new(service_portOut.IGetGoodsQuantityPort)),
-			fx.As(new(service_portOut.IGetGoodsInfoPort)),
-			fx.As(new(service_portOut.IGetWarehousesInfoPort)))),
+			fx.As(new(serviceportout.IAddOrChangeGoodDataPort)),
+			fx.As(new(serviceportout.ISetGoodQuantityPort)),
+			fx.As(new(serviceportout.IGetGoodsQuantityPort)),
+			fx.As(new(serviceportout.IGetGoodsInfoPort)),
+			fx.As(new(serviceportout.IGetWarehousesInfoPort)))),
 )

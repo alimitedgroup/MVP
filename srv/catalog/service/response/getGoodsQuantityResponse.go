@@ -1,4 +1,4 @@
-package service_Response
+package serviceresponse
 
 type GetGoodsQuantityResponse struct {
 	goodMap map[string]int64

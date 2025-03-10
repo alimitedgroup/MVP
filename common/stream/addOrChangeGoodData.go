@@ -10,6 +10,6 @@ var AddOrChangeGoodDataStream = jetstream.StreamConfig{
 
 type GoodUpdateData struct {
 	GoodID             string `json:"id"` //must be a new goodID if a new good was added, otherwise must be a valid goodID
-	GoodNewName        string `json:"newName"`
-	GoodNewDescription string `json:"newDescription"`
+	GoodNewName        string `json:"new_name"`
+	GoodNewDescription string `json:"new_description"`
 }

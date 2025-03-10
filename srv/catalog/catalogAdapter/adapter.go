@@ -1,42 +1,43 @@
 package catalogAdapter
 
 import (
-	service_Cmd "github.com/alimitedgroup/MVP/srv/catalog/service/Cmd"
-	service_Response "github.com/alimitedgroup/MVP/srv/catalog/service/Response"
+	"github.com/alimitedgroup/MVP/srv/catalog/persistence"
+	servicecmd "github.com/alimitedgroup/MVP/srv/catalog/service/cmd"
+	serviceresponse "github.com/alimitedgroup/MVP/srv/catalog/service/response"
 )
 
 type CatalogRepositoryAdapter struct {
-	repo IGoodRepository
+	repo persistence.IGoodRepository
 }
 
-func NewCatalogRepositoryAdapter(repo IGoodRepository) *CatalogRepositoryAdapter {
+func NewCatalogRepositoryAdapter(repo persistence.IGoodRepository) *CatalogRepositoryAdapter {
 	return &CatalogRepositoryAdapter{repo: repo}
 }
 
-func (cra *CatalogRepositoryAdapter) AddOrChangeGoodData(agc *service_Cmd.AddChangeGoodCmd) *service_Response.AddOrChangeResponse {
+func (cra *CatalogRepositoryAdapter) AddOrChangeGoodData(agc *servicecmd.AddChangeGoodCmd) *serviceresponse.AddOrChangeResponse {
 	err := cra.repo.AddGood(agc.GetId(), agc.GetName(), agc.GetDescription())
 	if err != nil {
-		return service_Response.NewAddOrChangeResponse(err.Error())
+		return serviceresponse.NewAddOrChangeResponse(err)
 	}
-	return service_Response.NewAddOrChangeResponse("Success")
+	return serviceresponse.NewAddOrChangeResponse(nil)
 }
 
-func (cra *CatalogRepositoryAdapter) SetGoodQuantity(agqc *service_Cmd.SetGoodQuantityCmd) *service_Response.SetGoodQuantityResponse {
+func (cra *CatalogRepositoryAdapter) SetGoodQuantity(agqc *servicecmd.SetGoodQuantityCmd) *serviceresponse.SetGoodQuantityResponse {
 	err := cra.repo.SetGoodQuantity(agqc.GetWarehouseId(), agqc.GetGoodId(), agqc.GetNewQuantity())
 	if err != nil {
-		return service_Response.NewSetGoodQuantityResponse(err.Error())
+		return serviceresponse.NewSetGoodQuantityResponse(err)
 	}
-	return service_Response.NewSetGoodQuantityResponse("Success")
+	return serviceresponse.NewSetGoodQuantityResponse(nil)
 }
 
-func (cra *CatalogRepositoryAdapter) GetGoodsQuantity(ggqc *service_Cmd.GetGoodsQuantityCmd) *service_Response.GetGoodsQuantityResponse {
-	return service_Response.NewGetGoodsQuantityResponse(cra.repo.GetGoodsGlobalQuantity())
+func (cra *CatalogRepositoryAdapter) GetGoodsQuantity(ggqc *servicecmd.GetGoodsQuantityCmd) *serviceresponse.GetGoodsQuantityResponse {
+	return serviceresponse.NewGetGoodsQuantityResponse(cra.repo.GetGoodsGlobalQuantity())
 }
 
-func (cra *CatalogRepositoryAdapter) GetGoodsInfo(ggqc *service_Cmd.GetGoodsInfoCmd) *service_Response.GetGoodsInfoResponse {
-	return service_Response.NewGetGoodsInfoResponse(cra.repo.GetGoods())
+func (cra *CatalogRepositoryAdapter) GetGoodsInfo(ggqc *servicecmd.GetGoodsInfoCmd) *serviceresponse.GetGoodsInfoResponse {
+	return serviceresponse.NewGetGoodsInfoResponse(cra.repo.GetGoods())
 }
 
-func (cra *CatalogRepositoryAdapter) GetWarehouses(*service_Cmd.GetWarehousesCmd) *service_Response.GetWarehousesResponse {
-	return service_Response.NewGetWarehousesResponse(cra.repo.GetWarehouses())
+func (cra *CatalogRepositoryAdapter) GetWarehouses(*servicecmd.GetWarehousesCmd) *serviceresponse.GetWarehousesResponse {
+	return serviceresponse.NewGetWarehousesResponse(cra.repo.GetWarehouses())
 }

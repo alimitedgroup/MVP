@@ -13,7 +13,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
 	"github.com/alimitedgroup/MVP/srv/catalog/controller"
-	goodRepository "github.com/alimitedgroup/MVP/srv/catalog/persistance"
+	goodRepository "github.com/alimitedgroup/MVP/srv/catalog/persistence"
 	"github.com/alimitedgroup/MVP/srv/catalog/service"
 	"github.com/magiconair/properties/assert"
 	"github.com/nats-io/nats.go/jetstream"

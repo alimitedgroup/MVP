@@ -8,7 +8,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
 	"github.com/alimitedgroup/MVP/srv/catalog/config"
 	"github.com/alimitedgroup/MVP/srv/catalog/controller"
-	goodRepository "github.com/alimitedgroup/MVP/srv/catalog/persistance"
+	goodRepository "github.com/alimitedgroup/MVP/srv/catalog/persistence"
 	"github.com/alimitedgroup/MVP/srv/catalog/service"
 	"go.uber.org/fx"
 )

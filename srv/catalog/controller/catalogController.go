@@ -8,22 +8,32 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
-	service_Cmd "github.com/alimitedgroup/MVP/srv/catalog/service/Cmd"
-	service_portIn "github.com/alimitedgroup/MVP/srv/catalog/service/portIn"
+	servicecmd "github.com/alimitedgroup/MVP/srv/catalog/service/cmd"
+	serviceportin "github.com/alimitedgroup/MVP/srv/catalog/service/portin"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.uber.org/fx"
 )
 
 type catalogController struct {
-	getGoodsInfoUseCase             service_portIn.IGetGoodsInfoUseCase
-	getGoodsQuantityUseCase         service_portIn.IGetGoodsQuantityUseCase
-	getWarehouseInfoUseCase         service_portIn.IGetWarehousesUseCase
-	setMultipleGoodsQuantityUseCase service_portIn.ISetMultipleGoodsQuantityUseCase
-	updateGoodDataUseCase           service_portIn.IUpdateGoodDataUseCase
+	getGoodsInfoUseCase             serviceportin.IGetGoodsInfoUseCase
+	getGoodsQuantityUseCase         serviceportin.IGetGoodsQuantityUseCase
+	getWarehouseInfoUseCase         serviceportin.IGetWarehousesUseCase
+	setMultipleGoodsQuantityUseCase serviceportin.ISetMultipleGoodsQuantityUseCase
+	updateGoodDataUseCase           serviceportin.IUpdateGoodDataUseCase
 }
 
-func NewCatalogController(getGoodsInfoUseCase service_portIn.IGetGoodsInfoUseCase, getGoodsQuantityUseCase service_portIn.IGetGoodsQuantityUseCase, getWarehouseInfoUseCase service_portIn.IGetWarehousesUseCase, setMultipleGoodsQuantityUseCase service_portIn.ISetMultipleGoodsQuantityUseCase, updateGoodDataUseCase service_portIn.IUpdateGoodDataUseCase) *catalogController {
-	return &catalogController{getGoodsInfoUseCase: getGoodsInfoUseCase, getGoodsQuantityUseCase: getGoodsQuantityUseCase, getWarehouseInfoUseCase: getWarehouseInfoUseCase, setMultipleGoodsQuantityUseCase: setMultipleGoodsQuantityUseCase, updateGoodDataUseCase: updateGoodDataUseCase}
+type CatalogControllerParams struct {
+	fx.In
+	GetGoodsInfoUseCase             serviceportin.IGetGoodsInfoUseCase
+	GetGoodsQuantityUseCase         serviceportin.IGetGoodsQuantityUseCase
+	GetWarehouseInfoUseCase         serviceportin.IGetWarehousesUseCase
+	SetMultipleGoodsQuantityUseCase serviceportin.ISetMultipleGoodsQuantityUseCase
+	UpdateGoodDataUseCase           serviceportin.IUpdateGoodDataUseCase
+}
+
+func NewCatalogController(p CatalogControllerParams) *catalogController {
+	return &catalogController{getGoodsInfoUseCase: p.GetGoodsInfoUseCase, getGoodsQuantityUseCase: p.GetGoodsQuantityUseCase, getWarehouseInfoUseCase: p.GetWarehouseInfoUseCase, setMultipleGoodsQuantityUseCase: p.SetMultipleGoodsQuantityUseCase, updateGoodDataUseCase: p.UpdateGoodDataUseCase}
 }
 
 func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg) error { //GetGoodsInfo
@@ -35,7 +45,7 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 		return nil
 	}
 
-	responseFromService := cc.getGoodsInfoUseCase.GetGoodsInfo(service_Cmd.NewGetGoodsInfoCmd())
+	responseFromService := cc.getGoodsInfoUseCase.GetGoodsInfo(servicecmd.NewGetGoodsInfoCmd())
 
 	responseToReply := response.GetGoodsDataResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""}
 
@@ -60,7 +70,7 @@ func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.
 		return nil
 	}
 
-	responseFromService := cc.getWarehouseInfoUseCase.GetWarehouses(service_Cmd.NewGetWarehousesCmd())
+	responseFromService := cc.getWarehouseInfoUseCase.GetWarehouses(servicecmd.NewGetWarehousesCmd())
 
 	responseToReply := response.GetWarehouseResponseDTO{WarehouseMap: responseFromService.GetWarehouseMap(), Err: ""}
 
@@ -85,7 +95,7 @@ func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, 
 		return nil
 	}
 
-	responseFromService := cc.getGoodsQuantityUseCase.GetGoodsQuantity(service_Cmd.NewGetGoodsQuantityCmd())
+	responseFromService := cc.getGoodsQuantityUseCase.GetGoodsQuantity(servicecmd.NewGetGoodsQuantityCmd())
 
 	responseToReply := response.GetGoodsQuantityResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""}
 
@@ -103,7 +113,7 @@ func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, 
 
 func (cc *catalogController) checkSetGoodDataRequest(request *stream.GoodUpdateData) error {
 	if request.GoodID == "" || request.GoodNewName == "" || request.GoodNewDescription == "" {
-		return catalogCommon.NewCustomError("Not a valid request")
+		return catalogCommon.ErrRequestNotValid
 	}
 	return nil
 }
@@ -124,10 +134,10 @@ func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstre
 		return err
 	}
 
-	responseFromService := cc.updateGoodDataUseCase.AddOrChangeGoodData(service_Cmd.NewAddChangeGoodCmd(request.GoodID, request.GoodNewName, request.GoodNewDescription))
+	responseFromService := cc.updateGoodDataUseCase.AddOrChangeGoodData(servicecmd.NewAddChangeGoodCmd(request.GoodID, request.GoodNewName, request.GoodNewDescription))
 
-	if responseFromService.GetOperationResult() == "Errors" {
-		return catalogCommon.NewCustomError("An error occured")
+	if responseFromService.GetOperationResult() == catalogCommon.ErrGenericFailure {
+		return catalogCommon.ErrGenericFailure
 	}
 
 	return nil
@@ -135,7 +145,7 @@ func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstre
 
 func (cc *catalogController) checkSetGoodQuantityRequest(request *stream.StockUpdate) error {
 	if request.WarehouseID == "" || len(request.Goods) == 0 || request.Goods == nil {
-		return catalogCommon.NewCustomError("Not a valid request")
+		return catalogCommon.ErrRequestNotValid
 	}
 	return nil
 }
@@ -156,10 +166,10 @@ func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jet
 		return err
 	}
 
-	responseFromService := cc.setMultipleGoodsQuantityUseCase.SetMultipleGoodsQuantity(service_Cmd.NewSetMultipleGoodsQuantityCmd(request.WarehouseID, request.Goods))
+	responseFromService := cc.setMultipleGoodsQuantityUseCase.SetMultipleGoodsQuantity(servicecmd.NewSetMultipleGoodsQuantityCmd(request.WarehouseID, request.Goods))
 
-	if responseFromService.GetOperationResult() == "Errors" {
-		return catalogCommon.NewCustomError("An error occured")
+	if responseFromService.GetOperationResult() == catalogCommon.ErrGenericFailure {
+		return catalogCommon.ErrGenericFailure
 	}
 
 	return nil
