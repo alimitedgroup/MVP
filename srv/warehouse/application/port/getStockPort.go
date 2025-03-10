@@ -1,5 +1,5 @@
 package port
 
-type GetStockPort interface {
+type IGetStockPort interface {
 	GetStock(goodId string) int64
 }

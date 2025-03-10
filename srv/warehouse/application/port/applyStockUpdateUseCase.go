@@ -2,7 +2,7 @@ package port
 
 import "context"
 
-type ApplyStockUpdateUseCase interface {
+type IApplyStockUpdateUseCase interface {
 	ApplyStockUpdate(context.Context, StockUpdateCmd) error
 }
 

@@ -10,10 +10,10 @@ import (
 )
 
 type CatalogListener struct {
-	applyCatalogUpdateUseCase port.ApplyCatalogUpdateUseCase
+	applyCatalogUpdateUseCase port.IApplyCatalogUpdateUseCase
 }
 
-func NewCatalogListener(applyCatalogUpdateUseCase port.ApplyCatalogUpdateUseCase) *CatalogListener {
+func NewCatalogListener(applyCatalogUpdateUseCase port.IApplyCatalogUpdateUseCase) *CatalogListener {
 	return &CatalogListener{applyCatalogUpdateUseCase}
 }
 

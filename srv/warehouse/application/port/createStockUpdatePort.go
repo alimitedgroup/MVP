@@ -6,7 +6,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 )
 
-type CreateStockUpdatePort interface {
+type ICreateStockUpdatePort interface {
 	CreateStockUpdate(context.Context, CreateStockUpdateCmd) error
 }
 

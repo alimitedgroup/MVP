@@ -8,10 +8,10 @@ import (
 )
 
 type ApplyCatalogUpdateService struct {
-	applyCatalogUpdatePort port.ApplyCatalogUpdatePort
+	applyCatalogUpdatePort port.IApplyCatalogUpdatePort
 }
 
-func NewApplyCatalogUpdateService(applyGoodUpdatePort port.ApplyCatalogUpdatePort) *ApplyCatalogUpdateService {
+func NewApplyCatalogUpdateService(applyGoodUpdatePort port.IApplyCatalogUpdatePort) *ApplyCatalogUpdateService {
 	return &ApplyCatalogUpdateService{applyGoodUpdatePort}
 }
 

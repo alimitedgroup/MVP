@@ -5,10 +5,10 @@ import (
 )
 
 type StockPersistanceAdapter struct {
-	stockRepo StockRepository
+	stockRepo IStockRepository
 }
 
-func NewStockPersistanceAdapter(stockRepo StockRepository) *StockPersistanceAdapter {
+func NewStockPersistanceAdapter(stockRepo IStockRepository) *StockPersistanceAdapter {
 	return &StockPersistanceAdapter{stockRepo}
 }
 

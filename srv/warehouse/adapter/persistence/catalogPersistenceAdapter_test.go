@@ -40,9 +40,9 @@ func TestCatalogPersistanceAdapter(t *testing.T) {
 	mock := NewCatalogRepositoryMock()
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(CatalogRepository)))),
+		fx.Supply(fx.Annotate(mock, fx.As(new(ICatalogRepository)))),
 		fx.Provide(NewCatalogPersistanceAdapter),
-		fx.Invoke(func(a *CatalogPersistanceAdapter, stockRepo CatalogRepository) {
+		fx.Invoke(func(a *CatalogPersistanceAdapter, stockRepo ICatalogRepository) {
 			good := model.GoodInfo{
 				ID:          "1",
 				Name:        "blue_hat",

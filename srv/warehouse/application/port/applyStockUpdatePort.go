@@ -4,6 +4,6 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 )
 
-type ApplyStockUpdatePort interface {
+type IApplyStockUpdatePort interface {
 	ApplyStockUpdate([]model.GoodStock) error
 }

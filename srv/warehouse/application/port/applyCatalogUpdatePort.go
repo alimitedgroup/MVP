@@ -4,6 +4,6 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 )
 
-type ApplyCatalogUpdatePort interface {
+type IApplyCatalogUpdatePort interface {
 	ApplyCatalogUpdate(good model.GoodInfo) error
 }

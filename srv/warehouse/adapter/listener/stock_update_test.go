@@ -67,7 +67,7 @@ func TestStockUpdateListener(t *testing.T) {
 		fx.Supply(ns),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.ApplyStockUpdateUseCase)))),
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyStockUpdateUseCase)))),
 		fx.Provide(NewStockUpdateListener),
 		fx.Provide(NewStockUpdateRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockUpdateRouter) {

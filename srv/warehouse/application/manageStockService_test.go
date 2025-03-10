@@ -71,9 +71,9 @@ func TestManageStockService(t *testing.T) {
 	mock := newMockPortsImpl()
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.CreateStockUpdatePort)), fx.As(new(port.GetStockPort)), fx.As(new(port.GetGoodPort)))),
-		fx.Provide(fx.Annotate(NewManageStockService, fx.As(new(port.AddStockUseCase)), fx.As(new(port.RemoveStockUseCase)))),
-		fx.Invoke(func(lc fx.Lifecycle, addStockUseCase port.AddStockUseCase, removeStockUseCase port.RemoveStockUseCase) {
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.ICreateStockUpdatePort)), fx.As(new(port.IGetStockPort)), fx.As(new(port.IGetGoodPort)))),
+		fx.Provide(fx.Annotate(NewManageStockService, fx.As(new(port.IAddStockUseCase)), fx.As(new(port.IRemoveStockUseCase)))),
+		fx.Invoke(func(lc fx.Lifecycle, addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase) {
 			lc.Append(fx.Hook{OnStart: func(ctx context.Context) error {
 				mock.AddGood("1", "hat", "very nice hat")
 

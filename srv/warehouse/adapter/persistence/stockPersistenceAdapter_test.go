@@ -36,9 +36,9 @@ func TestStockPersistanceAdapter(t *testing.T) {
 	mock := NewStockRepositoryMock()
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(StockRepository)))),
+		fx.Supply(fx.Annotate(mock, fx.As(new(IStockRepository)))),
 		fx.Provide(NewStockPersistanceAdapter),
-		fx.Invoke(func(a *StockPersistanceAdapter, stockRepo StockRepository) {
+		fx.Invoke(func(a *StockPersistanceAdapter, stockRepo IStockRepository) {
 			goods := []model.GoodStock{
 				{ID: "1", Quantity: 10},
 				{ID: "2", Quantity: 20},

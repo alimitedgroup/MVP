@@ -13,11 +13,11 @@ import (
 
 type StockController struct {
 	broker             *broker.NatsMessageBroker
-	addStockUseCase    port.AddStockUseCase
-	removeStockUseCase port.RemoveStockUseCase
+	addStockUseCase    port.IAddStockUseCase
+	removeStockUseCase port.IRemoveStockUseCase
 }
 
-func NewStockController(n *broker.NatsMessageBroker, addStockUseCase port.AddStockUseCase, removeStockUseCase port.RemoveStockUseCase) *StockController {
+func NewStockController(n *broker.NatsMessageBroker, addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase) *StockController {
 	return &StockController{n, addStockUseCase, removeStockUseCase}
 }
 

@@ -28,9 +28,9 @@ func TestApplyCatalogUpdateService(t *testing.T) {
 	mock := newApplyCatalogUpdatePortMock()
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.ApplyCatalogUpdatePort)))),
-		fx.Provide(fx.Annotate(NewApplyCatalogUpdateService, fx.As(new(port.ApplyCatalogUpdateUseCase)))),
-		fx.Invoke(func(useCase port.ApplyCatalogUpdateUseCase) {
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyCatalogUpdatePort)))),
+		fx.Provide(fx.Annotate(NewApplyCatalogUpdateService, fx.As(new(port.IApplyCatalogUpdateUseCase)))),
+		fx.Invoke(func(useCase port.IApplyCatalogUpdateUseCase) {
 			cmd := port.CatalogUpdateCmd{
 				GoodId:      "1",
 				Name:        "hat",

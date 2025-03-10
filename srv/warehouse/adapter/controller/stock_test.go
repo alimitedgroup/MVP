@@ -62,7 +62,7 @@ func TestStockController(t *testing.T) {
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.AddStockUseCase)), fx.As(new(port.RemoveStockUseCase)))),
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.IAddStockUseCase)), fx.As(new(port.IRemoveStockUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

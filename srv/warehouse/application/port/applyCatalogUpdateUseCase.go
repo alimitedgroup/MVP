@@ -2,7 +2,7 @@ package port
 
 import "context"
 
-type ApplyCatalogUpdateUseCase interface {
+type IApplyCatalogUpdateUseCase interface {
 	ApplyCatalogUpdate(ctx context.Context, cmd CatalogUpdateCmd) error
 }
 

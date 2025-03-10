@@ -9,12 +9,12 @@ import (
 )
 
 type ManageStockService struct {
-	createStockUpdatePort port.CreateStockUpdatePort
-	getStockPort          port.GetStockPort
-	getGoodPort           port.GetGoodPort
+	createStockUpdatePort port.ICreateStockUpdatePort
+	getStockPort          port.IGetStockPort
+	getGoodPort           port.IGetGoodPort
 }
 
-func NewManageStockService(createStockUpdatePort port.CreateStockUpdatePort, getStockPort port.GetStockPort, getGoodPort port.GetGoodPort) *ManageStockService {
+func NewManageStockService(createStockUpdatePort port.ICreateStockUpdatePort, getStockPort port.IGetStockPort, getGoodPort port.IGetGoodPort) *ManageStockService {
 	return &ManageStockService{createStockUpdatePort, getStockPort, getGoodPort}
 }
 

@@ -38,9 +38,9 @@ func TestApplyStockUpdateService(t *testing.T) {
 	mock := newApplyStockUpdatePortMock()
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.ApplyStockUpdatePort)))),
-		fx.Provide(fx.Annotate(NewApplyStockUpdateService, fx.As(new(port.ApplyStockUpdateUseCase)))),
-		fx.Invoke(func(useCase port.ApplyStockUpdateUseCase) {
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyStockUpdatePort)))),
+		fx.Provide(fx.Annotate(NewApplyStockUpdateService, fx.As(new(port.IApplyStockUpdateUseCase)))),
+		fx.Invoke(func(useCase port.IApplyStockUpdateUseCase) {
 			cmd := port.StockUpdateCmd{
 				ID: "1",
 				Goods: []port.StockUpdateCmdGood{

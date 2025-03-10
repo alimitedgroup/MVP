@@ -5,10 +5,10 @@ import (
 )
 
 type CatalogPersistanceAdapter struct {
-	catalogRepo CatalogRepository
+	catalogRepo ICatalogRepository
 }
 
-func NewCatalogPersistanceAdapter(catalogRepo CatalogRepository) *CatalogPersistanceAdapter {
+func NewCatalogPersistanceAdapter(catalogRepo ICatalogRepository) *CatalogPersistanceAdapter {
 	return &CatalogPersistanceAdapter{catalogRepo}
 }
 

@@ -2,7 +2,7 @@ package port
 
 import "context"
 
-type RemoveStockUseCase interface {
+type IRemoveStockUseCase interface {
 	RemoveStock(context.Context, RemoveStockCmd) error
 }
 

@@ -6,5 +6,5 @@ import (
 )
 
 var Module = fx.Options(
-	fx.Provide(fx.Annotate(NewPublishStockUpdateAdapter, fx.As(new(port.CreateStockUpdatePort)))),
+	fx.Provide(fx.Annotate(NewPublishStockUpdateAdapter, fx.As(new(port.ICreateStockUpdatePort)))),
 )

@@ -11,10 +11,10 @@ import (
 )
 
 type StockUpdateListener struct {
-	applyStockUpdateUseCase port.ApplyStockUpdateUseCase
+	applyStockUpdateUseCase port.IApplyStockUpdateUseCase
 }
 
-func NewStockUpdateListener(applyStockUpdateUseCase port.ApplyStockUpdateUseCase) *StockUpdateListener {
+func NewStockUpdateListener(applyStockUpdateUseCase port.IApplyStockUpdateUseCase) *StockUpdateListener {
 	return &StockUpdateListener{applyStockUpdateUseCase}
 }
 

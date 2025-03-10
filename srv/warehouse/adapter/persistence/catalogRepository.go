@@ -1,6 +1,6 @@
 package persistence
 
-type CatalogRepository interface {
+type ICatalogRepository interface {
 	GetGood(goodId string) *Good
 	SetGood(goodId string, name string, description string) bool
 }
