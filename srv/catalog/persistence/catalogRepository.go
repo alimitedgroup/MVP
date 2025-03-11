@@ -48,9 +48,8 @@ func (cr *CatalogRepository) SetGoodQuantity(warehouseID string, goodID string, 
 		Imposta la quantità di un bene in un magazzino e memorizza il nuovo stato globale della merce.
 		Se il magazzino non esiste viene creato, se la merce non esiste viene memorizzata la quantità, ma non le info sulla merce)
 	*/
-	cr.mutex.Lock()
-	defer cr.mutex.Unlock()
 	cr.addWarehouse(warehouseID)
+	cr.mutex.Lock()
 	_, presence := cr.goodStockMap[goodID]
 	if !presence {
 		//return catalogCommon.NewCustomError("Not a valid goodID")
@@ -62,6 +61,7 @@ func (cr *CatalogRepository) SetGoodQuantity(warehouseID string, goodID string, 
 		cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
 		cr.goodStockMap[goodID] += delta
 	}
+	cr.mutex.Unlock()
 	return nil
 }
 
@@ -71,39 +71,44 @@ func (cr *CatalogRepository) addWarehouse(warehouseID string) {
 		di una quantità di una merce determina l'assenza di un magazzino
 	*/
 	cr.mutex.Lock()
-	defer cr.mutex.Unlock()
 	_, presence := cr.warehouseMap[warehouseID]
 	if presence {
+		cr.mutex.Unlock()
 		return
 	}
 	cr.warehouseMap[warehouseID] = catalogCommon.NewWarehouse(warehouseID)
+	cr.mutex.Unlock()
 }
 
 func (cr *CatalogRepository) AddGood(goodID string, name string, description string) error {
 	cr.mutex.Lock()
-	defer cr.mutex.Unlock()
 	_, presence := cr.goodMap[goodID]
 	if presence {
+		cr.mutex.Unlock()
 		return cr.changeGoodData(goodID, name, description)
 	}
 	cr.goodMap[goodID] = catalogCommon.NewGood(goodID, name, description)
+	cr.mutex.Unlock()
 	return nil
 }
 
 func (cr *CatalogRepository) changeGoodData(goodID string, newName string, newDescription string) error {
 	cr.mutex.Lock()
-	defer cr.mutex.Unlock()
 	_, presence := cr.goodMap[goodID]
 	if !presence {
+		cr.mutex.Unlock()
 		return catalogCommon.ErrGoodIdNotValid
 	}
 	err := cr.goodMap[goodID].SetName(newName)
 	if err != nil {
+		cr.mutex.Unlock()
 		return err
 	}
 	err = cr.goodMap[goodID].SetDescription(newDescription)
 	if err != nil {
+		cr.mutex.Unlock()
 		return err
 	}
+	cr.mutex.Unlock()
 	return nil
 }
