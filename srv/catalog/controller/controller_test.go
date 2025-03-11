@@ -220,7 +220,7 @@ func TestSetGoodDataRequest(t *testing.T) {
 						return err
 					}
 
-					_, err = js.Publish(ctx, "good.update.test", data)
+					_, err = js.Publish(ctx, "good.update", data)
 
 					if err != nil {
 						return err
