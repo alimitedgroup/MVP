@@ -18,6 +18,8 @@ func NewCatalogRepository() *CatalogRepository {
 }
 
 func (cr *CatalogRepository) GetGoods() map[string]catalogCommon.Good {
+	cr.mutex.Lock()
+	defer cr.mutex.Unlock()
 	result := make(map[string]catalogCommon.Good)
 	for key := range cr.goodMap {
 		result[key] = *cr.goodMap[key]
@@ -26,10 +28,14 @@ func (cr *CatalogRepository) GetGoods() map[string]catalogCommon.Good {
 }
 
 func (cr *CatalogRepository) GetGoodsGlobalQuantity() map[string]int64 {
+	cr.mutex.Lock()
+	defer cr.mutex.Unlock()
 	return cr.goodStockMap
 }
 
 func (cr *CatalogRepository) GetWarehouses() map[string]catalogCommon.Warehouse {
+	cr.mutex.Lock()
+	defer cr.mutex.Unlock()
 	result := make(map[string]catalogCommon.Warehouse)
 	for key := range cr.warehouseMap {
 		result[key] = *cr.warehouseMap[key]
@@ -43,6 +49,7 @@ func (cr *CatalogRepository) SetGoodQuantity(warehouseID string, goodID string, 
 		Se il magazzino non esiste viene creato, se la merce non esiste viene memorizzata la quantità, ma non le info sulla merce)
 	*/
 	cr.mutex.Lock()
+	defer cr.mutex.Unlock()
 	cr.addWarehouse(warehouseID)
 	_, presence := cr.goodStockMap[goodID]
 	if !presence {
@@ -55,7 +62,6 @@ func (cr *CatalogRepository) SetGoodQuantity(warehouseID string, goodID string, 
 		cr.warehouseMap[warehouseID].SetStock(goodID, newQuantity)
 		cr.goodStockMap[goodID] += delta
 	}
-	cr.mutex.Unlock()
 	return nil
 }
 
@@ -64,6 +70,8 @@ func (cr *CatalogRepository) addWarehouse(warehouseID string) {
 		Aggiunge un Warehouse alla lista dei Warehouse. Funzione invocata automaticamente quando l'aggiunta
 		di una quantità di una merce determina l'assenza di un magazzino
 	*/
+	cr.mutex.Lock()
+	defer cr.mutex.Unlock()
 	_, presence := cr.warehouseMap[warehouseID]
 	if presence {
 		return
@@ -72,6 +80,8 @@ func (cr *CatalogRepository) addWarehouse(warehouseID string) {
 }
 
 func (cr *CatalogRepository) AddGood(goodID string, name string, description string) error {
+	cr.mutex.Lock()
+	defer cr.mutex.Unlock()
 	_, presence := cr.goodMap[goodID]
 	if presence {
 		return cr.changeGoodData(goodID, name, description)
@@ -81,6 +91,8 @@ func (cr *CatalogRepository) AddGood(goodID string, name string, description str
 }
 
 func (cr *CatalogRepository) changeGoodData(goodID string, newName string, newDescription string) error {
+	cr.mutex.Lock()
+	defer cr.mutex.Unlock()
 	_, presence := cr.goodMap[goodID]
 	if !presence {
 		return catalogCommon.ErrGoodIdNotValid
