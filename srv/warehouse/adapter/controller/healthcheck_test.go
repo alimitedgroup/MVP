@@ -24,7 +24,7 @@ func TestHealthCheckController(t *testing.T) {
 		fx.Supply(&cfg),
 		fx.Supply(ns),
 		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewHealthcheckController),
+		fx.Provide(NewHealthCheckController),
 		fx.Provide(NewHealthCheckRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *HealthCheckRouter) {
 			lc.Append(fx.Hook{

@@ -8,14 +8,14 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type HealthcheckController struct {
+type HealthCheckController struct {
 }
 
-func NewHealthcheckController() *HealthcheckController {
-	return &HealthcheckController{}
+func NewHealthCheckController() *HealthCheckController {
+	return &HealthCheckController{}
 }
 
-func (c *HealthcheckController) PingHandler(ctx context.Context, msg *nats.Msg) error {
+func (c *HealthCheckController) PingHandler(ctx context.Context, msg *nats.Msg) error {
 	resp := response.HealthCheckResponseDTO{Message: "pong"}
 
 	payload, err := json.Marshal(resp)

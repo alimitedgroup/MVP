@@ -2,16 +2,16 @@ package persistence
 
 import "sync"
 
-type StockRepositoryIml struct {
+type StockRepositoryImpl struct {
 	m           sync.Mutex
 	goodToStock map[string]int64
 }
 
-func NewStockRepositoryIml() *StockRepositoryIml {
-	return &StockRepositoryIml{goodToStock: make(map[string]int64)}
+func NewStockRepositoryImpl() *StockRepositoryImpl {
+	return &StockRepositoryImpl{goodToStock: make(map[string]int64)}
 }
 
-func (s *StockRepositoryIml) GetStock(goodId string) int64 {
+func (s *StockRepositoryImpl) GetStock(goodId string) int64 {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -23,7 +23,7 @@ func (s *StockRepositoryIml) GetStock(goodId string) int64 {
 	return stock
 }
 
-func (s *StockRepositoryIml) SetStock(goodId string, stock int64) bool {
+func (s *StockRepositoryImpl) SetStock(goodId string, stock int64) bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -34,7 +34,7 @@ func (s *StockRepositoryIml) SetStock(goodId string, stock int64) bool {
 	return exist
 }
 
-func (s *StockRepositoryIml) AddStock(goodId string, stock int64) bool {
+func (s *StockRepositoryImpl) AddStock(goodId string, stock int64) bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 

@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-func TestCatalogRepositoryIml(t *testing.T) {
-	catalog := NewCatalogRepositoryIml()
+func TestCatalogRepositoryImpl(t *testing.T) {
+	catalog := NewCatalogRepositoryImpl()
 
 	catalog.SetGood("1", "blue_hat", "very beautiful hat")
 	good := catalog.GetGood("1")

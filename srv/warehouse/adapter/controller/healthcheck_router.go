@@ -10,11 +10,11 @@ import (
 
 type HealthCheckRouter struct {
 	config                *config.WarehouseConfig
-	healthCheckController *HealthcheckController
+	healthCheckController *HealthCheckController
 	broker                *broker.NatsMessageBroker
 }
 
-func NewHealthCheckRouter(config *config.WarehouseConfig, healthCheckController *HealthcheckController, broker *broker.NatsMessageBroker) *HealthCheckRouter {
+func NewHealthCheckRouter(config *config.WarehouseConfig, healthCheckController *HealthCheckController, broker *broker.NatsMessageBroker) *HealthCheckRouter {
 	return &HealthCheckRouter{config, healthCheckController, broker}
 }
 

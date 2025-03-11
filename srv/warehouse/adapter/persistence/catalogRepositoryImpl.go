@@ -2,16 +2,16 @@ package persistence
 
 import "sync"
 
-type CatalogRepositoryIml struct {
+type CatalogRepositoryImpl struct {
 	m       sync.Mutex
 	goodMap map[string]Good
 }
 
-func NewCatalogRepositoryIml() *CatalogRepositoryIml {
-	return &CatalogRepositoryIml{goodMap: make(map[string]Good)}
+func NewCatalogRepositoryImpl() *CatalogRepositoryImpl {
+	return &CatalogRepositoryImpl{goodMap: make(map[string]Good)}
 }
 
-func (s *CatalogRepositoryIml) GetGood(goodId string) *Good {
+func (s *CatalogRepositoryImpl) GetGood(goodId string) *Good {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -23,7 +23,7 @@ func (s *CatalogRepositoryIml) GetGood(goodId string) *Good {
 	return &good
 }
 
-func (s *CatalogRepositoryIml) SetGood(goodId string, name string, description string) bool {
+func (s *CatalogRepositoryImpl) SetGood(goodId string, name string, description string) bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 

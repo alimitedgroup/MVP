@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-func TestStockRepositoryIml(t *testing.T) {
-	stock := NewStockRepositoryIml()
+func TestStockRepositoryImpl(t *testing.T) {
+	stock := NewStockRepositoryImpl()
 	stock.SetStock("1", 0)
 	stock.AddStock("1", 10)
 	good := stock.GetStock("1")
