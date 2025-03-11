@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib"
-	apiRouter "github.com/alimitedgroup/MVP/srv/api_gateway/api/router"
-	brokerRouter "github.com/alimitedgroup/MVP/srv/api_gateway/channel/router"
+	apiController "github.com/alimitedgroup/MVP/srv/api_gateway/api/controller"
+	brokerController "github.com/alimitedgroup/MVP/srv/api_gateway/channel/controller"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )
@@ -22,8 +22,8 @@ func TestRunWithBadConfigParams(t *testing.T) {
 
 	app := fx.New(
 		fx.Provide(lib.NewHTTPHandler),
-		fx.Supply(apiRouter.APIRoutes{}),
-		fx.Supply(brokerRouter.BrokerRoutes{}),
+		fx.Supply(apiController.APIRoutes{}),
+		fx.Supply(brokerController.BrokerRoutes{}),
 		fx.Supply(&config),
 		fx.Invoke(func(p RunParams) {
 			assert.Equal(t, p.ServerConfig.Host, config.Host)

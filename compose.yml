@@ -1,6 +1,7 @@
 volumes:
   nats_data:
 
+
 networks:
   warehouse:
     driver: bridge
@@ -18,7 +19,7 @@ services:
     networks:
       - warehouse
     healthcheck:
-      test: ["CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -"]
+      test: [ "CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -" ]
       interval: 1s
       timeout: 5s
       retries: 5
@@ -31,7 +32,19 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_API_PORT=8080
     volumes:
-      - ./config.yml:/data/config.yml:ro
+      - ./config.yml:/data/config.yml
+    networks:
+      - warehouse
+    depends_on:
+      - nats
+
+  catalog:
+    build: { args: { SERVICE: catalog } }
+    environment:
+      - ENV_API_PORT=8080
+      - ENV_BROKER_URL=nats://nats:4222
+    volumes:
+      - ./config.yml:/data/config.yml
     networks:
       - warehouse
     depends_on:

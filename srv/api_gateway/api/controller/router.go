@@ -1,15 +1,9 @@
-package router
+package controller
 
 import (
 	"context"
 
 	"github.com/alimitedgroup/MVP/common/lib"
-	"go.uber.org/fx"
-)
-
-var Module = fx.Options(
-	fx.Provide(NewAPIRoutes),
-	fx.Provide(NewHealthCheckRouter),
 )
 
 type APIRoutes []lib.APIRoute
