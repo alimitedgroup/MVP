@@ -28,9 +28,6 @@ var Module = fx.Options(
 	lib.Module,
 	adapter.Module,
 	application.Module,
-	// fx.Provide(broker.NewRestoreStreamControl),
-	// fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
-	// fx.Provide(broker.NewNatsMessageBroker),
 )
 
 type TestParams struct {
