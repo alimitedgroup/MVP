@@ -5,6 +5,6 @@ import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 )
 
-type IGetPemPublicKeyPort interface {
-	GetPemPublicKey(cmd *servicecmd.GetPemPublicKeyCmd) *serviceresponse.GetPemPublicKeyResponse
+type IPublishPort interface {
+	PublishKey(cmd *servicecmd.PublishPublicKeyCmd) *serviceresponse.PublishPublicKeyResponse
 }

@@ -5,6 +5,6 @@ import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 )
 
-type IStorePemKeyPairInterface interface {
+type IStorePemKeyPair interface {
 	StorePemKeyPair(cmd *servicecmd.StorePemKeyPairCmd) *serviceresponse.StorePemKeyPairResponse
 }

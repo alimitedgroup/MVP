@@ -48,19 +48,19 @@ func (fr *FakeRepo) StorePemKeyPair(prk []byte, puk []byte) error {
 func (fr *FakeRepo) GetPemPublicKey() (persistence.PemPublicKey, error) {
 	returnErr := getReturnErr()
 	if returnErr {
-		return *persistence.NewPemPublicKey(nil), common.ErrNoPublicKey
+		return *persistence.NewPemPublicKey(nil, ""), common.ErrNoPublicKey
 	}
 	returnSt := []byte("test")
-	return *persistence.NewPemPublicKey(&returnSt), nil
+	return *persistence.NewPemPublicKey(&returnSt, "test"), nil
 }
 
 func (fr *FakeRepo) GetPemPrivateKey() (persistence.PemPrivateKey, error) {
 	returnErr := getReturnErr()
 	if returnErr {
-		return *persistence.NewPemPrivateKey(nil), common.ErrNoPrivateKey
+		return *persistence.NewPemPrivateKey(nil, ""), common.ErrNoPrivateKey
 	}
 	returnSt := []byte("test")
-	return *persistence.NewPemPrivateKey(&returnSt), nil
+	return *persistence.NewPemPrivateKey(&returnSt, "test"), nil
 }
 
 func (fr *FakeRepo) CheckKeyPairExistance() error {

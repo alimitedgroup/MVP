@@ -5,6 +5,6 @@ import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 )
 
-type GetPemPrivateKeyPort interface {
+type IGetPemPrivateKeyPort interface {
 	GetPemPrivateKey(cmd *servicecmd.GetPemPrivateKeyCmd) *serviceresponse.GetPemPrivateKeyResponse
 }

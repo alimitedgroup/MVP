@@ -5,6 +5,6 @@ import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 )
 
-type CheckKeyPairExistance interface {
+type ICheckKeyPairExistance interface {
 	CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistence) *serviceresponse.CheckKeyPairExistenceResponse
 }

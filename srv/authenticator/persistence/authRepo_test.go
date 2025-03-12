@@ -30,8 +30,6 @@ func GeneratePemKey() (*[]byte, *[]byte, error) {
 		return nil, nil, err
 	}
 	publicKeyFile := pem.EncodeToMemory(&pem.Block{Type: "EC PUBLIC KEY", Bytes: pubkeybytes})
-	/*fmt.Println("PUBLIC: ", string(publicKeyFile))
-	fmt.Println("PRIVATE: ", string(privateKeyFile))*/
 	return &privateKeyFile, &publicKeyFile, nil
 }
 
@@ -45,8 +43,6 @@ func GenerateWrongPemKey() (*[]byte, *[]byte, error) {
 	privateKeyFile := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privKeyBytes})
 	pubkeybytes := x509.MarshalPKCS1PublicKey(puk.(*rsa.PublicKey))
 	publicKeyFile := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: pubkeybytes})
-	/*fmt.Println("PUBLIC: ", string(publicKeyFile))
-	fmt.Println("PRIVATE: ", string(privateKeyFile))*/
 	return &privateKeyFile, &publicKeyFile, nil
 }
 
@@ -124,7 +120,7 @@ func TestGetPemPublicKeyWithNoKey(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			pukc, err3 := ar.GetPemPublicKey()
 			assert.Equal(t, err3, common.ErrNoPublicKey)
-			assert.Equal(t, &pukc, NewPemPublicKey(nil))
+			assert.Equal(t, &pukc, NewPemPublicKey(nil, ""))
 		}),
 	)
 }
@@ -135,7 +131,7 @@ func TestGetPemPrivateKeyWithNoKey(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prkc, err3 := ar.GetPemPrivateKey()
 			assert.Equal(t, err3, common.ErrNoPrivateKey)
-			assert.Equal(t, &prkc, NewPemPrivateKey(nil))
+			assert.Equal(t, &prkc, NewPemPrivateKey(nil, ""))
 		}),
 	)
 }

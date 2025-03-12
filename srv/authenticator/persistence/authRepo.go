@@ -8,12 +8,14 @@ import (
 	"sync"
 
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
+	"github.com/google/uuid"
 )
 
 type AuthRepository struct {
-	prk   *PemPrivateKey
-	puk   *PemPublicKey
-	mutex sync.Mutex
+	prk    *PemPrivateKey
+	puk    *PemPublicKey
+	issuer string
+	mutex  sync.Mutex
 }
 
 func NewAuthRepo() *AuthRepository {
@@ -39,8 +41,9 @@ func (ar *AuthRepository) StorePemKeyPair(prk []byte, puk []byte) error {
 	defer ar.mutex.Unlock()
 	//Store key in PEM format to memory
 	if ar.checkKeyPair(&prk, &puk) {
-		ar.prk = NewPemPrivateKey(&prk)
-		ar.puk = NewPemPublicKey(&puk)
+		ar.issuer = uuid.New().String()
+		ar.prk = NewPemPrivateKey(&prk, ar.issuer)
+		ar.puk = NewPemPublicKey(&puk, ar.issuer)
 		return nil
 	}
 	return common.ErrKeyPairNotValid
@@ -52,7 +55,7 @@ func (ar *AuthRepository) GetPemPublicKey() (PemPublicKey, error) {
 	if ar.puk != nil && len(ar.puk.GetBytes()) > 0 {
 		return *ar.puk, nil
 	}
-	return *NewPemPublicKey(nil), common.ErrNoPublicKey
+	return *NewPemPublicKey(nil, ""), common.ErrNoPublicKey
 }
 
 func (ar *AuthRepository) GetPemPrivateKey() (PemPrivateKey, error) {
@@ -61,7 +64,7 @@ func (ar *AuthRepository) GetPemPrivateKey() (PemPrivateKey, error) {
 	if ar.puk != nil && len(ar.puk.GetBytes()) > 0 {
 		return *ar.prk, nil
 	}
-	return *NewPemPrivateKey(nil), common.ErrNoPrivateKey
+	return *NewPemPrivateKey(nil, ""), common.ErrNoPrivateKey
 }
 
 func (ar *AuthRepository) CheckKeyPairExistence() error {

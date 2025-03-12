@@ -8,8 +8,11 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(NewAuthAdapter,
-			fx.As(new(serviceportout.CheckKeyPairExistance)),
-			fx.As(new(serviceportout.GetPemPrivateKeyPort)),
-			fx.As(new(serviceportout.GetPemPublicKeyPort)),
-			fx.As(new(serviceportout.IStorePemKeyPairInterface)),
+			fx.As(new(serviceportout.ICheckKeyPairExistance)),
+			fx.As(new(serviceportout.IGetPemPrivateKeyPort)),
+			fx.As(new(serviceportout.IGetPemPublicKeyPort)),
+			fx.As(new(serviceportout.IStorePemKeyPair)),
+		),
+		fx.Annotate(NewAuthPublisherAdapter,
+			fx.As(new(serviceportout.IPublishPort)),
 		)))
