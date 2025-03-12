@@ -3,6 +3,7 @@ package adapter
 import (
 	"sync"
 	"testing"
+	"unsafe"
 
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 	persistence "github.com/alimitedgroup/MVP/srv/authenticator/persistence"
@@ -121,9 +122,7 @@ func TestGetPemPublicKey_NoKey(t *testing.T) {
 		fx.Invoke(func(ar *AuthAdapter) {
 			setReturnErr(true)
 			response := ar.GetPemPublicKey(servicecmd.NewGetPemPublicKeyCmd())
-			var ptr *[]byte
-			ptr = nil
-			assert.Equal(t, response.GetPemPublicKey(), ptr)
+			assert.Equal(t, response.GetPemPublicKey(), (*[]byte)(unsafe.Pointer(nil)))
 		}),
 	)
 }
@@ -147,9 +146,7 @@ func TestGetPemPrivateKey_NoKey(t *testing.T) {
 		fx.Invoke(func(ar *AuthAdapter) {
 			setReturnErr(true)
 			response := ar.GetPemPrivateKey(servicecmd.NewGetPemPrivateKeyCmd())
-			var ptr *[]byte
-			ptr = nil
-			assert.Equal(t, response.GetPemPrivateKey(), ptr)
+			assert.Equal(t, response.GetPemPrivateKey(), (*[]byte)(unsafe.Pointer(nil)))
 		}),
 	)
 }
