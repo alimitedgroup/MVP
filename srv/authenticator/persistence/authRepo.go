@@ -5,13 +5,15 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"reflect"
+	"sync"
 
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 )
 
 type AuthRepository struct {
-	prk *PemPrivateKey
-	puk *PemPublicKey
+	prk   *PemPrivateKey
+	puk   *PemPublicKey
+	mutex sync.Mutex
 }
 
 func NewAuthRepo() *AuthRepository {
@@ -32,7 +34,9 @@ func (ar *AuthRepository) checkKeyPair(prk *[]byte, puk *[]byte) bool {
 	return false
 }
 
-func (ar *AuthRepository) StoreKeyPair(prk []byte, puk []byte) error {
+func (ar *AuthRepository) StorePemKeyPair(prk []byte, puk []byte) error {
+	ar.mutex.Lock()
+	defer ar.mutex.Unlock()
 	//Store key in PEM format to memory
 	if ar.checkKeyPair(&prk, &puk) {
 		ar.prk = NewPemPrivateKey(&prk)
@@ -42,21 +46,27 @@ func (ar *AuthRepository) StoreKeyPair(prk []byte, puk []byte) error {
 	return common.ErrKeyPairNotValid
 }
 
-func (ar *AuthRepository) GetPublicKey() (PemPublicKey, error) {
+func (ar *AuthRepository) GetPemPublicKey() (PemPublicKey, error) {
+	ar.mutex.Lock()
+	defer ar.mutex.Unlock()
 	if ar.puk != nil && len(ar.puk.GetBytes()) > 0 {
 		return *ar.puk, nil
 	}
 	return *NewPemPublicKey(nil), common.ErrNoPublicKey
 }
 
-func (ar *AuthRepository) GetPrivateKey() (PemPrivateKey, error) {
+func (ar *AuthRepository) GetPemPrivateKey() (PemPrivateKey, error) {
+	ar.mutex.Lock()
+	defer ar.mutex.Unlock()
 	if ar.puk != nil && len(ar.puk.GetBytes()) > 0 {
 		return *ar.prk, nil
 	}
-	return *NewPemPrivateKey(nil), common.ErrNoPublicKey
+	return *NewPemPrivateKey(nil), common.ErrNoPrivateKey
 }
 
-func (ar *AuthRepository) CheckKeyPair() error {
+func (ar *AuthRepository) CheckKeyPairExistence() error {
+	ar.mutex.Lock()
+	defer ar.mutex.Unlock()
 	if ar.prk != nil && ar.puk != nil {
 		return nil
 	}

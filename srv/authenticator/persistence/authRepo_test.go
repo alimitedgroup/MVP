@@ -50,13 +50,13 @@ func GenerateWrongPemKey() (*[]byte, *[]byte, error) {
 	return &privateKeyFile, &publicKeyFile, nil
 }
 
-func TestStoreKeyPair(t *testing.T) {
+func TestStorePemKeyPair(t *testing.T) {
 	fx.New(
 		fx.Provide(NewAuthRepo),
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StoreKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk)
 			assert.Equal(t, err2, nil)
 		}),
 	)
@@ -68,7 +68,7 @@ func TestStoreWrongKeyPair(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GenerateWrongPemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StoreKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk)
 			assert.Equal(t, err2, common.ErrKeyPairNotValid)
 		}),
 	)
@@ -82,59 +82,59 @@ func TestStoreGarbageKeyPair(t *testing.T) {
 			prk = append(prk, byte(7))
 			puk := []byte{}
 			puk = append(puk, byte(7))
-			err := ar.StoreKeyPair(prk, puk)
+			err := ar.StorePemKeyPair(prk, puk)
 			assert.Equal(t, err, common.ErrKeyPairNotValid)
 		}),
 	)
 }
 
-func TestGetPublicKey(t *testing.T) {
+func TestGetPemPublicKey(t *testing.T) {
 	fx.New(
 		fx.Provide(NewAuthRepo),
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StoreKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk)
 			assert.Equal(t, err2, nil)
-			pukc, err3 := ar.GetPublicKey()
+			pukc, err3 := ar.GetPemPublicKey()
 			assert.Equal(t, err3, nil)
 			assert.Equal(t, pukc.GetBytes(), *puk)
 		}),
 	)
 }
 
-func TestGetPrivateKey(t *testing.T) {
+func TestGetPemPrivateKey(t *testing.T) {
 	fx.New(
 		fx.Provide(NewAuthRepo),
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StoreKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk)
 			assert.Equal(t, err2, nil)
-			pukc, err3 := ar.GetPrivateKey()
+			pukc, err3 := ar.GetPemPrivateKey()
 			assert.Equal(t, err3, nil)
 			assert.Equal(t, pukc.GetBytes(), *prk)
 		}),
 	)
 }
 
-func TestGetPublicKeyWithNoKey(t *testing.T) {
+func TestGetPemPublicKeyWithNoKey(t *testing.T) {
 	fx.New(
 		fx.Provide(NewAuthRepo),
 		fx.Invoke(func(ar *AuthRepository) {
-			pukc, err3 := ar.GetPublicKey()
+			pukc, err3 := ar.GetPemPublicKey()
 			assert.Equal(t, err3, common.ErrNoPublicKey)
 			assert.Equal(t, &pukc, NewPemPublicKey(nil))
 		}),
 	)
 }
 
-func TestGetPrivateKeyWithNoKey(t *testing.T) {
+func TestGetPemPrivateKeyWithNoKey(t *testing.T) {
 	fx.New(
 		fx.Provide(NewAuthRepo),
 		fx.Invoke(func(ar *AuthRepository) {
-			prkc, err3 := ar.GetPrivateKey()
-			assert.Equal(t, err3, common.ErrNoPublicKey)
+			prkc, err3 := ar.GetPemPrivateKey()
+			assert.Equal(t, err3, common.ErrNoPrivateKey)
 			assert.Equal(t, &prkc, NewPemPrivateKey(nil))
 		}),
 	)
@@ -146,9 +146,9 @@ func TestCheckKeyPair(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StoreKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk)
 			assert.Equal(t, err2, nil)
-			assert.Equal(t, ar.CheckKeyPair(), nil)
+			assert.Equal(t, ar.CheckKeyPairExistence(), nil)
 		}),
 	)
 }
@@ -157,7 +157,7 @@ func TestCheckKeyPairWithNoKey(t *testing.T) {
 	fx.New(
 		fx.Provide(NewAuthRepo),
 		fx.Invoke(func(ar *AuthRepository) {
-			assert.Equal(t, ar.CheckKeyPair(), common.ErrNoKeyPair)
+			assert.Equal(t, ar.CheckKeyPairExistence(), common.ErrNoKeyPair)
 		}),
 	)
 }
