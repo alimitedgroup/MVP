@@ -104,11 +104,11 @@ func (as *AuthService) generateToken(username string, role string) (string, erro
 }
 
 func (as *AuthService) GetToken(cmd *servicecmd.GetTokenCmd) *serviceresponse.GetTokenResponse {
-	isUserLegit := as.authenticatorStrategy.Authenticate(*serviceobject.NewUserData(cmd.GetUsername(), cmd.GetRole()))
-	if !isUserLegit {
+	role, err := as.authenticatorStrategy.Authenticate(*serviceobject.NewUserData(cmd.GetUsername()))
+	if err != nil {
 		return serviceresponse.NewGetTokenResponse("", common.ErrUserNotLegit)
 	}
-	token, err := as.generateToken(cmd.GetUsername(), cmd.GetRole())
+	token, err := as.generateToken(cmd.GetUsername(), role)
 	if err != nil {
 		return serviceresponse.NewGetTokenResponse("", common.ErrNoToken)
 	}

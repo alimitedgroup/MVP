@@ -1,20 +1,26 @@
 package serviceauthenticator
 
-import serviceobject "github.com/alimitedgroup/MVP/srv/authenticator/service/object"
+import (
+	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
+	serviceobject "github.com/alimitedgroup/MVP/srv/authenticator/service/object"
+)
 
 type SimpleAuthAlg struct {
-	validRoles map[string]bool
+	usernameRoles map[string]string
 }
 
 func NewSimpleAuthAlg() *SimpleAuthAlg {
-	roles := make(map[string]bool)
-	roles["admin"] = true
-	roles["local_admin"] = true
-	roles["client"] = true
-	return &SimpleAuthAlg{validRoles: roles}
+	roles := make(map[string]string)
+	roles["admin"] = "admin"
+	roles["local_admin"] = "local_admin"
+	roles["client"] = "client"
+	return &SimpleAuthAlg{usernameRoles: roles}
 }
 
-func (saa *SimpleAuthAlg) Authenticate(us serviceobject.UserData) bool {
-	_, presence := saa.validRoles[us.GetRole()]
-	return presence
+func (saa *SimpleAuthAlg) Authenticate(us serviceobject.UserData) (string, error) {
+	role, presence := saa.usernameRoles[us.GetUsername()]
+	if presence {
+		return role, nil
+	}
+	return "", common.ErrUserNotLegit
 }
