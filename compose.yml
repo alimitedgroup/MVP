@@ -26,7 +26,7 @@ services:
   api-gateway:
     build: { args: { SERVICE: api_gateway } }
     ports:
-      - "8080:8080"
+      - "80:8080"
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_API_PORT=8080
@@ -55,7 +55,7 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=2
     volumes:
-      - ./config.yml:/data/config.yml
+      - ./config.yml:/data/config.yml:ro
     networks:
       - warehouse
     depends_on:
@@ -66,7 +66,7 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
     volumes:
-      - ./config.yml:/data/config.yml
+      - ./config.yml:/data/config.yml:ro
     networks:
       - warehouse
     depends_on:
@@ -93,6 +93,21 @@ services:
       - warehouse
     depends_on:
       - nats
+
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin1234
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=stockdb
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-token
 
   collector:
     image: otel/opentelemetry-collector-contrib
