@@ -95,6 +95,9 @@ func TestGetPemPublicKey(t *testing.T) {
 			pukc, err3 := ar.GetPemPublicKey()
 			assert.Equal(t, err3, nil)
 			assert.Equal(t, pukc.GetBytes(), *puk)
+			if pukc.GetIssuer() == "" {
+				t.Error("Issuer is <nil>")
+			}
 		}),
 	)
 }
@@ -110,6 +113,9 @@ func TestGetPemPrivateKey(t *testing.T) {
 			pukc, err3 := ar.GetPemPrivateKey()
 			assert.Equal(t, err3, nil)
 			assert.Equal(t, pukc.GetBytes(), *prk)
+			if pukc.GetIssuer() == "" {
+				t.Error("Issuer is <nil>")
+			}
 		}),
 	)
 }
