@@ -84,7 +84,10 @@ func TestPublishing(t *testing.T) {
 					}
 					err = pb.PublishKey(puk, "test-issuer")
 					assert.Equal(t, err, nil)
-					pb.mb.RegisterJsHandler(ctx, rsc, stream.KeyStream, JsDetector)
+					err = pb.mb.RegisterJsHandler(ctx, rsc, stream.KeyStream, JsDetector)
+					if err != nil {
+						return err
+					}
 					time.Sleep(1 * time.Second)
 					assert.Equal(t, getPublish(), true)
 					return nil
