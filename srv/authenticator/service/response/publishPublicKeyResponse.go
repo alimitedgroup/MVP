@@ -8,6 +8,6 @@ func NewPublishPublicKeyResponse(err error) *PublishPublicKeyResponse {
 	return &PublishPublicKeyResponse{err: err}
 }
 
-func (ppkr *PublishPublicKeyResponse) GetErrror() error {
+func (ppkr *PublishPublicKeyResponse) GetError() error {
 	return ppkr.err
 }

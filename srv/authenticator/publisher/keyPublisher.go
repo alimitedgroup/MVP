@@ -3,11 +3,13 @@ package publisher
 import (
 	"context"
 	"crypto"
+	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
+	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 	"github.com/lestrrat-go/jwx/jwk"
 )
 
@@ -20,7 +22,11 @@ func NewPublisher(mb *broker.NatsMessageBroker) *AuthPublisher {
 }
 
 func (ap *AuthPublisher) PublishKey(puk crypto.PublicKey, issuer string) error {
-	key, err := jwk.New(puk)
+	ecdsaKey, valid := puk.(*ecdsa.PublicKey)
+	if !valid {
+		return common.ErrPublish
+	}
+	key, err := jwk.New(ecdsaKey)
 	if err != nil {
 		return err
 	}

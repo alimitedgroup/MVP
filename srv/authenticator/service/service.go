@@ -71,6 +71,18 @@ func (as *AuthService) StorePemKeyPair(cmd *servicecmd.StorePemKeyPairCmd) error
 	return nil
 }
 
+func (as *AuthService) getPrivateKeyFromPem(prk *[]byte) (*ecdsa.PrivateKey, error) {
+	decodedKey, _ := pem.Decode(*prk)
+	if decodedKey == nil {
+		return nil, common.ErrNoPrivateKey
+	}
+	prkDecoded, errprk := x509.ParseECPrivateKey(decodedKey.Bytes)
+	if errprk != nil {
+		return nil, common.ErrNoPrivateKey
+	}
+	return prkDecoded, nil
+}
+
 func (as *AuthService) generateToken(username string, role string) (string, error) {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
@@ -85,7 +97,7 @@ func (as *AuthService) generateToken(username string, role string) (string, erro
 			return "", err
 		}
 		issuer := as.getPemPublicKeyPort.GetPemPublicKey(servicecmd.NewGetPemPublicKeyCmd())
-		err = as.publishPort.PublishKey(servicecmd.NewPublishPublicKeyCmd(puk, issuer.GetIssuer())).GetErrror()
+		err = as.publishPort.PublishKey(servicecmd.NewPublishPublicKeyCmd(puk, issuer.GetIssuer())).GetError()
 		if err != nil {
 			log.Fatal("Cannot publish key, turning off service")
 		}
@@ -100,7 +112,15 @@ func (as *AuthService) generateToken(username string, role string) (string, erro
 		"exp":  time.Now().Add(time.Hour * 24 * 7).Unix(),
 		"iss":  storePrk.GetIssuer(),
 	})
-	return token.SignedString(storePrk)
+	signKey, err := as.getPrivateKeyFromPem(storePrk.GetPemPrivateKey())
+	if err != nil {
+		return "", err
+	}
+	tokenString, err := token.SignedString(signKey)
+	if err != nil {
+		return "", common.ErrNoToken
+	}
+	return tokenString, nil
 }
 
 func (as *AuthService) GetToken(cmd *servicecmd.GetTokenCmd) *serviceresponse.GetTokenResponse {

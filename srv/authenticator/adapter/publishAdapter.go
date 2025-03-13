@@ -14,7 +14,7 @@ type AuthPublisherAdapter struct {
 	pb publisher.IAuthPublisher
 }
 
-func NewAuthPublisherAdapter(pb *publisher.AuthPublisher) *AuthPublisherAdapter {
+func NewAuthPublisherAdapter(pb publisher.IAuthPublisher) *AuthPublisherAdapter {
 	return &AuthPublisherAdapter{pb: pb}
 }
 
