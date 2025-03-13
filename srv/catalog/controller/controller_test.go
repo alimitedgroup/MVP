@@ -3,12 +3,12 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"github.com/alimitedgroup/MVP/common/dto"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
-	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
@@ -84,14 +84,14 @@ func (f *FakeControllerUC) GetGoodsQuantity(ggqc *servicecmd.GetGoodsQuantityCmd
 }
 
 func (f *FakeControllerUC) GetGoodsInfo(ggqc *servicecmd.GetGoodsInfoCmd) *serviceresponse.GetGoodsInfoResponse {
-	goods := make(map[string]catalogCommon.Good)
-	goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")
+	goods := make(map[string]dto.Good)
+	goods["test-ID"] = *dto.NewGood("test-ID", "test-name", "test-description")
 	return serviceresponse.NewGetGoodsInfoResponse(goods)
 }
 
 func (f *FakeControllerUC) GetWarehouses(gwc *servicecmd.GetWarehousesCmd) *serviceresponse.GetWarehousesResponse {
-	warehouses := make(map[string]catalogCommon.Warehouse)
-	warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+	warehouses := make(map[string]dto.Warehouse)
+	warehouses["test-warehouse-ID"] = *dto.NewWarehouse("test-warehose-ID")
 	return serviceresponse.NewGetWarehousesResponse(warehouses)
 }
 
@@ -294,7 +294,7 @@ func TestGetGoodsRequest(t *testing.T) {
 						return err
 					}
 
-					var responseDTO = &response.GetGoodsDataResponseDTO{}
+					var responseDTO = &dto.GetGoodsDataResponseDTO{}
 
 					err = json.Unmarshal(responseFromController.Data, responseDTO)
 
@@ -302,8 +302,8 @@ func TestGetGoodsRequest(t *testing.T) {
 						t.Error(err)
 					}
 
-					good := make(map[string]catalogCommon.Good)
-					good["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")
+					good := make(map[string]dto.Good)
+					good["test-ID"] = *dto.NewGood("test-ID", "test-name", "test-description")
 
 					assert.Equal(t, responseDTO.Err, "")
 					assert.Equal(t, responseDTO.GoodMap, good)
@@ -373,7 +373,7 @@ func TestGetWarehousesRequest(t *testing.T) {
 						return err
 					}
 
-					var responseDTO = &response.GetWarehouseResponseDTO{}
+					var responseDTO = &dto.GetWarehouseResponseDTO{}
 
 					err = json.Unmarshal(responseFromController.Data, responseDTO)
 
@@ -381,8 +381,8 @@ func TestGetWarehousesRequest(t *testing.T) {
 						t.Error(err)
 					}
 
-					warehouses := make(map[string]catalogCommon.Warehouse)
-					warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+					warehouses := make(map[string]dto.Warehouse)
+					warehouses["test-warehouse-ID"] = *dto.NewWarehouse("test-warehose-ID")
 
 					assert.Equal(t, responseDTO.Err, "")
 					assert.Equal(t, responseDTO.WarehouseMap, warehouses)
@@ -452,7 +452,7 @@ func TestGetGoodsGlobalQuantityRequest(t *testing.T) {
 						return err
 					}
 
-					var responseDTO = &response.GetGoodsQuantityResponseDTO{}
+					var responseDTO = &dto.GetGoodsQuantityResponseDTO{}
 
 					err = json.Unmarshal(responseFromController.Data, responseDTO)
 

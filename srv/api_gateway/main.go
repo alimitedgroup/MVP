@@ -9,6 +9,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"go.uber.org/fx"
 	"log"
+	"net"
 )
 
 type APIConfig struct {
@@ -49,17 +50,23 @@ func main() {
 
 	config := loadConfig()
 
+	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", "localhost", 8080))
+	if err != nil {
+		log.Fatal("Invalid TCP address: ", err)
+	}
+
 	app := fx.New(
+		config,
 		lib.Module,
 		business.Module,
 		adapterout.Module,
 		adapterin.Module,
-		config,
+		fx.Supply(addr),
 		fx.Provide(adapterin.NewListener),
 		fx.Invoke(RunLifeCycle),
 	)
 
-	err := app.Start(ctx)
+	err = app.Start(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -29,7 +29,7 @@ func NewBusiness(authAdapter portout.AuthenticationPortOut) *Business {
 }
 
 var Module = fx.Options(
-	fx.Provide(NewBusiness),
+	fx.Provide(fx.Annotate(NewBusiness, fx.As(new(portin.Auth)))),
 )
 
 func (b *Business) Login(username string) (portin.LoginResult, error) {

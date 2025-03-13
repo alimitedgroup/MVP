@@ -54,7 +54,7 @@ func IntegrationTest(t *testing.T, testFunc any) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(&p),
-		fx.Replace(ns),
+		fx.Supply(ns),
 		Module,
 		fx.Invoke(testFunc),
 	)

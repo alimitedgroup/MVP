@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/alimitedgroup/MVP/common/dto"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/stream"
@@ -70,14 +71,14 @@ func (fp *fakeGetGoodsQuantityPort) GetGoodsQuantity(ggqc *servicecmd.GetGoodsQu
 }
 
 func (fp *fakeGetGoodsInfoPort) GetGoodsInfo(ggqc *servicecmd.GetGoodsInfoCmd) *serviceresponse.GetGoodsInfoResponse {
-	goods := make(map[string]catalogCommon.Good)
-	goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")
+	goods := make(map[string]dto.Good)
+	goods["test-ID"] = *dto.NewGood("test-ID", "test-name", "test-description")
 	return serviceresponse.NewGetGoodsInfoResponse(goods)
 }
 
 func (fp *fakeGetWarehousesPort) GetWarehouses(gwc *servicecmd.GetWarehousesCmd) *serviceresponse.GetWarehousesResponse {
-	warehouses := make(map[string]catalogCommon.Warehouse)
-	warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+	warehouses := make(map[string]dto.Warehouse)
+	warehouses["test-warehouse-ID"] = *dto.NewWarehouse("test-warehose-ID")
 	return serviceresponse.NewGetWarehousesResponse(warehouses)
 }
 
@@ -106,8 +107,8 @@ func TestGetWarehouses(t *testing.T) {
 		),
 		fx.Provide(NewCatalogService),
 		fx.Invoke(func(cs *CatalogService) {
-			warehouses := make(map[string]catalogCommon.Warehouse)
-			warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+			warehouses := make(map[string]dto.Warehouse)
+			warehouses["test-warehouse-ID"] = *dto.NewWarehouse("test-warehose-ID")
 			cmd := servicecmd.NewGetWarehousesCmd()
 			response := cs.GetWarehouses(cmd)
 			assert.Equal(t, response.GetWarehouseMap(), warehouses)
