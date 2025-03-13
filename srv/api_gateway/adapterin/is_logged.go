@@ -1,4 +1,4 @@
-package controller
+package adapterin
 
 import (
 	"github.com/alimitedgroup/MVP/common/dto"

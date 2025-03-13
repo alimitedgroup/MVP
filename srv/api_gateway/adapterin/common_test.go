@@ -1,4 +1,4 @@
-package controller
+package adapterin
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@latest -destination business_auth_mock.go -package controller github.com/alimitedgroup/MVP/srv/api_gateway/portin Auth
+//go:generate go run go.uber.org/mock/mockgen@latest -destination business_auth_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Auth
 
 // start starts the application with a mock business login,
 // and returns it, along with the base url that can be used to send requests

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/alimitedgroup/MVP/common/lib"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterin"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterout"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/controller"
 	"go.uber.org/fx"
 	"log"
 )
@@ -20,7 +20,7 @@ type RunParams struct {
 	fx.In
 
 	ServerConfig *APIConfig
-	HttpHandler  *controller.HTTPHandler
+	HttpHandler  *adapterin.HTTPHandler
 }
 
 func Run(p RunParams) error {
@@ -53,9 +53,9 @@ func main() {
 		lib.Module,
 		business.Module,
 		adapterout.Module,
-		controller.Module,
+		adapterin.Module,
 		config,
-		fx.Provide(controller.NewListener),
+		fx.Provide(adapterin.NewListener),
 		fx.Invoke(RunLifeCycle),
 	)
 
