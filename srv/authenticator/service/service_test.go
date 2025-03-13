@@ -56,24 +56,6 @@ func GenerateWrongPemKey() (*[]byte, *[]byte, error) {
 
 //INIZIO MOCK PORTE
 
-/*var (
-	mutex    sync.Mutex
-	wrongKey bool
-)
-
-func setWrongKey(value bool) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	wrongKey = value
-}
-
-func getWrongKeyValue() bool {
-	mutex.Lock()
-	value := wrongKey
-	mutex.Unlock()
-	return value
-}*/
-
 var (
 	mutex sync.Mutex
 	puk   *[]byte
@@ -98,17 +80,6 @@ type FakeAdapter struct {
 }
 
 func NewFakeAdapter() *FakeAdapter {
-	/*var prk *[]byte
-	var puk *[]byte
-	var err error
-	if getWrongKeyValue() {
-		prk, puk, err = GenerateWrongPemKey()
-	} else {
-		prk, puk, err = GeneratePemKey()
-	}
-	if err != nil {
-		return nil
-	}*/
 	return &FakeAdapter{prk: nil, puk: nil}
 }
 
