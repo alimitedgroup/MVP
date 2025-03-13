@@ -15,6 +15,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"log/slog"
+	"time"
 )
 
 type AuthenticationAdapter struct {
@@ -85,8 +86,11 @@ func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.Parse
 		if err != nil {
 			return nil, portout.ErrTokenInvalid
 		}
+		if iss == "" {
+			return nil, portout.ErrTokenInvalid
+		}
 
-		key, err := aa.getValidationKey(context.TODO(), iss)
+		key, err := getValidationKey(context.TODO(), aa, iss)
 		if err != nil {
 			slog.Error("Error getting JWT validation key", "error", err)
 			return nil, portout.ErrTokenInvalid
@@ -110,7 +114,7 @@ func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.Parse
 }
 
 // getValidationKey returns a public key that can be used to verify JWTs signed by the given issuer
-func (aa *AuthenticationAdapter) getValidationKey(ctx context.Context, issuer string) (*ecdsa.PublicKey, error) {
+func getValidationKey(ctx context.Context, aa *AuthenticationAdapter, issuer string) (*ecdsa.PublicKey, error) {
 	stream, err := aa.Broker.Js.CreateStream(
 		ctx,
 		jetstream.StreamConfig{Name: "auth_keys", Subjects: []string{"keys.>"}},
@@ -127,7 +131,7 @@ func (aa *AuthenticationAdapter) getValidationKey(ctx context.Context, issuer st
 		return nil, fmt.Errorf("failed to create consumer: %w", err)
 	}
 
-	msg, err := consumer.Next()
+	msg, err := consumer.Next(jetstream.FetchMaxWait(time.Second))
 	if err != nil {
 		return nil, fmt.Errorf("failed to receive message: %w", err)
 	}

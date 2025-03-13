@@ -11,7 +11,7 @@ import (
 )
 
 // NewInProcessNATSServer creates a temporary, in-process NATS server, and returns a connection to it. Useful for tests
-func NewInProcessNATSServer(t *testing.T) *nats.Conn {
+func NewInProcessNATSServer(t *testing.T) (*nats.Conn, func()) {
 	tmp, err := os.MkdirTemp("", "nats_test")
 	require.NoError(t, err)
 
@@ -22,17 +22,23 @@ func NewInProcessNATSServer(t *testing.T) *nats.Conn {
 	})
 	require.NoError(t, err)
 
+	cancelled := false
+	cancel := func() {
+		if !cancelled {
+			server.Shutdown()
+			err := os.RemoveAll(tmp)
+			require.NoError(t, err)
+			cancelled = true
+		}
+	}
+
 	server.Start()
-	t.Cleanup(func() {
-		server.Shutdown()
-		err := os.RemoveAll(tmp)
-		require.NoError(t, err)
-	})
+	t.Cleanup(cancel)
 	require.True(t, server.ReadyForConnections(1*time.Second))
 
 	// Create a connection.
 	conn, err := nats.Connect("", nats.InProcessServer(server))
 	require.NoError(t, err)
 
-	return conn
+	return conn, cancel
 }
