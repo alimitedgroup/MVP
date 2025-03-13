@@ -2,7 +2,6 @@ package adapterout
 
 import (
 	"context"
-	"fmt"
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
@@ -43,10 +42,32 @@ func TestListGoods(t *testing.T) {
 	require.NoError(t, err)
 	catalog := NewCatalogAdapter(brk)
 
-	data, err := catalog.ListGoods()
+	_, err = catalog.ListGoods()
 	require.NoError(t, err)
-	fmt.Println(data)
+}
 
+func TestListStock(t *testing.T) {
+	nc, _ := broker.NewInProcessNATSServer(t)
+	startCatalog(t, nc)
+
+	brk, err := broker.NewNatsMessageBroker(nc)
+	require.NoError(t, err)
+	catalog := NewCatalogAdapter(brk)
+
+	_, err = catalog.ListStock()
+	require.NoError(t, err)
+}
+
+func TestListWarehouses(t *testing.T) {
+	nc, _ := broker.NewInProcessNATSServer(t)
+	startCatalog(t, nc)
+
+	brk, err := broker.NewNatsMessageBroker(nc)
+	require.NoError(t, err)
+	catalog := NewCatalogAdapter(brk)
+
+	_, err = catalog.ListWarehouses()
+	require.NoError(t, err)
 }
 
 func Run(cr *controller.ControllerRouter) error {

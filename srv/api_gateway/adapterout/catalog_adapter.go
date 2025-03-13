@@ -39,13 +39,41 @@ func (c CatalogAdapterOut) ListGoods() (map[string]dto.Good, error) {
 }
 
 func (c CatalogAdapterOut) ListStock() (map[string]int64, error) {
-	//TODO implement me
-	panic("implement me")
+	resp, err := c.Broker.Nats.Request("catalog.getGoodsGlobalQuantity", []byte("{}"), nats.DefaultTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	var goods dto.GetGoodsQuantityResponseDTO
+	err = json.Unmarshal(resp.Data, &goods)
+	if err != nil {
+		return nil, err
+	}
+
+	if goods.Err != "" {
+		return nil, fmt.Errorf("%s", goods.Err)
+	}
+
+	return goods.GoodMap, err
 }
 
 func (c CatalogAdapterOut) ListWarehouses() (map[string]dto.Warehouse, error) {
-	//TODO implement me
-	panic("implement me")
+	resp, err := c.Broker.Nats.Request("catalog.getGoodsGlobalQuantity", []byte("{}"), nats.DefaultTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	var goods dto.GetWarehouseResponseDTO
+	err = json.Unmarshal(resp.Data, &goods)
+	if err != nil {
+		return nil, err
+	}
+
+	if goods.Err != "" {
+		return nil, fmt.Errorf("%s", goods.Err)
+	}
+
+	return goods.WarehouseMap, err
 }
 
 var _ portout.CatalogPortOut = (*CatalogAdapterOut)(nil)
