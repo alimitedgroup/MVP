@@ -3,16 +3,16 @@ package controller
 import (
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
 
 type LoginController struct {
 	broker   *broker.NatsMessageBroker
-	business *business.Business
+	business portin.Auth
 }
 
-func NewLoginController(broker *broker.NatsMessageBroker, business *business.Business) *LoginController {
+func NewLoginController(broker *broker.NatsMessageBroker, business portin.Auth) *LoginController {
 	return &LoginController{broker, business}
 }
 

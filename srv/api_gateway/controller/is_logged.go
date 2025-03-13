@@ -1,17 +1,16 @@
 package controller
 
 import (
-	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
 
 type AuthHealthCheckController struct {
-	businness *business.Business
+	business portin.Auth
 }
 
-func NewAuthHealthCheckController(businness *business.Business) *AuthHealthCheckController {
-	return &AuthHealthCheckController{businness: businness}
+func NewAuthHealthCheckController(business portin.Auth) *AuthHealthCheckController {
+	return &AuthHealthCheckController{business: business}
 }
 
 func (c *AuthHealthCheckController) Handler() gin.HandlerFunc {

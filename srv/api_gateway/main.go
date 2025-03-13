@@ -55,6 +55,7 @@ func main() {
 		adapterout.Module,
 		controller.Module,
 		config,
+		fx.Provide(controller.NewListener),
 		fx.Invoke(RunLifeCycle),
 	)
 

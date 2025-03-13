@@ -13,18 +13,6 @@ var Module = fx.Options(
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
 )
 
-func RegisterRoutes(http *HTTPHandler, controllers []Controller) {
-	for _, controller := range controllers {
-		var group *gin.RouterGroup
-		if controller.RequiresAuth() {
-			group = http.AuthenticatedGroup
-		} else {
-			group = http.ApiGroup
-		}
-		group.Handle(controller.Method(), controller.Pattern(), controller.Handler())
-	}
-}
-
 type Controller interface {
 	Handler() gin.HandlerFunc
 	Pattern() string
