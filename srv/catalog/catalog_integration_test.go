@@ -28,7 +28,7 @@ var ModulesfForTesting = fx.Options(
 )
 
 func TestInsertGetWarehousesQuantity(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),
@@ -140,7 +140,7 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 }
 
 func TestInsertGetGoodsQuantity(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),
@@ -249,7 +249,7 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 }
 
 func TestInsertGetGoods(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),

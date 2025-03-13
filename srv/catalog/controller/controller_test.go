@@ -101,7 +101,7 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		fx.Supply(ns),
@@ -178,7 +178,7 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 func TestSetGoodDataRequest(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		fx.Supply(ns),
@@ -254,7 +254,7 @@ func TestSetGoodDataRequest(t *testing.T) {
 func TestGetGoodsRequest(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		fx.Supply(ns),
@@ -333,7 +333,7 @@ func TestGetGoodsRequest(t *testing.T) {
 func TestGetWarehousesRequest(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		fx.Supply(ns),
@@ -412,7 +412,7 @@ func TestGetWarehousesRequest(t *testing.T) {
 func TestGetGoodsGlobalQuantityRequest(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		fx.Supply(ns),

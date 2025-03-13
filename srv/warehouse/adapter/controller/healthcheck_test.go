@@ -17,7 +17,7 @@ import (
 func TestHealthCheckController(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
