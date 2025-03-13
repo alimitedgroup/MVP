@@ -22,6 +22,13 @@ type MissingRequiredFieldError struct {
 	Description string `json:"description"`
 }
 
+type GoodAndAmount struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	ID          string `json:"id"`
+	Amount      int64  `json:"amount"`
+}
+
 func FieldIsRequired(fieldName string) response.ResponseDTO[MissingRequiredFieldError] {
 	return response.ResponseDTO[MissingRequiredFieldError]{
 		Error: "missing_field",
