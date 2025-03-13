@@ -81,6 +81,18 @@ func TestLoginGetRoleError(t *testing.T) {
 	require.ErrorIs(t, err, ErrorGetRole)
 }
 
+func TestLoginVerifyTokenError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockAuthenticationPortOut(ctrl)
+
+	mock.EXPECT().GetToken(gomock.Any()).Return(types.UserToken("some.secure.jwt"), nil)
+	mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(nil, fmt.Errorf("some error"))
+
+	business := NewBusiness(mock)
+	_, err := business.Login("user")
+	require.ErrorIs(t, err, ErrorGetToken)
+}
+
 func TestVerifyToken(t *testing.T) {
 	var token types.ParsedToken = struct{ test int }{}
 
