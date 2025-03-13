@@ -3,6 +3,8 @@ package controller
 import (
 	"context"
 	"errors"
+	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -78,12 +80,16 @@ func Authentication(b portin.Auth) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth, found := strings.CutPrefix(ctx.GetHeader("Authorization"), "Bearer ")
 		if !found {
-			ctx.AbortWithStatusJSON(401, gin.H{"error": "unauthorized", "message": "No token provided"})
+			ctx.AbortWithStatusJSON(401, dto.MissingToken())
 			return
 		}
 		data, err := b.ValidateToken(auth)
 		if err != nil {
-			ctx.AbortWithStatusJSON(401, gin.H{"error": "unauthorized", "message": err.Error()})
+			if errors.Is(err, business.ErrorTokenExpired) {
+				ctx.AbortWithStatusJSON(401, dto.ExpiredToken())
+			} else {
+				ctx.AbortWithStatusJSON(401, dto.InvalidToken())
+			}
 			return
 		}
 

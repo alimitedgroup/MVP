@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +16,9 @@ func NewAuthHealthCheckController(business portin.Auth) *AuthHealthCheckControll
 
 func (c *AuthHealthCheckController) Handler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(200, gin.H{"role": c.MustGet("user_data").(portin.UserData).Role.String()})
+		c.JSON(200, dto.IsLoggedResponse{
+			Role: c.MustGet("user_data").(portin.UserData).Role.String(),
+		})
 	}
 }
 

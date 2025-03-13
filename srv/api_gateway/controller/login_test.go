@@ -1,0 +1,114 @@
+package controller
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/dto/response"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
+	"github.com/stretchr/testify/require"
+	"net/http"
+	"net/url"
+	"strings"
+	"testing"
+	"time"
+)
+
+func TestLoginOk(t *testing.T) {
+	auth, base := start(t)
+
+	auth.EXPECT().Login("user").Return(portin.LoginResult{
+		Token:           "some.secure.token",
+		TokenExpiration: time.Now().Add(7 * 24 * time.Hour),
+		Role:            types.RoleClient,
+	}, nil)
+
+	req, err := http.NewRequest(
+		"POST",
+		base+"/api/v1/login",
+		strings.NewReader(url.Values{"username": {"user"}}.Encode()),
+	)
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var respBody dto.AuthLoginResponse
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+	require.NoError(t, err)
+	require.Equal(t, "some.secure.token", respBody.Token)
+}
+
+func TestLoginMissingUsername(t *testing.T) {
+	_, base := start(t)
+
+	req, err := http.NewRequest(
+		"POST",
+		base+"/api/v1/login",
+		nil,
+	)
+	require.NoError(t, err)
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+	var respBody response.ResponseDTO[dto.MissingRequiredFieldError]
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+	require.NoError(t, err)
+	require.Equal(t, "missing_field", respBody.Error)
+	require.Equal(t, "username", respBody.Message.Field)
+}
+
+func TestLoginInternalError(t *testing.T) {
+	auth, base := start(t)
+
+	auth.EXPECT().Login("user").Return(portin.LoginResult{}, fmt.Errorf("some error"))
+
+	req, err := http.NewRequest(
+		"POST",
+		base+"/api/v1/login",
+		strings.NewReader(url.Values{"username": {"user"}}.Encode()),
+	)
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+
+	var respBody response.ResponseDTO[string]
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+	require.NoError(t, err)
+	require.Equal(t, "internal_error", respBody.Error)
+}
+
+func TestLoginAuthFailed(t *testing.T) {
+	auth, base := start(t)
+
+	auth.EXPECT().Login("user").Return(portin.LoginResult{
+		Token:           "",
+		TokenExpiration: time.Now().Add(7 * 24 * time.Hour),
+		Role:            types.RoleNone,
+	}, nil)
+
+	req, err := http.NewRequest(
+		"POST",
+		base+"/api/v1/login",
+		strings.NewReader(url.Values{"username": {"user"}}.Encode()),
+	)
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+	var respBody response.ResponseDTO[string]
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+	require.NoError(t, err)
+	require.Equal(t, "authentication_failed", respBody.Error)
+}

@@ -18,15 +18,20 @@ func NewLoginController(broker *broker.NatsMessageBroker, business portin.Auth) 
 
 func (c *LoginController) Handler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		username := ctx.PostForm("username")
+		username, ok := ctx.GetPostForm("username")
+		if !ok {
+			ctx.JSON(400, dto.FieldIsRequired("username"))
+			return
+		}
+
 		token, err := c.business.Login(username)
 		if err != nil {
-			ctx.JSON(500, gin.H{"error": err.Error()})
+			ctx.JSON(500, dto.InternalError())
 			return
 		}
 
 		if token.Token == "" {
-			ctx.JSON(401, gin.H{"error": "unauthorized"})
+			ctx.JSON(401, dto.AuthFailed())
 			return
 		}
 
