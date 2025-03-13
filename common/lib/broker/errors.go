@@ -3,11 +3,10 @@ package broker
 import (
 	"encoding/json"
 
-	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/nats-io/nats.go"
 )
 
-func RespondToMsg[T any](msg *nats.Msg, resp response.ResponseDTO[T]) error {
+func RespondToMsg(msg *nats.Msg, resp any) error {
 	payload, err := json.Marshal(resp)
 	if err != nil {
 		return err
