@@ -21,7 +21,7 @@ func NewPublishOrderUpdateAdapter(broker *broker.NatsMessageBroker) *PublishOrde
 func (a *PublishOrderUpdateAdapter) SaveOrderUpdate(ctx context.Context, cmd port.SaveOrderUpdateCmd) error {
 	now := time.Now()
 
-	goods := make([]stream.OrderUpdateGood, 0)
+	goods := make([]stream.OrderUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, stream.OrderUpdateGood{
 			GoodID:   good.GoodId,
@@ -30,6 +30,7 @@ func (a *PublishOrderUpdateAdapter) SaveOrderUpdate(ctx context.Context, cmd por
 	}
 	streamMsg := stream.OrderUpdate{
 		ID:           cmd.ID,
+		Status:       cmd.Status,
 		Name:         cmd.Name,
 		Email:        cmd.Email,
 		Address:      cmd.Address,

@@ -8,6 +8,7 @@ type ISaveOrderUpdatePort interface {
 
 type SaveOrderUpdateCmd struct {
 	ID      string
+	Status  string
 	Name    string
 	Email   string
 	Address string

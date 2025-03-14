@@ -27,7 +27,7 @@ func NewManageStockService(p ManageOrderServiceParams) *ManageOrderService {
 }
 
 func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrderCmd) (port.CreateOrderResponse, error) {
-	availCmd := CreateOrderCmdToCalculateAvailabilityCmd(cmd)
+	availCmd := createOrderCmdToCalculateAvailabilityCmd(cmd)
 	availResp, err := s.calculateAvailabilityUseCase.GetAvailable(ctx, availCmd)
 	if err != nil {
 		return port.CreateOrderResponse{}, err
@@ -36,7 +36,7 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 	_ = availResp
 
 	orderId := uuid.New().String()
-	saveCmd := CreateOrderCmdToSaveOrderUpdateCmd(orderId, cmd)
+	saveCmd := createOrderCmdToSaveOrderUpdateCmd(orderId, cmd)
 
 	err = s.saveOrderUpdatePort.SaveOrderUpdate(ctx, saveCmd)
 	if err != nil {
@@ -50,10 +50,8 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 	return resp, nil
 }
 
-func (s *ManageOrderService) GetOrder(ctx context.Context) (model.Order, error) {
-	orderId := model.OrderID("")
-
-	order, err := s.getOrderPort.GetOrder(orderId)
+func (s *ManageOrderService) GetOrder(ctx context.Context, orderId string) (model.Order, error) {
+	order, err := s.getOrderPort.GetOrder(model.OrderID(orderId))
 	if err != nil {
 		return model.Order{}, err
 	}
@@ -61,8 +59,8 @@ func (s *ManageOrderService) GetOrder(ctx context.Context) (model.Order, error) 
 	return order, nil
 }
 
-func CreateOrderCmdToCalculateAvailabilityCmd(cmd port.CreateOrderCmd) port.CalculateAvailabilityCmd {
-	requestGoods := make([]port.RequestedGood, 0)
+func createOrderCmdToCalculateAvailabilityCmd(cmd port.CreateOrderCmd) port.CalculateAvailabilityCmd {
+	requestGoods := make([]port.RequestedGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		requestGoods = append(requestGoods, port.RequestedGood(good))
 	}
@@ -74,8 +72,8 @@ func CreateOrderCmdToCalculateAvailabilityCmd(cmd port.CreateOrderCmd) port.Calc
 	return availCmd
 }
 
-func CreateOrderCmdToSaveOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd) port.SaveOrderUpdateCmd {
-	goods := make([]port.SaveOrderUpdateGood, 0)
+func createOrderCmdToSaveOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd) port.SaveOrderUpdateCmd {
+	goods := make([]port.SaveOrderUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, port.SaveOrderUpdateGood{
 			GoodId:   good.GoodID,
@@ -85,6 +83,7 @@ func CreateOrderCmdToSaveOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd)
 
 	saveCmd := port.SaveOrderUpdateCmd{
 		ID:      orderId,
+		Status:  cmd.Status,
 		Name:    cmd.Name,
 		Email:   cmd.Email,
 		Address: cmd.Address,

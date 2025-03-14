@@ -8,23 +8,33 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/nats-io/nats.go"
+	"go.uber.org/fx"
 )
 
 type OrderController struct {
 	broker             *broker.NatsMessageBroker
 	createOrderUseCase port.ICreateOrderUseCase
+	getOrderUseCase    port.IGetOrderUseCase
 }
 
-func NewOrderController(broker *broker.NatsMessageBroker, createOrderUseCase port.ICreateOrderUseCase) *OrderController {
-	return &OrderController{broker, createOrderUseCase}
+type OrderControllerParams struct {
+	fx.In
+
+	Broker             *broker.NatsMessageBroker
+	CreateOrderUseCase port.ICreateOrderUseCase
+	GetOrderUseCase    port.IGetOrderUseCase
+}
+
+func NewOrderController(p OrderControllerParams) *OrderController {
+	return &OrderController{p.Broker, p.CreateOrderUseCase, p.GetOrderUseCase}
 }
 
 func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg) error {
 	var dto request.CreateOrderRequestDTO
-	err := json.Unmarshal(msg.Data, &dto)
-	if err != nil {
+	if err := json.Unmarshal(msg.Data, &dto); err != nil {
 		return err
 	}
 
@@ -32,9 +42,7 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 		resp := response.ErrorResponseDTO{
 			Error: err.Error(),
 		}
-
-		err = broker.RespondToMsg(msg, resp)
-		if err != nil {
+		if err := broker.RespondToMsg(msg, resp); err != nil {
 			return err
 		}
 
@@ -42,7 +50,7 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 
 	}
 
-	goods := make([]port.CreateOrderGood, 0)
+	goods := make([]port.CreateOrderGood, 0, len(dto.Goods))
 	for _, good := range dto.Goods {
 		goods = append(goods, port.CreateOrderGood{
 			GoodID:   good.GoodID,
@@ -51,6 +59,7 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 	}
 
 	cmd := port.CreateOrderCmd{
+		Status:  "Created",
 		Name:    dto.Name,
 		Email:   dto.Email,
 		Address: dto.Address,
@@ -62,9 +71,7 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 		resp := response.ErrorResponseDTO{
 			Error: err.Error(),
 		}
-
-		err = broker.RespondToMsg(msg, resp)
-		if err != nil {
+		if err := broker.RespondToMsg(msg, resp); err != nil {
 			return err
 		}
 
@@ -77,8 +84,41 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 		},
 	}
 
-	err = broker.RespondToMsg(msg, respDto)
+	if err = broker.RespondToMsg(msg, respDto); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) error {
+	var dto request.GetOrderRequestDTO
+	if err := json.Unmarshal(msg.Data, &dto); err != nil {
+		return err
+	}
+
+	if dto.OrderID == "" {
+		resp := response.ErrorResponseDTO{
+			Error: "orderid is required",
+		}
+		if err := broker.RespondToMsg(msg, resp); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	order, err := c.getOrderUseCase.GetOrder(ctx, dto.OrderID)
 	if err != nil {
+		resp := response.ErrorResponseDTO{
+			Error: err.Error(),
+		}
+		if err := broker.RespondToMsg(msg, resp); err != nil {
+			return err
+		}
+	}
+
+	respDto := orderToGetGoodResponseDTO(order)
+	if err := broker.RespondToMsg(msg, respDto); err != nil {
 		return err
 	}
 
@@ -108,4 +148,25 @@ func checkCreateOrderRequestDTO(dto request.CreateOrderRequestDTO) error {
 	}
 
 	return nil
+}
+
+func orderToGetGoodResponseDTO(order model.Order) response.GetOrderResponseDTO {
+	goods := make([]response.OrderInfoGood, 0, len(order.Goods))
+	for _, good := range order.Goods {
+		goods = append(goods, response.OrderInfoGood{
+			GoodID:   string(good.ID),
+			Quantity: good.Quantity,
+		})
+	}
+
+	return response.GetOrderResponseDTO{
+		Message: response.OrderInfo{
+			OrderID: string(order.Id),
+			Status:  order.Status,
+			Name:    order.Name,
+			Email:   order.Email,
+			Address: order.Address,
+			Goods:   goods,
+		},
+	}
 }

@@ -17,8 +17,12 @@ func NewStockRouter(orderController *OrderController, broker *broker.NatsMessage
 
 func (r *OrderRouter) Setup(ctx context.Context) error {
 	// register request/reply handlers
-	err := r.broker.RegisterRequest(ctx, "order.create", broker.NoQueue, r.orderController.OrderCreateHandler)
-	if err != nil {
+
+	if err := r.broker.RegisterRequest(ctx, "order.create", broker.NoQueue, r.orderController.OrderCreateHandler); err != nil {
+		return err
+	}
+
+	if err := r.broker.RegisterRequest(ctx, "order.get", broker.NoQueue, r.orderController.OrderGetHandler); err != nil {
 		return err
 	}
 

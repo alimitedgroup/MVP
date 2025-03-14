@@ -1,0 +1,14 @@
+package port
+
+import (
+	"context"
+	"errors"
+
+	"github.com/alimitedgroup/MVP/srv/order/business/model"
+)
+
+type IGetOrderUseCase interface {
+	GetOrder(context.Context, string) (model.Order, error)
+}
+
+var ErrOrderNotFound = errors.New("order not found")
