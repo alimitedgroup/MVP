@@ -26,17 +26,17 @@ func newMockPortsImpl() *mockPortsImpl {
 	return &mockPortsImpl{info: make(map[string]mockGood)}
 }
 
-func (m *mockPortsImpl) GetStock(id string) int64 {
-	if v, ok := m.info[id]; ok {
-		return v.qty
+func (m *mockPortsImpl) GetStock(id model.GoodId) model.GoodStock {
+	if v, ok := m.info[string(id)]; ok {
+		return model.GoodStock{ID: id, Quantity: v.qty}
 	}
-	return 0
+	return model.GoodStock{ID: id, Quantity: 0}
 }
 
 func (m *mockPortsImpl) AddGood(id string, name string, description string) {
 	m.info[id] = mockGood{
 		info: model.GoodInfo{
-			ID:          id,
+			ID:          model.GoodId(id),
 			Name:        name,
 			Description: description,
 		},
@@ -45,8 +45,8 @@ func (m *mockPortsImpl) AddGood(id string, name string, description string) {
 	}
 }
 
-func (m *mockPortsImpl) GetGood(id string) *model.GoodInfo {
-	if v, ok := m.info[id]; ok {
+func (m *mockPortsImpl) GetGood(id model.GoodId) *model.GoodInfo {
+	if v, ok := m.info[string(id)]; ok {
 		return &v.info
 	}
 	return nil
@@ -54,13 +54,13 @@ func (m *mockPortsImpl) GetGood(id string) *model.GoodInfo {
 
 func (m *mockPortsImpl) CreateStockUpdate(ctx context.Context, cmd port.CreateStockUpdateCmd) error {
 	for _, v := range cmd.Goods {
-		old, ok := m.info[v.Good.ID]
+		old, ok := m.info[string(v.Good.ID)]
 		if !ok {
 			return fmt.Errorf("good %s not found", v.Good.ID)
 		}
 		old.lastUpdateQty = v.Good.Quantity
 		old.qty = v.Good.Quantity
-		m.info[v.Good.ID] = old
+		m.info[string(v.Good.ID)] = old
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func TestManageStockService(t *testing.T) {
 				}
 
 				assert.Equal(t, mock.info["1"].lastUpdateQty, int64(10))
-				assert.Equal(t, mock.GetStock("1"), int64(10))
+				assert.Equal(t, mock.GetStock("1").Quantity, int64(10))
 
 				remStockCmd := port.RemoveStockCmd{
 					ID:       "1",
@@ -98,7 +98,7 @@ func TestManageStockService(t *testing.T) {
 					t.Error(err)
 				}
 
-				assert.Equal(t, mock.GetStock("1"), int64(0))
+				assert.Equal(t, mock.GetStock("1").Quantity, int64(0))
 				assert.Equal(t, mock.info["1"].lastUpdateQty, int64(0))
 
 				return nil

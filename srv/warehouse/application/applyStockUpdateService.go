@@ -19,7 +19,7 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       good.GoodID,
+			ID:       model.GoodId(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}

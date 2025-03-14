@@ -19,19 +19,19 @@ func NewManageStockService(createStockUpdatePort port.ICreateStockUpdatePort, ge
 }
 
 func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd) error {
-	if s.getGoodPort.GetGood(cmd.ID) == nil {
+	if s.getGoodPort.GetGood(model.GoodId(cmd.ID)) == nil {
 		return fmt.Errorf("good %s not found", cmd.ID)
 	}
 
-	currentQuantity := s.getStockPort.GetStock(cmd.ID)
-	quantity := currentQuantity + cmd.Quantity
+	currentQuantity := s.getStockPort.GetStock(model.GoodId(cmd.ID))
+	quantity := currentQuantity.Quantity + cmd.Quantity
 
 	createCmd := port.CreateStockUpdateCmd{
 		Type: port.CreateStockUpdateCmdTypeAdd,
 		Goods: []port.CreateStockUpdateCmdGood{
 			{
 				Good: model.GoodStock{
-					ID:       cmd.ID,
+					ID:       model.GoodId(cmd.ID),
 					Quantity: quantity,
 				},
 				QuantityDiff: cmd.Quantity,
@@ -48,24 +48,24 @@ func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd)
 }
 
 func (s *ManageStockService) RemoveStock(ctx context.Context, cmd port.RemoveStockCmd) error {
-	if s.getGoodPort.GetGood(cmd.ID) == nil {
+	if s.getGoodPort.GetGood(model.GoodId(cmd.ID)) == nil {
 		return fmt.Errorf("good %s not found", cmd.ID)
 	}
 
-	currentQuantity := s.getStockPort.GetStock(cmd.ID)
+	currentQuantity := s.getStockPort.GetStock(model.GoodId(cmd.ID))
 
-	if currentQuantity < cmd.Quantity {
+	if currentQuantity.Quantity < cmd.Quantity {
 		return fmt.Errorf("not enough stock for good %s", cmd.ID)
 	}
 
-	quantity := currentQuantity - cmd.Quantity
+	quantity := currentQuantity.Quantity - cmd.Quantity
 
 	createCmd := port.CreateStockUpdateCmd{
 		Type: port.CreateStockUpdateCmdTypeRemove,
 		Goods: []port.CreateStockUpdateCmdGood{
 			{
 				Good: model.GoodStock{
-					ID:       cmd.ID,
+					ID:       model.GoodId(cmd.ID),
 					Quantity: quantity,
 				},
 				QuantityDiff: cmd.Quantity,

@@ -17,7 +17,7 @@ func NewApplyCatalogUpdateService(applyGoodUpdatePort port.IApplyCatalogUpdatePo
 
 func (s *ApplyCatalogUpdateService) ApplyCatalogUpdate(ctx context.Context, cmd port.CatalogUpdateCmd) error {
 	good := model.GoodInfo{
-		ID:          cmd.GoodId,
+		ID:          model.GoodId(cmd.GoodId),
 		Name:        cmd.Name,
 		Description: cmd.Description,
 	}

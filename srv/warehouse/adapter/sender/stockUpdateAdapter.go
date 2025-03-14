@@ -27,7 +27,7 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 	goodsMsg := make([]stream.StockUpdateGood, 0, len(cmd.Goods))
 	for _, v := range cmd.Goods {
 		goodsMsg = append(goodsMsg, stream.StockUpdateGood{
-			GoodID:   v.Good.ID,
+			GoodID:   string(v.Good.ID),
 			Quantity: v.Good.Quantity,
 			Delta:    v.QuantityDiff,
 		})

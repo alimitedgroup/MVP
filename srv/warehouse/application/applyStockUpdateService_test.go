@@ -21,12 +21,12 @@ func newApplyStockUpdatePortMock() *applyStockUpdatePortMock {
 func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) error {
 	for _, v := range goods {
 
-		old, exist := m.M[v.ID]
+		old, exist := m.M[string(v.ID)]
 		if !exist {
 			old = 0
 		}
 
-		m.M[v.ID] = old + v.Quantity
+		m.M[string(v.ID)] = old + v.Quantity
 		m.Total += v.Quantity
 	}
 	return nil

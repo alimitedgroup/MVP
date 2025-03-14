@@ -1,12 +1,14 @@
 package model
 
+type GoodId string
+
 type GoodStock struct {
-	ID       string
+	ID       GoodId
 	Quantity int64
 }
 
 type GoodInfo struct {
-	ID          string
+	ID          GoodId
 	Name        string
 	Description string
 }

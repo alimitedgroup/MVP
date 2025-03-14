@@ -18,7 +18,7 @@ func newApplyCatalogUpdatePortMock() *applyCatalogUpdatePortMock {
 }
 
 func (m *applyCatalogUpdatePortMock) ApplyCatalogUpdate(good model.GoodInfo) error {
-	m.M[good.ID] = good
+	m.M[string(good.ID)] = good
 	return nil
 }
 
