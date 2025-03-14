@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"github.com/alimitedgroup/MVP/common/dto"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
@@ -109,7 +110,7 @@ func TestChangeGoodDataEmptyName(t *testing.T) {
 			err1 := cr.AddGood("test-ID", "test-name", "test-description")
 			err2 := cr.changeGoodData("test-ID", "", "test-description")
 			assert.Equal(t, err1, nil)
-			assert.Equal(t, err2, catalogCommon.ErrEmptyName)
+			assert.Equal(t, err2, dto.ErrEmptyName)
 		}),
 	)
 }
@@ -122,7 +123,7 @@ func TestChangeGoodDataEmptyDescription(t *testing.T) {
 			err1 := cr.AddGood("test-ID", "test-name", "test-description")
 			err2 := cr.changeGoodData("test-ID", "2test-name", "")
 			assert.Equal(t, err1, nil)
-			assert.Equal(t, err2, catalogCommon.ErrEmptyDescription)
+			assert.Equal(t, err2, dto.ErrEmptyDescription)
 		}),
 	)
 }

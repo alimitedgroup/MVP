@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib"
@@ -64,6 +65,7 @@ func main() {
 	opts := fx.Options(
 		config,
 		Modules,
+		fx.Provide(broker.NewNatsConn),
 	)
 
 	app := fx.New(

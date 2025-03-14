@@ -1,6 +1,7 @@
 package catalogAdapter
 
 import (
+	"github.com/alimitedgroup/MVP/common/dto"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
@@ -19,9 +20,9 @@ func NewFakeRepo() *fakeRepo {
 	return &fakeRepo{}
 }
 
-func (fr *fakeRepo) GetGoods() map[string]catalogCommon.Good {
-	goods := make(map[string]catalogCommon.Good)
-	goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")
+func (fr *fakeRepo) GetGoods() map[string]dto.Good {
+	goods := make(map[string]dto.Good)
+	goods["test-ID"] = *dto.NewGood("test-ID", "test-name", "test-description")
 	return goods
 }
 
@@ -45,9 +46,9 @@ func (fr *fakeRepo) AddGood(goodID string, name string, description string) erro
 	return nil
 }
 
-func (fr *fakeRepo) GetWarehouses() map[string]catalogCommon.Warehouse {
-	warehouses := make(map[string]catalogCommon.Warehouse)
-	warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+func (fr *fakeRepo) GetWarehouses() map[string]dto.Warehouse {
+	warehouses := make(map[string]dto.Warehouse)
+	warehouses["test-warehouse-ID"] = *dto.NewWarehouse("test-warehose-ID")
 	return warehouses
 }
 
@@ -63,8 +64,8 @@ func TestGetWarehouses(t *testing.T) {
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
 			cmd := servicecmd.NewGetWarehousesCmd()
 			response := a.GetWarehouses(cmd)
-			warehouses := make(map[string]catalogCommon.Warehouse)
-			warehouses["test-warehouse-ID"] = *catalogCommon.NewWarehouse("test-warehose-ID")
+			warehouses := make(map[string]dto.Warehouse)
+			warehouses["test-warehouse-ID"] = *dto.NewWarehouse("test-warehose-ID")
 			assert.Equal(t, response.GetWarehouseMap(), warehouses)
 		}),
 	)
@@ -155,8 +156,8 @@ func TestGetGoodsInfo(t *testing.T) {
 		fx.Invoke(func(a *CatalogRepositoryAdapter) {
 			cmd := servicecmd.NewGetGoodsInfoCmd()
 			response := a.GetGoodsInfo(cmd)
-			goods := make(map[string]catalogCommon.Good)
-			goods["test-ID"] = *catalogCommon.NewGood("test-ID", "test-name", "test-description")
+			goods := make(map[string]dto.Good)
+			goods["test-ID"] = *dto.NewGood("test-ID", "test-name", "test-description")
 			assert.Equal(t, response.GetMap(), goods)
 		}),
 	)
