@@ -53,7 +53,7 @@ func TestStockController(t *testing.T) {
 
 	mock := NewMockStock()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(

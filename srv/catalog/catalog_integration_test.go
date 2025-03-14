@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/alimitedgroup/MVP/common/dto"
 	"log"
 	"testing"
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
-	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
@@ -28,7 +28,7 @@ var ModulesfForTesting = fx.Options(
 )
 
 func TestInsertGetWarehousesQuantity(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),
@@ -103,7 +103,7 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 						return err
 					}
 
-					var responseDTO = &response.GetWarehouseResponseDTO{}
+					var responseDTO = &dto.GetWarehouseResponseDTO{}
 
 					err = json.Unmarshal(responseFromController.Data, responseDTO)
 
@@ -140,7 +140,7 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 }
 
 func TestInsertGetGoodsQuantity(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),
@@ -215,7 +215,7 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 						return err
 					}
 
-					var responseDTO = &response.GetGoodsQuantityResponseDTO{}
+					var responseDTO = &dto.GetGoodsQuantityResponseDTO{}
 
 					err = json.Unmarshal(responseFromController.Data, responseDTO)
 
@@ -249,7 +249,7 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 }
 
 func TestInsertGetGoods(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),
@@ -301,7 +301,7 @@ func TestInsertGetGoods(t *testing.T) {
 						return err
 					}
 
-					var responseDTO = &response.GetGoodsDataResponseDTO{}
+					var responseDTO = &dto.GetGoodsDataResponseDTO{}
 
 					err = json.Unmarshal(responseFromController.Data, responseDTO)
 

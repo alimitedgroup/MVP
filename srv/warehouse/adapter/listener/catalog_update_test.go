@@ -55,7 +55,7 @@ func (m *applyCatalogUpdateMock) GetGood(id string) goodMock {
 func TestCatalogUpdateListener(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	js, err := jetstream.New(ns)
 	if err != nil {
 		t.Error(err)
