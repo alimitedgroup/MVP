@@ -46,6 +46,16 @@ func (s *OrderPersistanceAdapter) GetOrder(orderId model.OrderID) (model.Order, 
 	return modelOrder, nil
 }
 
+func (s *OrderPersistanceAdapter) GetAllOrder() ([]model.Order, error) {
+	orders, err := s.orderRepo.GetOrders()
+	if err != nil {
+		return nil, err
+	}
+
+	modelOrder := repoOrdersToModelOrders(orders)
+	return modelOrder, nil
+}
+
 func repoOrderToModelOrder(order Order) model.Order {
 	goods := make([]model.GoodStock, 0, len(order.Goods))
 	for _, good := range order.Goods {
@@ -64,4 +74,13 @@ func repoOrderToModelOrder(order Order) model.Order {
 		Goods:        goods,
 		CreationTime: order.CreationTime,
 	}
+}
+
+func repoOrdersToModelOrders(orders []Order) []model.Order {
+	list := make([]model.Order, 0, len(orders))
+	for _, order := range orders {
+		list = append(list, repoOrderToModelOrder(order))
+	}
+
+	return list
 }

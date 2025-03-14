@@ -59,6 +59,15 @@ func (s *ManageOrderService) GetOrder(ctx context.Context, orderId string) (mode
 	return order, nil
 }
 
+func (s *ManageOrderService) GetAllOrders(context.Context) ([]model.Order, error) {
+	orders, err := s.getOrderPort.GetAllOrder()
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
 func createOrderCmdToCalculateAvailabilityCmd(cmd port.CreateOrderCmd) port.CalculateAvailabilityCmd {
 	requestGoods := make([]port.RequestedGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {

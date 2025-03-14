@@ -23,6 +23,18 @@ func (s *OrderRepositoryImpl) GetOrder(orderId string) (Order, error) {
 	return order, nil
 }
 
+func (s *OrderRepositoryImpl) GetOrders() ([]Order, error) {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	orders := make([]Order, 0, len(s.orderMap))
+	for _, order := range s.orderMap {
+		orders = append(orders, order)
+	}
+
+	return orders, nil
+}
+
 func (s *OrderRepositoryImpl) SetOrder(orderId string, order Order) bool {
 	s.m.Lock()
 	defer s.m.Unlock()

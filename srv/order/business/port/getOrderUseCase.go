@@ -9,6 +9,7 @@ import (
 
 type IGetOrderUseCase interface {
 	GetOrder(context.Context, string) (model.Order, error)
+	GetAllOrders(context.Context) ([]model.Order, error)
 }
 
 var ErrOrderNotFound = errors.New("order not found")

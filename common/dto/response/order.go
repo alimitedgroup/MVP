@@ -9,6 +9,7 @@ type OrderCreateInfo struct {
 type ErrorResponseDTO ResponseDTO[any]
 
 type GetOrderResponseDTO ResponseDTO[OrderInfo]
+type GetAllOrderResponseDTO ResponseDTO[[]OrderInfo]
 
 type OrderInfo struct {
 	OrderID string          `json:"order_id"`

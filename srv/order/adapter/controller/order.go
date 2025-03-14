@@ -125,6 +125,25 @@ func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) er
 	return nil
 }
 
+func (c *OrderController) OrderGetAllHandler(ctx context.Context, msg *nats.Msg) error {
+	orders, err := c.getOrderUseCase.GetAllOrders(ctx)
+	if err != nil {
+		resp := response.ErrorResponseDTO{
+			Error: err.Error(),
+		}
+		if err := broker.RespondToMsg(msg, resp); err != nil {
+			return err
+		}
+	}
+
+	respDto := ordersToGetAllGoodResponseDTO(orders)
+	if err := broker.RespondToMsg(msg, respDto); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var ErrNameIsRequired = errors.New("name is required")
 var ErrEmailIsRequired = errors.New("email is required")
 var ErrAddressIsRequired = errors.New("address is required")
@@ -168,5 +187,32 @@ func orderToGetGoodResponseDTO(order model.Order) response.GetOrderResponseDTO {
 			Address: order.Address,
 			Goods:   goods,
 		},
+	}
+}
+
+func ordersToGetAllGoodResponseDTO(model []model.Order) response.GetAllOrderResponseDTO {
+	orders := make([]response.OrderInfo, 0, len(model))
+
+	for _, order := range model {
+		goods := make([]response.OrderInfoGood, 0, len(order.Goods))
+		for _, good := range order.Goods {
+			goods = append(goods, response.OrderInfoGood{
+				GoodID:   string(good.ID),
+				Quantity: good.Quantity,
+			})
+		}
+
+		orders = append(orders, response.OrderInfo{
+			OrderID: string(order.Id),
+			Status:  order.Status,
+			Name:    order.Name,
+			Email:   order.Email,
+			Address: order.Address,
+			Goods:   goods,
+		})
+	}
+
+	return response.GetAllOrderResponseDTO{
+		Message: orders,
 	}
 }

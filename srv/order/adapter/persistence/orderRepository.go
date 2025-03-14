@@ -4,6 +4,7 @@ import "errors"
 
 type IOrderRepository interface {
 	GetOrder(orderId string) (Order, error)
+	GetOrders() ([]Order, error)
 	SetOrder(orderId string, order Order) bool
 }
 

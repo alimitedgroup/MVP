@@ -26,5 +26,9 @@ func (r *OrderRouter) Setup(ctx context.Context) error {
 		return err
 	}
 
+	if err := r.broker.RegisterRequest(ctx, "order.get.all", broker.NoQueue, r.orderController.OrderGetAllHandler); err != nil {
+		return err
+	}
+
 	return nil
 }
