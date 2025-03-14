@@ -3,9 +3,8 @@ package controller
 import (
 	"context"
 	"encoding/json"
-
+	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/dto/request"
-	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 	servicecmd "github.com/alimitedgroup/MVP/srv/catalog/service/cmd"
@@ -37,9 +36,9 @@ func NewCatalogController(p CatalogControllerParams) *catalogController {
 }
 
 func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg) error { //GetGoodsInfo
-	request := &request.GetGoodsInfoDTO{}
+	req := &request.GetGoodsInfoDTO{}
 
-	err := json.Unmarshal(msg.Data, request)
+	err := json.Unmarshal(msg.Data, req)
 
 	if err != nil {
 		return nil
@@ -47,12 +46,12 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 
 	responseFromService := cc.getGoodsInfoUseCase.GetGoodsInfo(servicecmd.NewGetGoodsInfoCmd())
 
-	responseToReply := response.GetGoodsDataResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""}
+	responseToReply := dto.GetGoodsDataResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""}
 
 	data, err := json.Marshal(responseToReply)
 
 	if err != nil {
-		responseToReply = response.GetGoodsDataResponseDTO{GoodMap: make(map[string]catalogCommon.Good), Err: "Cannot complete the request"}
+		responseToReply = dto.GetGoodsDataResponseDTO{GoodMap: make(map[string]dto.Good), Err: "Cannot complete the request"}
 		data, _ = json.Marshal(responseToReply)
 	}
 
@@ -62,9 +61,9 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 }
 
 func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.Msg) error { //GetWarehouses
-	request := &request.GetWarehousesInfoDTO{}
+	req := &request.GetWarehousesInfoDTO{}
 
-	err := json.Unmarshal(msg.Data, request)
+	err := json.Unmarshal(msg.Data, req)
 
 	if err != nil {
 		return nil
@@ -72,12 +71,12 @@ func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.
 
 	responseFromService := cc.getWarehouseInfoUseCase.GetWarehouses(servicecmd.NewGetWarehousesCmd())
 
-	responseToReply := response.GetWarehouseResponseDTO{WarehouseMap: responseFromService.GetWarehouseMap(), Err: ""}
+	responseToReply := dto.GetWarehouseResponseDTO{WarehouseMap: responseFromService.GetWarehouseMap(), Err: ""}
 
 	data, err := json.Marshal(responseToReply)
 
 	if err != nil {
-		responseToReply = response.GetWarehouseResponseDTO{WarehouseMap: make(map[string]catalogCommon.Warehouse), Err: "Cannot complete the request"}
+		responseToReply = dto.GetWarehouseResponseDTO{WarehouseMap: make(map[string]dto.Warehouse), Err: "Cannot complete the request"}
 		data, _ = json.Marshal(responseToReply)
 	}
 
@@ -97,12 +96,12 @@ func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, 
 
 	responseFromService := cc.getGoodsQuantityUseCase.GetGoodsQuantity(servicecmd.NewGetGoodsQuantityCmd())
 
-	responseToReply := response.GetGoodsQuantityResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""}
+	responseToReply := dto.GetGoodsQuantityResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""}
 
 	data, err := json.Marshal(responseToReply)
 
 	if err != nil {
-		responseToReply = response.GetGoodsQuantityResponseDTO{GoodMap: make(map[string]int64), Err: "Cannot complete the request"}
+		responseToReply = dto.GetGoodsQuantityResponseDTO{GoodMap: make(map[string]int64), Err: "Cannot complete the request"}
 		data, _ = json.Marshal(responseToReply)
 	}
 

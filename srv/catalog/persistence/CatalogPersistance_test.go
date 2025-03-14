@@ -1,8 +1,10 @@
 package persistence
 
 import (
+	"github.com/alimitedgroup/MVP/common/dto"
 	"testing"
 
+	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )
@@ -83,6 +85,45 @@ func TestChangeGoodData(t *testing.T) {
 			assert.Equal(t, resultGoods["test-ID"].GetName(), "new-test-name")
 			assert.Equal(t, resultGoods["test-ID"].GetDescription(), "new-test-description")
 			assert.Equal(t, cr.GetGoodsGlobalQuantity()["test-ID"], int64(7))
+		}),
+	)
+}
+
+func TestChangeGoodDataWrongID(t *testing.T) {
+	// Testa la modifica di una merce
+	fx.New(
+		fx.Provide(NewCatalogRepository),
+		fx.Invoke(func(cr *CatalogRepository) {
+			err1 := cr.AddGood("test-ID", "test-name", "test-description")
+			err2 := cr.changeGoodData("2test-ID", "test-name", "test-description")
+			assert.Equal(t, err1, nil)
+			assert.Equal(t, err2, catalogCommon.ErrGoodIdNotValid)
+		}),
+	)
+}
+
+func TestChangeGoodDataEmptyName(t *testing.T) {
+	// Testa la modifica di una merce
+	fx.New(
+		fx.Provide(NewCatalogRepository),
+		fx.Invoke(func(cr *CatalogRepository) {
+			err1 := cr.AddGood("test-ID", "test-name", "test-description")
+			err2 := cr.changeGoodData("test-ID", "", "test-description")
+			assert.Equal(t, err1, nil)
+			assert.Equal(t, err2, dto.ErrEmptyName)
+		}),
+	)
+}
+
+func TestChangeGoodDataEmptyDescription(t *testing.T) {
+	// Testa la modifica di una merce
+	fx.New(
+		fx.Provide(NewCatalogRepository),
+		fx.Invoke(func(cr *CatalogRepository) {
+			err1 := cr.AddGood("test-ID", "test-name", "test-description")
+			err2 := cr.changeGoodData("test-ID", "2test-name", "")
+			assert.Equal(t, err1, nil)
+			assert.Equal(t, err2, dto.ErrEmptyDescription)
 		}),
 	)
 }

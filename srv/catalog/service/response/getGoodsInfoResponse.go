@@ -1,16 +1,18 @@
 package serviceresponse
 
-import "github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
+import (
+	"github.com/alimitedgroup/MVP/common/dto"
+)
 
 type GetGoodsInfoResponse struct {
-	goodMap map[string]catalogCommon.Good
+	goodMap map[string]dto.Good
 }
 
-func NewGetGoodsInfoResponse(goodMap map[string]catalogCommon.Good) *GetGoodsInfoResponse {
+func NewGetGoodsInfoResponse(goodMap map[string]dto.Good) *GetGoodsInfoResponse {
 	return &GetGoodsInfoResponse{goodMap: goodMap}
 }
 
-func (ggqr *GetGoodsInfoResponse) GetMap() map[string]catalogCommon.Good {
+func (ggqr *GetGoodsInfoResponse) GetMap() map[string]dto.Good {
 
 	return ggqr.goodMap
 }
