@@ -7,3 +7,31 @@ type OrderCreateInfo struct {
 }
 
 type ErrorResponseDTO ResponseDTO[any]
+
+type GetOrderResponseDTO ResponseDTO[OrderInfo]
+
+type OrderInfo struct {
+	OrderID string          `json:"order_id"`
+	Status  string          `json:"status"`
+	Name    string          `json:"name"`
+	Email   string          `json:"email"`
+	Address string          `json:"address"`
+	Goods   []OrderInfoGood `json:"goods"`
+}
+
+type OrderInfoGood struct {
+	GoodID   string `json:"good_id"`
+	Quantity int64  `json:"quantity"`
+}
+
+type TransferInfo struct {
+	TransferID string             `json:"transfer_id"`
+	SenderID   string             `json:"sender_id"`
+	ReceiverID string             `json:"receiver_id"`
+	Goods      []TransferInfoGood `json:"goods"`
+}
+
+type TransferInfoGood struct {
+	GoodID   string `json:"good_id"`
+	Quantity int64  `json:"quantity"`
+}
