@@ -30,6 +30,18 @@ func (s *stockRepositoryMock) AddStock(id string, quantity int64) bool {
 	return true
 }
 
+func (s *stockRepositoryMock) GetFreeStock(goodId string) int64 {
+	return 0
+}
+
+func (s *stockRepositoryMock) ReserveStock(goodId string, stock int64) error {
+	return nil
+}
+
+func (s *stockRepositoryMock) UnReserveStock(goodId string, stock int64) error {
+	return nil
+}
+
 func TestStockPersistanceAdapter(t *testing.T) {
 	ctx := t.Context()
 

@@ -7,4 +7,5 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(fx.Annotate(NewPublishStockUpdateAdapter, fx.As(new(port.ICreateStockUpdatePort)))),
+	fx.Provide(fx.Annotate(NewPublishReservationEventAdapter, fx.As(new(port.IStoreReservationEventPort)))),
 )

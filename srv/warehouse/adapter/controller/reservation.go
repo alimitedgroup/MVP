@@ -7,14 +7,16 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/nats-io/nats.go"
 )
 
 type ReservationController struct {
+	createReservationUseCase port.ICreateReservationUseCase
 }
 
-func NewReservationController() *ReservationController {
-	return &ReservationController{}
+func NewReservationController(createReservationUseCase port.ICreateReservationUseCase) *ReservationController {
+	return &ReservationController{createReservationUseCase}
 }
 
 func (c *ReservationController) CreateReservationHandler(ctx context.Context, msg *nats.Msg) error {
@@ -23,11 +25,28 @@ func (c *ReservationController) CreateReservationHandler(ctx context.Context, ms
 		return err
 	}
 
-	reservationId := "reservation_id"
+	goods := make([]port.ReservationGood, 0, len(dto.Goods))
+	for _, good := range dto.Goods {
+		goods = append(goods, port.ReservationGood{
+			GoodID:   good.GoodID,
+			Quantity: good.Quantity,
+		})
+	}
+
+	cmd := port.CreateReservationCmd{Goods: goods}
+	createResp, err := c.createReservationUseCase.CreateReservation(ctx, cmd)
+	if err != nil {
+		resp := response.ErrorResponseDTO{
+			Error: err.Error(),
+		}
+		if err := broker.RespondToMsg(msg, resp); err != nil {
+			return err
+		}
+	}
 
 	respDto := response.ReserveStockResponseDTO{
 		Message: response.ReserveStockInfo{
-			ReservationID: reservationId,
+			ReservationID: createResp.ReservationID,
 		},
 	}
 	if err := broker.RespondToMsg(msg, &respDto); err != nil {

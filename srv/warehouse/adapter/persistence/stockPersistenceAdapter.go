@@ -20,6 +20,14 @@ func (s *StockPersistanceAdapter) ApplyStockUpdate(goods []model.GoodStock) erro
 	return nil
 }
 
+func (s *StockPersistanceAdapter) ApplyStockReservation(reservation model.Reservation) error {
+	for _, good := range reservation.Goods {
+		s.stockRepo.ReserveStock(string(good.GoodID), good.Quantity)
+	}
+
+	return nil
+}
+
 func (s *StockPersistanceAdapter) GetStock(goodId model.GoodId) model.GoodStock {
 	stock := s.stockRepo.GetStock(string(goodId))
 	return model.GoodStock{

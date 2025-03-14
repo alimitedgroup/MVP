@@ -10,4 +10,6 @@ var Module = fx.Options(
 	fx.Provide(NewListenerRoutes),
 	fx.Provide(NewCatalogListener),
 	fx.Provide(NewCatalogRouter),
+	fx.Provide(NewReservationEventListener),
+	fx.Provide(NewReservationEventRouter),
 )
