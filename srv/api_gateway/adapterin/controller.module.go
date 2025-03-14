@@ -11,6 +11,8 @@ var Module = fx.Module(
 	fx.Provide(AsController(NewHealthCheckController)),
 	fx.Provide(AsController(NewLoginController)),
 	fx.Provide(AsController(NewAuthHealthCheckController)),
+	fx.Provide(AsController(NewListWarehousesController)),
+	fx.Provide(AsController(NewGetGoodsController)),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
 )
 

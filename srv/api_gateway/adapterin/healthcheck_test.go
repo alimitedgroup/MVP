@@ -9,10 +9,10 @@ import (
 )
 
 func TestHealthCheck(t *testing.T) {
-	_, base := start(t)
+	s := start(t)
 	client := &http.Client{}
 
-	resp, err := client.Get(base + "/api/v1/ping")
+	resp, err := client.Get(s.base + "/api/v1/ping")
 	require.NoError(t, err)
 
 	var respbody response.ResponseDTO[string]

@@ -16,9 +16,9 @@ import (
 )
 
 func TestLoginOk(t *testing.T) {
-	auth, base := start(t)
+	s := start(t)
 
-	auth.EXPECT().Login("user").Return(portin.LoginResult{
+	s.auth.EXPECT().Login("user").Return(portin.LoginResult{
 		Token:           "some.secure.token",
 		TokenExpiration: time.Now().Add(7 * 24 * time.Hour),
 		Role:            types.RoleClient,
@@ -26,7 +26,7 @@ func TestLoginOk(t *testing.T) {
 
 	req, err := http.NewRequest(
 		"POST",
-		base+"/api/v1/login",
+		s.base+"/api/v1/login",
 		strings.NewReader(url.Values{"username": {"user"}}.Encode()),
 	)
 	require.NoError(t, err)
@@ -43,11 +43,11 @@ func TestLoginOk(t *testing.T) {
 }
 
 func TestLoginMissingUsername(t *testing.T) {
-	_, base := start(t)
+	s := start(t)
 
 	req, err := http.NewRequest(
 		"POST",
-		base+"/api/v1/login",
+		s.base+"/api/v1/login",
 		nil,
 	)
 	require.NoError(t, err)
@@ -64,13 +64,13 @@ func TestLoginMissingUsername(t *testing.T) {
 }
 
 func TestLoginInternalError(t *testing.T) {
-	auth, base := start(t)
+	s := start(t)
 
-	auth.EXPECT().Login("user").Return(portin.LoginResult{}, fmt.Errorf("some error"))
+	s.auth.EXPECT().Login("user").Return(portin.LoginResult{}, fmt.Errorf("some error"))
 
 	req, err := http.NewRequest(
 		"POST",
-		base+"/api/v1/login",
+		s.base+"/api/v1/login",
 		strings.NewReader(url.Values{"username": {"user"}}.Encode()),
 	)
 	require.NoError(t, err)
@@ -87,9 +87,9 @@ func TestLoginInternalError(t *testing.T) {
 }
 
 func TestLoginAuthFailed(t *testing.T) {
-	auth, base := start(t)
+	s := start(t)
 
-	auth.EXPECT().Login("user").Return(portin.LoginResult{
+	s.auth.EXPECT().Login("user").Return(portin.LoginResult{
 		Token:           "",
 		TokenExpiration: time.Now().Add(7 * 24 * time.Hour),
 		Role:            types.RoleNone,
@@ -97,7 +97,7 @@ func TestLoginAuthFailed(t *testing.T) {
 
 	req, err := http.NewRequest(
 		"POST",
-		base+"/api/v1/login",
+		s.base+"/api/v1/login",
 		strings.NewReader(url.Values{"username": {"user"}}.Encode()),
 	)
 	require.NoError(t, err)

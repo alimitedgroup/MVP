@@ -13,14 +13,14 @@ import (
 )
 
 func TestIsLoggedOk(t *testing.T) {
-	auth, base := start(t)
+	s := start(t)
 
-	auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
 
-	req, _ := http.NewRequest("GET", base+"/api/v1/is_logged", nil)
+	req, _ := http.NewRequest("GET", s.base+"/api/v1/is_logged", nil)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")
 
 	resp, err := http.DefaultClient.Do(req)
@@ -34,9 +34,9 @@ func TestIsLoggedOk(t *testing.T) {
 }
 
 func TestIsLoggedMissingToken(t *testing.T) {
-	_, base := start(t)
+	s := start(t)
 
-	req, _ := http.NewRequest("GET", base+"/api/v1/is_logged", nil)
+	req, _ := http.NewRequest("GET", s.base+"/api/v1/is_logged", nil)
 
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
@@ -49,11 +49,11 @@ func TestIsLoggedMissingToken(t *testing.T) {
 }
 
 func TestIsLoggedInvalidToken(t *testing.T) {
-	auth, base := start(t)
+	s := start(t)
 
-	auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{}, business.ErrorTokenInvalid)
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{}, business.ErrorTokenInvalid)
 
-	req, _ := http.NewRequest("GET", base+"/api/v1/is_logged", nil)
+	req, _ := http.NewRequest("GET", s.base+"/api/v1/is_logged", nil)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")
 
 	resp, err := http.DefaultClient.Do(req)
@@ -67,11 +67,11 @@ func TestIsLoggedInvalidToken(t *testing.T) {
 }
 
 func TestIsLoggedExpiredToken(t *testing.T) {
-	auth, base := start(t)
+	s := start(t)
 
-	auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{}, business.ErrorTokenExpired)
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{}, business.ErrorTokenExpired)
 
-	req, _ := http.NewRequest("GET", base+"/api/v1/is_logged", nil)
+	req, _ := http.NewRequest("GET", s.base+"/api/v1/is_logged", nil)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")
 
 	resp, err := http.DefaultClient.Do(req)

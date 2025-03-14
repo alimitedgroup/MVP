@@ -17,6 +17,14 @@ type IsLoggedResponse struct {
 	Role string `json:"role"`
 }
 
+type GetWarehousesResponse struct {
+	Ids []string `json:"warehouse_ids"`
+}
+
+type GetGoodsResponse struct {
+	Goods []GoodAndAmount `json:"goods"`
+}
+
 type MissingRequiredFieldError struct {
 	Field       string `json:"field"`
 	Description string `json:"description"`
