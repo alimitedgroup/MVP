@@ -7,7 +7,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/google/uuid"
 )

@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 )
 
 type CatalogPersistanceAdapter struct {

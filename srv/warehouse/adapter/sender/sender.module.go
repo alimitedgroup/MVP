@@ -1,7 +1,7 @@
 package sender
 
 import (
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"go.uber.org/fx"
 )
 

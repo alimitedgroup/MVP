@@ -3,7 +3,7 @@ package persistence
 import (
 	"testing"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )

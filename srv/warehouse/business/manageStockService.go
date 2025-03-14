@@ -1,11 +1,11 @@
-package application
+package business
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 )
 
 type ManageStockService struct {

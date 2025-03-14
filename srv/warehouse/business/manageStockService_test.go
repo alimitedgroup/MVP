@@ -1,12 +1,12 @@
-package application
+package business
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )

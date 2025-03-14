@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 )
 
 type ICreateStockUpdatePort interface {

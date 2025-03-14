@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/nats-io/nats.go/jetstream"
 )
 
