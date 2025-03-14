@@ -16,7 +16,7 @@ func TestGetWarehouses(t *testing.T) {
 	client := &http.Client{}
 
 	s.warehouses.EXPECT().GetWarehouses().Return(
-		[]portin.WarehouseOverview{{"id1"}, {"id2"}, {"id3"}},
+		[]portin.WarehouseOverview{{ID: "id1"}, {ID: "id2"}, {ID: "id3"}},
 		nil,
 	)
 

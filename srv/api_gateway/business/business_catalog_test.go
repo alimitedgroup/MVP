@@ -14,8 +14,8 @@ func TestGetWarehouses(t *testing.T) {
 	catalog := NewMockCatalogPortOut(ctrl)
 
 	catalog.EXPECT().ListWarehouses().Return(map[string]dto.Warehouse{
-		"abc": {"abc", map[string]int64{"id1": 20}},
-		"def": {"def", map[string]int64{"id1": 10, "id2": 20}},
+		"abc": {ID: "abc", Stock: map[string]int64{"id1": 20}},
+		"def": {ID: "def", Stock: map[string]int64{"id1": 10, "id2": 20}},
 	}, nil)
 
 	business := NewBusiness(auth, catalog)
@@ -45,8 +45,8 @@ func TestGetGoods(t *testing.T) {
 	catalog := NewMockCatalogPortOut(ctrl)
 
 	catalog.EXPECT().ListGoods().Return(map[string]dto.Good{
-		"id1": {"abc", "abcdesc", "id1"},
-		"id2": {"def", "defdesc", "id2"},
+		"id1": {Name: "abc", Description: "abcdesc", ID: "id1"},
+		"id2": {Name: "def", Description: "defdesc", ID: "id2"},
 	}, nil)
 	catalog.EXPECT().ListStock().Return(
 		map[string]int64{"id1": 20, "id2": 10},
@@ -95,8 +95,8 @@ func TestGetGoodsStockError(t *testing.T) {
 	catalog := NewMockCatalogPortOut(ctrl)
 
 	catalog.EXPECT().ListGoods().Return(map[string]dto.Good{
-		"id1": {"abc", "abcdesc", "id1"},
-		"id2": {"def", "defdesc", "id2"},
+		"id1": {Name: "abc", Description: "abcdesc", ID: "id1"},
+		"id2": {Name: "def", Description: "defdesc", ID: "id2"},
 	}, nil)
 	catalog.EXPECT().ListStock().Return(nil, fmt.Errorf("some error"))
 
@@ -112,8 +112,8 @@ func TestGetGoodsMissingStock(t *testing.T) {
 	catalog := NewMockCatalogPortOut(ctrl)
 
 	catalog.EXPECT().ListGoods().Return(map[string]dto.Good{
-		"id1": {"abc", "abcdesc", "id1"},
-		"id2": {"def", "defdesc", "id2"},
+		"id1": {Name: "abc", Description: "abcdesc", ID: "id1"},
+		"id2": {Name: "def", Description: "defdesc", ID: "id2"},
 	}, nil)
 	catalog.EXPECT().ListStock().Return(
 		map[string]int64{"id1": 20},

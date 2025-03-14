@@ -16,8 +16,8 @@ func TestGetGoods(t *testing.T) {
 
 	s.warehouses.EXPECT().GetGoods().Return(
 		[]dto.GoodAndAmount{
-			{"Apple", "A tasty apple", "id1", 20},
-			{"Orange", "A tasty orange", "id2", 10},
+			{Name: "Apple", Description: "A tasty apple", ID: "id1", Amount: 20},
+			{Name: "Orange", Description: "A tasty orange", ID: "id2", Amount: 10},
 		},
 		nil,
 	)
@@ -30,8 +30,8 @@ func TestGetGoods(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&respbody)
 	require.NoError(t, err)
 	require.Equal(t, []dto.GoodAndAmount{
-		{"Apple", "A tasty apple", "id1", 20},
-		{"Orange", "A tasty orange", "id2", 10},
+		{Name: "Apple", Description: "A tasty apple", ID: "id1", Amount: 20},
+		{Name: "Orange", Description: "A tasty orange", ID: "id2", Amount: 10},
 	}, respbody.Goods)
 }
 
