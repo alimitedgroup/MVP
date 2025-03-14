@@ -41,5 +41,5 @@ func (aa *AuthAdapter) GetPemPublicKey(cmd *servicecmd.GetPemPublicKeyCmd) *serv
 }
 
 func (aa *AuthAdapter) CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistence) *serviceresponse.CheckKeyPairExistenceResponse {
-	return serviceresponse.NewCheckKeyPairExistenceResponse(aa.repo.CheckKeyPairExistance())
+	return serviceresponse.NewCheckKeyPairExistenceResponse(aa.repo.CheckKeyPairExistence())
 }

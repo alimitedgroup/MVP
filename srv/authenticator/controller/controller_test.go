@@ -48,13 +48,13 @@ var p = fx.Options(
 func TestGetToken(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
 		fx.Provide(NewAuthController),
-		fx.Invoke(func(lc fx.Lifecycle, r *authRouter) {
+		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)
@@ -93,13 +93,13 @@ func TestGetToken(t *testing.T) {
 func TestGetTokenWithWrongUser(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
 		fx.Provide(NewAuthController),
-		fx.Invoke(func(lc fx.Lifecycle, r *authRouter) {
+		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)
@@ -138,13 +138,13 @@ func TestGetTokenWithWrongUser(t *testing.T) {
 func TestGetTokenEmptyUsername(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
 		fx.Provide(NewAuthController),
-		fx.Invoke(func(lc fx.Lifecycle, r *authRouter) {
+		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)
@@ -183,13 +183,13 @@ func TestGetTokenEmptyUsername(t *testing.T) {
 func TestGetTokenWrongRequest(t *testing.T) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
 		fx.Provide(NewAuthController),
-		fx.Invoke(func(lc fx.Lifecycle, r *authRouter) {
+		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)

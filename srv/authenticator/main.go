@@ -4,48 +4,19 @@ import (
 	"context"
 	"log"
 
-	"github.com/alimitedgroup/MVP/common/lib"
+	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/authenticator/config"
-	"github.com/alimitedgroup/MVP/srv/authenticator/controller"
 	"go.uber.org/fx"
-)
-
-func Run(ctx context.Context, cr *controller.ControllerRouter) error {
-	//var err error
-	err := cr.Setup(ctx)
-	if err != nil {
-		return err
-	}
-	<-ctx.Done()
-	return nil
-}
-
-func RunLifeCycle(lc fx.Lifecycle, cr *controller.ControllerRouter) {
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			err := Run(ctx, cr)
-			return err
-		},
-		OnStop: func(ctx context.Context) error {
-			return nil
-		},
-	})
-}
-
-var Modules = fx.Options(
-	lib.Module,
-	controller.Module,
-
-	//metti tutti altri module
 )
 
 func main() {
 	ctx := context.Background()
-	config := config.LoadConfig()
+	cfg := config.LoadConfig()
 	app := fx.New(
-		Modules,
-		config,
-		fx.Invoke(RunLifeCycle),
+		cfg,
+		config.Modules,
+		fx.Provide(broker.NewNatsConn),
+		fx.Invoke(config.RunLifeCycle),
 	)
 
 	err := app.Start(ctx)

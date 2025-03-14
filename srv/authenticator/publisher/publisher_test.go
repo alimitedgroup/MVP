@@ -67,7 +67,7 @@ func JsDetector(ctx context.Context, msg jetstream.Msg) error {
 }
 
 func TestPublishing(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),
@@ -113,7 +113,7 @@ func TestPublishing(t *testing.T) {
 }
 
 func TestPublishingWrongKey(t *testing.T) {
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),

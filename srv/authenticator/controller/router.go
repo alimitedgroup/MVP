@@ -8,7 +8,7 @@ import (
 
 type ControllerRouter []lib.BrokerRoute
 
-func NewControllerRouter(ar *authRouter) *ControllerRouter {
+func NewControllerRouter(ar *AuthRouter) *ControllerRouter {
 	return &ControllerRouter{
 		ar,
 	}
