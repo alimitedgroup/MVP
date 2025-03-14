@@ -38,7 +38,7 @@ type TestParams struct {
 func IntegrationTest(t *testing.T, testFunc any) {
 	ctx := t.Context()
 
-	ns := broker.NewInProcessNATSServer(t)
+	ns, _ := broker.NewInProcessNATSServer(t)
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	js, err := jetstream.New(ns)
@@ -54,7 +54,7 @@ func IntegrationTest(t *testing.T, testFunc any) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(&p),
-		fx.Replace(ns),
+		fx.Supply(ns),
 		Module,
 		fx.Invoke(testFunc),
 	)
