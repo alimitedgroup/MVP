@@ -273,7 +273,10 @@ func TestGetTwoToken(t *testing.T) {
 						t.Error("Second token is empty")
 					}
 					time.Sleep(1 * time.Second)
-					chekKey(broker, rsc)
+					err = chekKey(broker, rsc)
+					if err != nil {
+						return err
+					}
 					time.Sleep(2 * time.Second)
 					assert.Equal(t, getCheck(), true)
 					return nil
