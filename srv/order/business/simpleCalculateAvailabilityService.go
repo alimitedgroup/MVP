@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"errors"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 )
@@ -15,5 +16,6 @@ func NewSimpleCalculateAvailabilityService() *SimpleCalculateAvailabilityService
 
 func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, cmd port.CalculateAvailabilityCmd) (port.CalculateAvailabilityResponse, error) {
 
-	return port.CalculateAvailabilityResponse{}, nil
+	return port.CalculateAvailabilityResponse{}, errors.New("no stock")
+	// return port.CalculateAvailabilityResponse{}, nil
 }

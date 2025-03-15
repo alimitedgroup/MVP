@@ -7,7 +7,7 @@ import (
 var Module = fx.Options(
 	fx.Provide(NewStockUpdateListener),
 	fx.Provide(NewStockUpdateRouter),
-	fx.Provide(NewOrderUpdateListener),
-	fx.Provide(NewOrderUpdateRouter),
+	fx.Provide(NewOrderListener),
+	fx.Provide(NewOrderRouter),
 	fx.Provide(NewListenerRoutes),
 )

@@ -9,7 +9,8 @@ type ICalculateAvailabilityUseCase interface {
 }
 
 type CalculateAvailabilityCmd struct {
-	Goods []RequestedGood
+	Goods              []RequestedGood
+	ExcludedWarehouses []string
 }
 
 type RequestedGood struct {

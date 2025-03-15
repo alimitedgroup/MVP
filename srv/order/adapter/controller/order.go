@@ -47,7 +47,6 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 		}
 
 		return nil
-
 	}
 
 	goods := make([]port.CreateOrderGood, 0, len(dto.Goods))
@@ -59,7 +58,6 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 	}
 
 	cmd := port.CreateOrderCmd{
-		Status:  "Created",
 		Name:    dto.Name,
 		Email:   dto.Email,
 		Address: dto.Address,

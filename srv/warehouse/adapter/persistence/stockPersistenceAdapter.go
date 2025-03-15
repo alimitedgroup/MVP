@@ -20,9 +20,11 @@ func (s *StockPersistanceAdapter) ApplyStockUpdate(goods []model.GoodStock) erro
 	return nil
 }
 
-func (s *StockPersistanceAdapter) ApplyStockReservation(reservation model.Reservation) error {
+func (s *StockPersistanceAdapter) ApplyReservationEvent(reservation model.Reservation) error {
 	for _, good := range reservation.Goods {
-		s.stockRepo.ReserveStock(string(good.GoodID), good.Quantity)
+		if err := s.stockRepo.ReserveStock(string(good.GoodID), good.Quantity); err != nil {
+			return err
+		}
 	}
 
 	return nil

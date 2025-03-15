@@ -6,5 +6,7 @@ import (
 )
 
 var Module = fx.Options(
-	fx.Provide(fx.Annotate(NewPublishOrderUpdateAdapter, fx.As(new(port.ISaveOrderUpdatePort)))),
+	fx.Provide(fx.Annotate(NewNatsStreamAdapter,
+		fx.As(new(port.ISendOrderUpdatePort)), fx.As(new(port.ISendContactWarehousePort)), fx.As(new(port.IRequestReservationPort)),
+	)),
 )

@@ -10,7 +10,6 @@ type ICreateOrderUseCase interface {
 
 type CreateOrderCmd struct {
 	Name    string
-	Status  string
 	Email   string
 	Address string
 	Goods   []CreateOrderGood
