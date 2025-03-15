@@ -3,7 +3,7 @@ package persistence
 import (
 	"testing"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
 )
@@ -28,6 +28,18 @@ func (s *stockRepositoryMock) GetStock(id string) int64 {
 func (s *stockRepositoryMock) AddStock(id string, quantity int64) bool {
 	s.M[id] += quantity
 	return true
+}
+
+func (s *stockRepositoryMock) GetFreeStock(goodId string) int64 {
+	return 0
+}
+
+func (s *stockRepositoryMock) ReserveStock(goodId string, stock int64) error {
+	return nil
+}
+
+func (s *stockRepositoryMock) UnReserveStock(goodId string, stock int64) error {
+	return nil
 }
 
 func TestStockPersistanceAdapter(t *testing.T) {

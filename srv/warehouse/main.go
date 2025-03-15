@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
-	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"log"
+
+	"github.com/alimitedgroup/MVP/common/lib/broker"
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"go.uber.org/fx"
 )
@@ -54,7 +55,7 @@ func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
 var Modules = fx.Options(
 	lib.Module,
 	adapter.Module,
-	application.Module,
+	business.Module,
 )
 
 func main() {

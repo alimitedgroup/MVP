@@ -6,9 +6,9 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 	"github.com/magiconair/properties/assert"
 	"github.com/nats-io/nats.go/jetstream"
 	"go.uber.org/fx"

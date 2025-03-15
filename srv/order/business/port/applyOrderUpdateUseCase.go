@@ -1,0 +1,22 @@
+package port
+
+import "context"
+
+type IApplyOrderUpdateUseCase interface {
+	ApplyOrderUpdate(context.Context, OrderUpdateCmd) error
+}
+
+type OrderUpdateCmd struct {
+	ID           string
+	Goods        []OrderUpdateGood
+	Status       string
+	Name         string
+	Email        string
+	Address      string
+	CreationTime int64
+}
+
+type OrderUpdateGood struct {
+	GoodID   string
+	Quantity int64
+}

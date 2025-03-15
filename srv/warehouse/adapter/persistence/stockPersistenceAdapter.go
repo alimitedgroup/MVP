@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 )
 
 type StockPersistanceAdapter struct {
@@ -14,12 +14,24 @@ func NewStockPersistanceAdapter(stockRepo IStockRepository) *StockPersistanceAda
 
 func (s *StockPersistanceAdapter) ApplyStockUpdate(goods []model.GoodStock) error {
 	for _, good := range goods {
-		s.stockRepo.SetStock(good.ID, good.Quantity)
+		s.stockRepo.SetStock(string(good.ID), good.Quantity)
 	}
 
 	return nil
 }
 
-func (s *StockPersistanceAdapter) GetStock(goodId string) int64 {
-	return s.stockRepo.GetStock(goodId)
+func (s *StockPersistanceAdapter) ApplyStockReservation(reservation model.Reservation) error {
+	for _, good := range reservation.Goods {
+		s.stockRepo.ReserveStock(string(good.GoodID), good.Quantity)
+	}
+
+	return nil
+}
+
+func (s *StockPersistanceAdapter) GetStock(goodId model.GoodId) model.GoodStock {
+	stock := s.stockRepo.GetStock(string(goodId))
+	return model.GoodStock{
+		ID:       goodId,
+		Quantity: stock,
+	}
 }
