@@ -5,6 +5,9 @@ import (
 )
 
 var Module = fx.Options(
-	fx.Provide(fx.Annotate(NewCatalogRepository,
-		fx.As(new(IGoodRepository)))),
+	fx.Provide(
+		fx.Annotate(NewCatalogRepository,
+			fx.As(new(IGoodRepository)),
+		),
+	),
 )

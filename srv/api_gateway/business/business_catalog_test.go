@@ -2,10 +2,11 @@ package business
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"testing"
 )
 
 func TestGetWarehouses(t *testing.T) {
