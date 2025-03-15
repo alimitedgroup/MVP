@@ -6,5 +6,5 @@ import (
 )
 
 type ICheckKeyPairExistance interface {
-	CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistence) *serviceresponse.CheckKeyPairExistenceResponse
+	CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistenceCmd) *serviceresponse.CheckKeyPairExistenceResponse
 }

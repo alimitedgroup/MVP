@@ -83,7 +83,7 @@ func NewFakeAdapter() *FakeAdapter {
 	return &FakeAdapter{prk: nil, puk: nil}
 }
 
-func (fa *FakeAdapter) CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistence) *serviceresponse.CheckKeyPairExistenceResponse {
+func (fa *FakeAdapter) CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistenceCmd) *serviceresponse.CheckKeyPairExistenceResponse {
 	if fa.prk == nil || fa.puk == nil {
 		return serviceresponse.NewCheckKeyPairExistenceResponse(common.ErrNoKeyPair)
 	}

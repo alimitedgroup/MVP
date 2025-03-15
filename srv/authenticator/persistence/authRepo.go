@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
-	"github.com/google/uuid"
 )
 
 type AuthRepository struct {
@@ -36,12 +35,12 @@ func (ar *AuthRepository) checkKeyPair(prk *[]byte, puk *[]byte) bool {
 	return false
 }
 
-func (ar *AuthRepository) StorePemKeyPair(prk []byte, puk []byte) error {
+func (ar *AuthRepository) StorePemKeyPair(prk []byte, puk []byte, emit string) error {
 	ar.mutex.Lock()
 	defer ar.mutex.Unlock()
 	//Store key in PEM format to memory
 	if ar.checkKeyPair(&prk, &puk) {
-		ar.issuer = uuid.New().String()
+		ar.issuer = emit
 		ar.prk = NewPemPrivateKey(&prk, ar.issuer)
 		ar.puk = NewPemPublicKey(&puk, ar.issuer)
 		return nil

@@ -19,7 +19,7 @@ func (aa *AuthAdapter) StorePemKeyPair(cmd *servicecmd.StorePemKeyPairCmd) *serv
 	if cmd.GetPemPrivateKey() == nil || cmd.GetPemPublicKey() == nil {
 		return serviceresponse.NewStorePemKeyPairResponse(common.ErrKeyPairNotValid)
 	}
-	return serviceresponse.NewStorePemKeyPairResponse(aa.repo.StorePemKeyPair(*cmd.GetPemPrivateKey(), *cmd.GetPemPublicKey()))
+	return serviceresponse.NewStorePemKeyPairResponse(aa.repo.StorePemKeyPair(*cmd.GetPemPrivateKey(), *cmd.GetPemPublicKey(), cmd.GetIssuer()))
 }
 
 func (aa *AuthAdapter) GetPemPrivateKey(cmd *servicecmd.GetPemPrivateKeyCmd) *serviceresponse.GetPemPrivateKeyResponse {
@@ -40,6 +40,6 @@ func (aa *AuthAdapter) GetPemPublicKey(cmd *servicecmd.GetPemPublicKeyCmd) *serv
 	return serviceresponse.NewGetPemPublicKeyResponse(&data, puk.GetIssuer(), nil)
 }
 
-func (aa *AuthAdapter) CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistence) *serviceresponse.CheckKeyPairExistenceResponse {
+func (aa *AuthAdapter) CheckKeyPairExistance(cmd *servicecmd.CheckPemKeyPairExistenceCmd) *serviceresponse.CheckKeyPairExistenceResponse {
 	return serviceresponse.NewCheckKeyPairExistenceResponse(aa.repo.CheckKeyPairExistence())
 }

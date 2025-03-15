@@ -52,7 +52,7 @@ func TestStorePemKeyPair(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StorePemKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk, "test-issuer")
 			assert.Equal(t, err2, nil)
 		}),
 	)
@@ -64,7 +64,7 @@ func TestStoreWrongKeyPair(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GenerateWrongPemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StorePemKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk, "test-issuer")
 			assert.Equal(t, err2, common.ErrKeyPairNotValid)
 		}),
 	)
@@ -78,7 +78,7 @@ func TestStoreGarbageKeyPair(t *testing.T) {
 			prk = append(prk, byte(7))
 			puk := []byte{}
 			puk = append(puk, byte(7))
-			err := ar.StorePemKeyPair(prk, puk)
+			err := ar.StorePemKeyPair(prk, puk, "test-issuer")
 			assert.Equal(t, err, common.ErrKeyPairNotValid)
 		}),
 	)
@@ -90,7 +90,7 @@ func TestGetPemPublicKey(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StorePemKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk, "test-issuer")
 			assert.Equal(t, err2, nil)
 			pukc, err3 := ar.GetPemPublicKey()
 			assert.Equal(t, err3, nil)
@@ -108,7 +108,7 @@ func TestGetPemPrivateKey(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StorePemKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk, "test-issuer")
 			assert.Equal(t, err2, nil)
 			pukc, err3 := ar.GetPemPrivateKey()
 			assert.Equal(t, err3, nil)
@@ -148,7 +148,7 @@ func TestCheckKeyPair(t *testing.T) {
 		fx.Invoke(func(ar *AuthRepository) {
 			prk, puk, err := GeneratePemKey()
 			assert.Equal(t, err, nil)
-			err2 := ar.StorePemKeyPair(*prk, *puk)
+			err2 := ar.StorePemKeyPair(*prk, *puk, "test-issuer")
 			assert.Equal(t, err2, nil)
 			assert.Equal(t, ar.CheckKeyPairExistence(), nil)
 		}),

@@ -17,6 +17,7 @@ import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 	serviceauthenticator "github.com/alimitedgroup/MVP/srv/authenticator/service/strategy"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"go.uber.org/fx"
 )
 
@@ -92,7 +93,7 @@ func (as *AuthService) generateToken(username string, role string) (string, erro
 		if err != nil {
 			return "", err
 		}
-		err = as.StorePemKeyPair(servicecmd.NewStorePemKeyPairCmd(prk, puk))
+		err = as.StorePemKeyPair(servicecmd.NewStorePemKeyPairCmd(prk, puk, uuid.New().String()))
 		if err != nil {
 			return "", err
 		}

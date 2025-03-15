@@ -38,7 +38,7 @@ func NewFakeRepo() *FakeRepo {
 	return &FakeRepo{}
 }
 
-func (fr *FakeRepo) StorePemKeyPair(prk []byte, puk []byte) error {
+func (fr *FakeRepo) StorePemKeyPair(prk []byte, puk []byte, emit string) error {
 	if len(prk) == 0 || len(puk) == 0 {
 		return common.ErrKeyPairNotValid
 	}
@@ -63,7 +63,7 @@ func (fr *FakeRepo) GetPemPrivateKey() (persistence.PemPrivateKey, error) {
 	return *persistence.NewPemPrivateKey(&returnSt, "test"), nil
 }
 
-func (fr *FakeRepo) CheckKeyPairExistance() error {
+func (fr *FakeRepo) CheckKeyPairExistence() error {
 	returnErr := getReturnErr()
 	if returnErr {
 		return common.ErrNoKeyPair
@@ -85,7 +85,7 @@ func TestStorePemKeyPair(t *testing.T) {
 		p,
 		fx.Invoke(func(ar *AuthAdapter) {
 			fakeKey := []byte("test")
-			response := ar.StorePemKeyPair(servicecmd.NewStorePemKeyPairCmd(&fakeKey, &fakeKey))
+			response := ar.StorePemKeyPair(servicecmd.NewStorePemKeyPairCmd(&fakeKey, &fakeKey, "test-issuer"))
 			assert.Equal(t, response.GetError(), nil)
 		}),
 	)
@@ -97,7 +97,7 @@ func TestStoreWrongPemKeyPair(t *testing.T) {
 		p,
 		fx.Invoke(func(ar *AuthAdapter) {
 			fakeKey := []byte("test")
-			response := ar.StorePemKeyPair(servicecmd.NewStorePemKeyPairCmd(nil, &fakeKey))
+			response := ar.StorePemKeyPair(servicecmd.NewStorePemKeyPairCmd(nil, &fakeKey, "test-issuer"))
 			assert.Equal(t, response.GetError(), common.ErrKeyPairNotValid)
 		}),
 	)
