@@ -18,7 +18,7 @@ type AuthRepository struct {
 }
 
 func NewAuthRepo() *AuthRepository {
-	return &AuthRepository{prk: nil, puk: nil}
+	return &AuthRepository{prk: nil, puk: nil, issuer: ""}
 }
 
 func (ar *AuthRepository) checkKeyPair(prk *[]byte, puk *[]byte) bool {

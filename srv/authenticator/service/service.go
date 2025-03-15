@@ -64,7 +64,7 @@ func (as *AuthService) generatePemKey() (*[]byte, *[]byte, error) {
 	return &privateKeyFile, &publicKeyFile, nil
 }
 
-func (as *AuthService) StorePemKeyPair(cmd *servicecmd.StorePemKeyPairCmd) error {
+func (as *AuthService) storePemKeyPair(cmd *servicecmd.StorePemKeyPairCmd) error {
 	storeRespose := as.storePemKeyPairPort.StorePemKeyPair(cmd)
 	if storeRespose.GetError() != nil {
 		return storeRespose.GetError()
@@ -93,7 +93,7 @@ func (as *AuthService) generateToken(username string, role string) (string, erro
 		if err != nil {
 			return "", err
 		}
-		err = as.StorePemKeyPair(servicecmd.NewStorePemKeyPairCmd(prk, puk, uuid.New().String()))
+		err = as.storePemKeyPair(servicecmd.NewStorePemKeyPairCmd(prk, puk, uuid.New().String()))
 		if err != nil {
 			return "", err
 		}
