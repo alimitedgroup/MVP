@@ -32,3 +32,19 @@ func (s *StockPersistanceAdapter) GetStock(cmd port.GetStockCmd) (model.GoodStoc
 
 	return model.GoodStock{ID: cmd.GoodID, Quantity: stock}, nil
 }
+
+func (s *StockPersistanceAdapter) GetGlobalStock(GoodID model.GoodId) model.GoodStock {
+	stock := s.stockRepo.GetGlobalStock(string(GoodID))
+	return model.GoodStock{ID: GoodID, Quantity: stock}
+}
+
+func (s *StockPersistanceAdapter) GetWarehouses() []model.Warehouse {
+	warehousesIds := s.stockRepo.GetWarehouses()
+
+	warehouses := make([]model.Warehouse, 0, len(warehousesIds))
+	for _, warehouseId := range warehousesIds {
+		warehouses = append(warehouses, model.Warehouse{ID: warehouseId})
+	}
+
+	return warehouses
+}

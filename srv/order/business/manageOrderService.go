@@ -77,7 +77,6 @@ func (s *ManageOrderService) GetAllOrders(ctx context.Context) ([]model.Order, e
 func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) error {
 	now := time.Now().UnixNano()
 
-	// TODO: embed order information inside the contact request to avoid delay and incositency
 	order, err := s.getOrderPort.GetOrder(model.OrderID(cmd.OrderId))
 	if err != nil {
 		return err
@@ -120,7 +119,6 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 	remainingConfirmation := len(availResp.Warehouses)
 
 	errWarehouses := make([]string, 0, len(cmd.ExcludeWarehouses))
-	errWarehouses = append(errWarehouses, cmd.ExcludeWarehouses...)
 
 	for _, warehouse := range availResp.Warehouses {
 		items := make([]port.ReservationItem, 0, len(warehouse.Goods))
@@ -147,6 +145,7 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 			ReservationID: reservResp.Id,
 			Goods:         warehouse.Goods,
 		})
+
 		remainingConfirmation--
 	}
 
@@ -172,6 +171,11 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 			})
 		}
 
+		reservations := make([]string, 0, len(confirmed))
+		for _, reserv := range confirmed {
+			reservations = append(reservations, reserv.ReservationID)
+		}
+
 		orderUpdatecmd := port.SendOrderUpdateCmd{
 			ID:           string(order.Id),
 			Status:       "Filled",
@@ -179,6 +183,7 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 			Email:        order.Email,
 			CreationTime: order.CreationTime,
 			Goods:        goods,
+			Reservations: reservations,
 		}
 		err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdatecmd)
 		if err != nil {
@@ -187,19 +192,6 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 	}
 
 	return nil
-}
-
-func createOrderCmdToCalculateAvailabilityCmd(cmd port.CreateOrderCmd) port.CalculateAvailabilityCmd {
-	requestGoods := make([]port.RequestedGood, 0, len(cmd.Goods))
-	for _, good := range cmd.Goods {
-		requestGoods = append(requestGoods, port.RequestedGood(good))
-	}
-
-	availCmd := port.CalculateAvailabilityCmd{
-		Goods: requestGoods,
-	}
-
-	return availCmd
 }
 
 func createOrderCmdToSendOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd) port.SendOrderUpdateCmd {
@@ -212,12 +204,13 @@ func createOrderCmdToSendOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd)
 	}
 
 	saveCmd := port.SendOrderUpdateCmd{
-		ID:      orderId,
-		Status:  "Created",
-		Name:    cmd.Name,
-		Email:   cmd.Email,
-		Address: cmd.Address,
-		Goods:   goods,
+		ID:           orderId,
+		Status:       "Created",
+		Name:         cmd.Name,
+		Email:        cmd.Email,
+		Address:      cmd.Address,
+		Goods:        goods,
+		Reservations: []string{},
 	}
 
 	return saveCmd

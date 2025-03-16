@@ -34,12 +34,16 @@ func (s *stockRepositoryMock) GetFreeStock(goodId string) int64 {
 	return 0
 }
 
-func (s *stockRepositoryMock) ReserveStock(goodId string, stock int64) error {
+func (s *stockRepositoryMock) ReserveStock(reservationId string, goodId string, stock int64) error {
 	return nil
 }
 
 func (s *stockRepositoryMock) UnReserveStock(goodId string, stock int64) error {
 	return nil
+}
+
+func (s *stockRepositoryMock) GetReservation(reservationId string) (Reservation, error) {
+	return Reservation{}, nil
 }
 
 func TestStockPersistanceAdapter(t *testing.T) {

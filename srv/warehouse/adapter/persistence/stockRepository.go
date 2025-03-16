@@ -7,8 +7,14 @@ type IStockRepository interface {
 	SetStock(goodId string, stock int64) bool
 	AddStock(goodId string, stock int64) bool
 	GetFreeStock(goodId string) int64
-	ReserveStock(goodId string, stock int64) error
+	ReserveStock(reservationId string, goodId string, stock int64) error
 	UnReserveStock(goodId string, stock int64) error
+	GetReservation(reservationId string) (Reservation, error)
 }
 
 var ErrNotEnoughGoods = errors.New("not enough goods")
+var ErrReservationNotFound = errors.New("reservation not found")
+
+type Reservation struct {
+	Goods map[string]int64
+}

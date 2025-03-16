@@ -15,5 +15,7 @@ type ApplyOrderUpdateCmd struct {
 	Email        string
 	Address      string
 	Goods        []model.GoodStock
+	Reservations []string
+	UpdateTime   int64
 	CreationTime int64
 }

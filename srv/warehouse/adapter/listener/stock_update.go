@@ -24,7 +24,7 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 	if err != nil {
 		return err
 	}
-	cmd := StockUpdateEventToApplyStockUpdateCmd(event)
+	cmd := stockUpdateEventToApplyStockUpdateCmd(event)
 	err = l.applyStockUpdateUseCase.ApplyStockUpdate(ctx, cmd)
 	if err != nil {
 		return err
@@ -33,13 +33,15 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 	return nil
 }
 
-func StockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
+func stockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
 	var cmdType port.StockUpdateCmdType
 	switch event.Type {
 	case stream.StockUpdateTypeAdd:
 		cmdType = port.StockUpdateCmdTypeAdd
 	case stream.StockUpdateTypeRemove:
 		cmdType = port.StockUpdateCmdTypeRemove
+	case stream.StockUpdateTypeOrder:
+		cmdType = port.StockUpdateCmdTypeOrder
 	default:
 		log.Fatal("unknown stock update type")
 	}

@@ -40,6 +40,7 @@ func orderUpdateCmdToApplyOrderUpdateCmd(cmd port.OrderUpdateCmd) port.ApplyOrde
 		Email:        cmd.Email,
 		Address:      cmd.Address,
 		CreationTime: cmd.CreationTime,
+		Reservations: cmd.Reservations,
 		Goods:        goods,
 	}
 

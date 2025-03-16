@@ -1,18 +1,21 @@
 package persistence
 
-import "sync"
+import (
+	"sync"
+)
 
 type WarehouseStock struct {
 	goodToStock map[string]int64
 }
 
 type StockRepositoryImpl struct {
-	m            sync.Mutex
-	warehouseMap map[string]WarehouseStock
+	m              sync.Mutex
+	warehouseMap   map[string]WarehouseStock
+	globalStockMap map[string]int64
 }
 
 func NewStockRepositoryImpl() *StockRepositoryImpl {
-	return &StockRepositoryImpl{warehouseMap: make(map[string]WarehouseStock)}
+	return &StockRepositoryImpl{warehouseMap: make(map[string]WarehouseStock), globalStockMap: make(map[string]int64)}
 }
 
 func (s *StockRepositoryImpl) GetStock(warehouseId string, goodId string) (int64, error) {
@@ -46,6 +49,12 @@ func (s *StockRepositoryImpl) SetStock(warehouseId string, goodId string, stock 
 
 	warehouse.goodToStock[goodId] = stock
 
+	prevGlobalStock, globalExist := s.globalStockMap[goodId]
+	if !globalExist {
+		prevGlobalStock = 0
+	}
+	s.globalStockMap[goodId] = prevGlobalStock + stock
+
 	return exist
 }
 
@@ -65,5 +74,35 @@ func (s *StockRepositoryImpl) AddStock(warehouseId string, goodId string, stock 
 
 	warehouse.goodToStock[goodId] = prevStock + stock
 
+	prevGlobalStock, globalExist := s.globalStockMap[goodId]
+	if !globalExist {
+		prevGlobalStock = 0
+	}
+	s.globalStockMap[goodId] = prevGlobalStock + stock
+
 	return exist, nil
+}
+
+func (s *StockRepositoryImpl) GetGlobalStock(goodId string) int64 {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	stock, exist := s.globalStockMap[goodId]
+	if !exist {
+		return 0
+	}
+
+	return stock
+}
+
+func (s *StockRepositoryImpl) GetWarehouses() []string {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	warehouses := make([]string, 0, len(s.warehouseMap))
+	for warehouseId := range s.warehouseMap {
+		warehouses = append(warehouses, warehouseId)
+	}
+
+	return warehouses
 }

@@ -27,7 +27,6 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 	}
 
 	cmd := StockUpdateEventToApplyStockUpdateCmd(event)
-
 	err = l.applyStockUpdateUseCase.ApplyStockUpdate(ctx, cmd)
 	if err != nil {
 		return err
@@ -43,27 +42,30 @@ func StockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockU
 		cmdType = port.StockUpdateCmdTypeAdd
 	case stream.StockUpdateTypeRemove:
 		cmdType = port.StockUpdateCmdTypeRemove
+	case stream.StockUpdateTypeOrder:
+		cmdType = port.StockUpdateCmdTypeOrder
 	default:
 		log.Fatal("unknown stock update type")
 	}
 
-	cmd := port.StockUpdateCmd{
-		ID:         event.ID,
-		Type:       cmdType,
-		OrderID:    event.OrderID,
-		TransferID: event.TransferID,
-		Timestamp:  event.Timestamp,
-	}
-
-	cmd.Goods = make([]port.StockUpdateCmdGood, 0, len(event.Goods))
+	goods := make([]port.StockUpdateCmdGood, 0, len(event.Goods))
 
 	for _, good := range event.Goods {
-		cmd.Goods = append(cmd.Goods, port.StockUpdateCmdGood{
+		goods = append(goods, port.StockUpdateCmdGood{
 			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 			Delta:    good.Delta,
 		})
 	}
 
-	return cmd
+	return port.StockUpdateCmd{
+		ID:            event.ID,
+		WarehouseID:   event.WarehouseID,
+		Type:          cmdType,
+		OrderID:       event.OrderID,
+		TransferID:    event.TransferID,
+		ReservationID: event.ReservationID,
+		Timestamp:     event.Timestamp,
+		Goods:         goods,
+	}
 }

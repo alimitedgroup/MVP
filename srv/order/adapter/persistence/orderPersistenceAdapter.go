@@ -13,7 +13,52 @@ func NewOrderPersistanceAdapter(orderRepo IOrderRepository) *OrderPersistanceAda
 	return &OrderPersistanceAdapter{orderRepo}
 }
 
+func (s *OrderPersistanceAdapter) SetCompletedWarehouse(cmd port.SetCompletedWarehouseCmd) (model.Order, error) {
+	order, err := s.orderRepo.GetOrder(string(cmd.OrderId))
+	if err != nil {
+		return model.Order{}, err
+	}
+
+	warehouses := make([]OrderWarehouseUsed, 0, len(order.Warehouses)+1)
+	warehouses = append(warehouses, order.Warehouses...)
+	goods := make(map[string]int64)
+	for _, good := range cmd.Goods {
+		prev, exist := goods[string(good.ID)]
+		if !exist {
+			prev = 0
+		}
+		goods[string(good.ID)] = prev + good.Quantity
+	}
+	warehouses = append(warehouses, OrderWarehouseUsed{
+		WarehouseID: cmd.WarehouseId,
+		Goods:       goods,
+	})
+
+	newOrder := Order{
+		ID:           order.ID,
+		Status:       order.Status,
+		Name:         order.Name,
+		Email:        order.Email,
+		Address:      order.Address,
+		Goods:        order.Goods,
+		Reservations: order.Reservations,
+		Warehouses:   warehouses,
+		UpdateTime:   order.UpdateTime,
+	}
+
+	_ = s.orderRepo.SetOrder(string(cmd.OrderId), newOrder)
+
+	return repoOrderToModelOrder(newOrder), nil
+}
+
 func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd) error {
+	var warehouses []OrderWarehouseUsed
+	if old, err := s.orderRepo.GetOrder(string(cmd.Id)); err == nil {
+		warehouses = make([]OrderWarehouseUsed, 0, len(cmd.Reservations))
+	} else {
+		warehouses = old.Warehouses
+	}
+
 	goods := make([]OrderUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, OrderUpdateGood{
@@ -29,6 +74,9 @@ func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd)
 		Email:        cmd.Email,
 		Address:      cmd.Address,
 		Goods:        goods,
+		Reservations: cmd.Reservations,
+		Warehouses:   warehouses,
+		UpdateTime:   cmd.UpdateTime,
 		CreationTime: cmd.CreationTime,
 	}
 
@@ -65,6 +113,19 @@ func repoOrderToModelOrder(order Order) model.Order {
 		})
 	}
 
+	warehouses := make([]model.OrderWarehouseUsed, 0, len(order.Warehouses))
+
+	for _, warehouse := range order.Warehouses {
+		goods := make(map[model.GoodId]int64)
+		for goodId, quantity := range warehouse.Goods {
+			goods[model.GoodId(goodId)] = quantity
+		}
+		warehouses = append(warehouses, model.OrderWarehouseUsed{
+			WarehouseID: warehouse.WarehouseID,
+			Goods:       goods,
+		})
+	}
+
 	return model.Order{
 		Id:           model.OrderID(order.ID),
 		Name:         order.Name,
@@ -72,6 +133,9 @@ func repoOrderToModelOrder(order Order) model.Order {
 		Email:        order.Email,
 		Address:      order.Address,
 		Goods:        goods,
+		Warehouses:   warehouses,
+		Reservations: order.Reservations,
+		UpdateTime:   order.UpdateTime,
 		CreationTime: order.CreationTime,
 	}
 }

@@ -79,6 +79,8 @@ func orderUpdateEventToApplyOrderUpdateCmd(event stream.OrderUpdate) port.OrderU
 		Name:         event.Name,
 		Email:        event.Email,
 		Address:      event.Address,
+		Reservations: event.Reservations,
+		UpdateTime:   event.UpdateTime,
 		CreationTime: event.CreationTime,
 	}
 

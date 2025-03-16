@@ -97,7 +97,7 @@ func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) er
 
 	if dto.OrderID == "" {
 		resp := response.ErrorResponseDTO{
-			Error: "orderid is required",
+			Error: "order id is required",
 		}
 		if err := broker.RespondToMsg(msg, resp); err != nil {
 			return err

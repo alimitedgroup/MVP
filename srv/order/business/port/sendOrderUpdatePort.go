@@ -14,6 +14,7 @@ type SendOrderUpdateCmd struct {
 	Address      string
 	CreationTime int64
 	Goods        []SendOrderUpdateGood
+	Reservations []string
 }
 
 type SendOrderUpdateGood struct {

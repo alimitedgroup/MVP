@@ -46,6 +46,7 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 		Email:        cmd.Email,
 		Address:      cmd.Address,
 		Goods:        goods,
+		Reservations: cmd.Reservations,
 		CreationTime: creationTime,
 		UpdateTime:   now.UnixNano(),
 	}

@@ -2,6 +2,7 @@ package port
 
 import (
 	"context"
+	"errors"
 )
 
 type ICalculateAvailabilityUseCase interface {
@@ -26,3 +27,5 @@ type WarehouseAvailability struct {
 	WarehouseID string
 	Goods       map[string]int64
 }
+
+var ErrNotEnoughStock = errors.New("not enough stock")

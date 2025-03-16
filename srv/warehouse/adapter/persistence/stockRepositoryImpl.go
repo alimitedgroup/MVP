@@ -1,15 +1,18 @@
 package persistence
 
-import "sync"
+import (
+	"sync"
+)
 
 type StockRepositoryImpl struct {
 	m             sync.Mutex
 	goodToStock   map[string]int64
 	reservedStock map[string]int64
+	reservations  map[string]Reservation
 }
 
 func NewStockRepositoryImpl() *StockRepositoryImpl {
-	return &StockRepositoryImpl{goodToStock: make(map[string]int64), reservedStock: make(map[string]int64)}
+	return &StockRepositoryImpl{goodToStock: make(map[string]int64), reservedStock: make(map[string]int64), reservations: make(map[string]Reservation)}
 }
 
 func (s *StockRepositoryImpl) GetStock(goodId string) int64 {
@@ -46,18 +49,18 @@ func (s *StockRepositoryImpl) AddStock(goodId string, stock int64) bool {
 	return exist
 }
 
-func (s *StockRepositoryImpl) ReserveStock(goodId string, stock int64) error {
+func (s *StockRepositoryImpl) ReserveStock(reservationId string, goodId string, stock int64) error {
 	s.m.Lock()
 	defer s.m.Unlock()
 
 	prevReserved, exist := s.reservedStock[goodId]
 	if !exist {
-		return ErrNotEnoughGoods
+		prevReserved = 0
 	}
 
 	currStock, exist := s.goodToStock[goodId]
 	if !exist {
-		return ErrNotEnoughGoods
+		currStock = 0
 	}
 
 	if currStock-prevReserved < stock {
@@ -65,6 +68,16 @@ func (s *StockRepositoryImpl) ReserveStock(goodId string, stock int64) error {
 	}
 
 	s.reservedStock[goodId] = prevReserved + stock
+
+	if _, exist = s.reservations[reservationId]; !exist {
+		s.reservations[reservationId] = Reservation{Goods: make(map[string]int64)}
+	}
+
+	old, exist := s.reservations[reservationId].Goods[goodId]
+	if !exist {
+		old = 0
+	}
+	s.reservations[reservationId].Goods[goodId] = old + stock
 
 	return nil
 }
@@ -102,4 +115,16 @@ func (s *StockRepositoryImpl) GetFreeStock(goodId string) int64 {
 	}
 
 	return stock - reserved
+}
+
+func (s *StockRepositoryImpl) GetReservation(reservationId string) (Reservation, error) {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	reserv, exist := s.reservations[reservationId]
+	if !exist {
+		return Reservation{}, ErrReservationNotFound
+	}
+
+	return reserv, nil
 }

@@ -17,5 +17,3 @@ type ReservationGood struct {
 type CreateReservationResponse struct {
 	ReservationID string
 }
-
-var ErrNotEnoughGoods = "not enough goods"

@@ -15,6 +15,8 @@ type Order struct {
 	Email        string
 	Address      string
 	Goods        []OrderUpdateGood
+	Warehouses   []OrderWarehouseUsed
+	Reservations []string
 	CreationTime int64
 	UpdateTime   int64
 }
@@ -22,6 +24,11 @@ type Order struct {
 type OrderUpdateGood struct {
 	GoodID   string
 	Quantity int64
+}
+
+type OrderWarehouseUsed struct {
+	WarehouseID string
+	Goods       map[string]int64
 }
 
 var ErrOrderNotFound = errors.New("order not found")

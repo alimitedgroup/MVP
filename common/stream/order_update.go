@@ -17,6 +17,7 @@ type OrderUpdate struct {
 	Email        string            `json:"email"`
 	Address      string            `json:"address"`
 	Goods        []OrderUpdateGood `json:"goods"`
+	Reservations []string          `json:"reservations"`
 	CreationTime int64             `json:"creation_time"`
 	UpdateTime   int64             `json:"update_time"`
 }

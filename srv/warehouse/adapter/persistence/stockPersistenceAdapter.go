@@ -22,7 +22,7 @@ func (s *StockPersistanceAdapter) ApplyStockUpdate(goods []model.GoodStock) erro
 
 func (s *StockPersistanceAdapter) ApplyReservationEvent(reservation model.Reservation) error {
 	for _, good := range reservation.Goods {
-		if err := s.stockRepo.ReserveStock(string(good.GoodID), good.Quantity); err != nil {
+		if err := s.stockRepo.ReserveStock(string(reservation.ID), string(good.GoodID), good.Quantity); err != nil {
 			return err
 		}
 	}
@@ -36,4 +36,26 @@ func (s *StockPersistanceAdapter) GetStock(goodId model.GoodId) model.GoodStock 
 		ID:       goodId,
 		Quantity: stock,
 	}
+}
+
+func (s *StockPersistanceAdapter) GetReservation(reservationId model.ReservationId) (model.Reservation, error) {
+	reserv, err := s.stockRepo.GetReservation(string(reservationId))
+	if err != nil {
+		return model.Reservation{}, err
+	}
+
+	goods := make([]model.ReservationGood, 0, len(reserv.Goods))
+
+	for goodId, qty := range reserv.Goods {
+		goods = append(goods, model.ReservationGood{
+			GoodID:   model.GoodId(goodId),
+			Quantity: qty,
+		})
+	}
+
+	return model.Reservation{
+		ID:    reservationId,
+		Goods: goods,
+	}, nil
+
 }

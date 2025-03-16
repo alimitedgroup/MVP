@@ -24,13 +24,13 @@ func (a *PublishReservationEventAdapter) StoreReservationEvent(ctx context.Conte
 	goods := make([]stream.ReservationGood, 0, len(reservation.Goods))
 	for _, good := range reservation.Goods {
 		goods = append(goods, stream.ReservationGood{
-			GoodID:   good.GoodID,
+			GoodID:   string(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
 
 	streamMsg := stream.ReservationEvent{
-		Id:    reservation.ID,
+		Id:    string(reservation.ID),
 		Goods: goods,
 	}
 
