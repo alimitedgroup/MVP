@@ -14,4 +14,7 @@ var Module = fx.Options(
 	)),
 	fx.Provide(fx.Annotate(NewCatalogRepositoryImpl, fx.As(new(ICatalogRepository)))),
 	fx.Provide(fx.Annotate(NewCatalogPersistanceAdapter, fx.As(new(port.IApplyCatalogUpdatePort)), fx.As(new(port.IGetGoodPort)))),
+
+	fx.Provide(fx.Annotate(NewIdempotentRepositoryImpl, fx.As(new(IIdempotentRepository)))),
+	fx.Provide(fx.Annotate(NewIDempotentAdapter, fx.As(new(port.IIdempotentPort)))),
 )

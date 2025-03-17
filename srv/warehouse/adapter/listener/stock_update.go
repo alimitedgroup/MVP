@@ -47,11 +47,12 @@ func stockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockU
 	}
 
 	cmd := port.StockUpdateCmd{
-		ID:         event.ID,
-		Type:       cmdType,
-		OrderID:    event.OrderID,
-		TransferID: event.TransferID,
-		Timestamp:  event.Timestamp,
+		ID:            event.ID,
+		Type:          cmdType,
+		OrderID:       event.OrderID,
+		TransferID:    event.TransferID,
+		ReservationID: event.ReservationID,
+		Timestamp:     event.Timestamp,
 	}
 
 	cmd.Goods = make([]port.StockUpdateCmdGood, 0, len(event.Goods))

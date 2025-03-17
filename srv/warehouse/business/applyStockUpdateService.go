@@ -9,10 +9,11 @@ import (
 
 type ApplyStockUpdateService struct {
 	applyStockUpdatePort port.IApplyStockUpdatePort
+	idempotentPort       port.IIdempotentPort
 }
 
-func NewApplyStockUpdateService(applyStockUpdatePort port.IApplyStockUpdatePort) *ApplyStockUpdateService {
-	return &ApplyStockUpdateService{applyStockUpdatePort}
+func NewApplyStockUpdateService(applyStockUpdatePort port.IApplyStockUpdatePort, idempotentPort port.IIdempotentPort) *ApplyStockUpdateService {
+	return &ApplyStockUpdateService{applyStockUpdatePort, idempotentPort}
 }
 
 func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port.StockUpdateCmd) error {
@@ -27,6 +28,14 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 	err := s.applyStockUpdatePort.ApplyStockUpdate(goods)
 	if err != nil {
 		return err
+	}
+
+	if cmd.Type == port.StockUpdateCmdTypeOrder {
+		idempotentCmd := port.IdempotentCmd{
+			Event: "reservation",
+			Id:    cmd.ReservationID,
+		}
+		s.idempotentPort.SaveEventID(idempotentCmd)
 	}
 
 	return nil

@@ -15,6 +15,7 @@ type ManageReservationService struct {
 	getReservationPort         port.IGetReservationPort
 	getStockPort               port.IGetStockPort
 	createStockUpdatePort      port.ICreateStockUpdatePort
+	idempotentPort             port.IIdempotentPort
 	cfg                        *config.WarehouseConfig
 }
 
@@ -24,11 +25,12 @@ func NewManageReservationService(
 	getReservationPort port.IGetReservationPort,
 	getStockPort port.IGetStockPort,
 	createStockUpdatePort port.ICreateStockUpdatePort,
+	idempotentPort port.IIdempotentPort,
 	cfg *config.WarehouseConfig,
 ) *ManageReservationService {
 	return &ManageReservationService{
 		createReservationEventPort, applyReservationEventPort, getReservationPort,
-		getStockPort, createStockUpdatePort, cfg,
+		getStockPort, createStockUpdatePort, idempotentPort, cfg,
 	}
 }
 
@@ -79,6 +81,14 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 	reserv := model.Reservation{
 		ID:    model.ReservationId(cmd.Id),
 		Goods: goods,
+	}
+
+	idempotentCmd := port.IdempotentCmd{
+		Event: "reservation",
+		Id:    cmd.Id,
+	}
+	if s.idempotentPort.IsAlreadyProcessed(idempotentCmd) {
+		return nil
 	}
 
 	err := s.applyReservationEventPort.ApplyReservationEvent(reserv)

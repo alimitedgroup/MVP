@@ -18,6 +18,14 @@ func newApplyStockUpdatePortMock() *applyStockUpdatePortMock {
 	return &applyStockUpdatePortMock{M: make(map[string]int64), Total: 0}
 }
 
+func (m *applyStockUpdatePortMock) SaveEventID(port.IdempotentCmd) {
+
+}
+
+func (m *applyStockUpdatePortMock) IsAlreadyProcessed(port.IdempotentCmd) bool {
+	return false
+}
+
 func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) error {
 	for _, v := range goods {
 
@@ -38,7 +46,7 @@ func TestApplyStockUpdateService(t *testing.T) {
 	mock := newApplyStockUpdatePortMock()
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyStockUpdatePort)))),
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyStockUpdatePort)), fx.As(new(port.IIdempotentPort)))),
 		fx.Provide(fx.Annotate(NewApplyStockUpdateService, fx.As(new(port.IApplyStockUpdateUseCase)))),
 		fx.Invoke(func(useCase port.IApplyStockUpdateUseCase) {
 			cmd := port.StockUpdateCmd{
