@@ -19,7 +19,7 @@ type ContactWarehousesOrder struct {
 	ID           string
 	Status       string
 	Name         string
-	Email        string
+	FullName     string
 	Address      string
 	UpdateTime   int64
 	CreationTime int64

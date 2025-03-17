@@ -1,10 +1,10 @@
 package request
 
 type CreateOrderRequestDTO struct {
-	Name    string            `json:"name"`
-	Email   string            `json:"email"`
-	Address string            `json:"address"`
-	Goods   []CreateOrderGood `json:"goods"`
+	Name     string            `json:"name"`
+	FullName string            `json:"fullname"`
+	Address  string            `json:"address"`
+	Goods    []CreateOrderGood `json:"goods"`
 }
 
 type CreateOrderGood struct {

@@ -14,7 +14,7 @@ type SendOrderUpdateCmd struct {
 	ID           string
 	Status       string
 	Name         string
-	Email        string
+	FullName     string
 	Address      string
 	CreationTime int64
 	Goods        []SendOrderUpdateGood

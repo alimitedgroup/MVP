@@ -16,7 +16,7 @@ type Order struct {
 	ID           string
 	Status       string
 	Name         string
-	Email        string
+	FullName     string
 	Address      string
 	Goods        []OrderUpdateGood
 	Warehouses   []OrderWarehouseUsed

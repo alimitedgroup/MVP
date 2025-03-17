@@ -8,7 +8,7 @@ type Order struct {
 	UpdateTime   int64
 	CreationTime int64
 	Name         string
-	Email        string
+	FullName     string
 	Address      string
 	Goods        []GoodStock
 	Reservations []string

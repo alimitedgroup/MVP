@@ -12,7 +12,7 @@ type OrderUpdateCmd struct {
 	Reservations []string
 	Status       string
 	Name         string
-	Email        string
+	FullName     string
 	Address      string
 	CreationTime int64
 	UpdateTime   int64

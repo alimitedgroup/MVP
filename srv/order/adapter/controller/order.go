@@ -58,10 +58,10 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 	}
 
 	cmd := port.CreateOrderCmd{
-		Name:    dto.Name,
-		Email:   dto.Email,
-		Address: dto.Address,
-		Goods:   goods,
+		Name:     dto.Name,
+		FullName: dto.FullName,
+		Address:  dto.Address,
+		Goods:    goods,
 	}
 
 	resp, err := c.createOrderUseCase.CreateOrder(ctx, cmd)
@@ -143,7 +143,7 @@ func (c *OrderController) OrderGetAllHandler(ctx context.Context, msg *nats.Msg)
 }
 
 var ErrNameIsRequired = errors.New("name is required")
-var ErrEmailIsRequired = errors.New("email is required")
+var ErrFullNameIsRequired = errors.New("full name is required")
 var ErrAddressIsRequired = errors.New("address is required")
 var ErrGoodsIsRequired = errors.New("goods is required")
 
@@ -152,8 +152,8 @@ func checkCreateOrderRequestDTO(dto request.CreateOrderRequestDTO) error {
 		return ErrNameIsRequired
 	}
 
-	if dto.Email == "" {
-		return ErrEmailIsRequired
+	if dto.FullName == "" {
+		return ErrFullNameIsRequired
 	}
 
 	if dto.Address == "" {
@@ -181,7 +181,7 @@ func orderToGetGoodResponseDTO(order model.Order) response.GetOrderResponseDTO {
 			OrderID: string(order.Id),
 			Status:  order.Status,
 			Name:    order.Name,
-			Email:   order.Email,
+			Email:   order.FullName,
 			Address: order.Address,
 			Goods:   goods,
 		},
@@ -204,7 +204,7 @@ func ordersToGetAllGoodResponseDTO(model []model.Order) response.GetAllOrderResp
 			OrderID:      string(order.Id),
 			Status:       order.Status,
 			Name:         order.Name,
-			Email:        order.Email,
+			Email:        order.FullName,
 			Address:      order.Address,
 			Reservations: order.Reservations,
 			Goods:        goods,

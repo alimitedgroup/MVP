@@ -37,7 +37,7 @@ func orderUpdateCmdToApplyOrderUpdateCmd(cmd port.OrderUpdateCmd) port.ApplyOrde
 		Id:           cmd.ID,
 		Status:       cmd.Status,
 		Name:         cmd.Name,
-		Email:        cmd.Email,
+		FullName:     cmd.FullName,
 		Address:      cmd.Address,
 		CreationTime: cmd.CreationTime,
 		Reservations: cmd.Reservations,
