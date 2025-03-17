@@ -123,6 +123,9 @@ func TestGetGoodsMissingStock(t *testing.T) {
 
 	business := NewBusiness(auth, catalog)
 	goods, err := business.GetGoods()
-	require.Nil(t, goods)
-	require.ErrorIs(t, err, ErrorGoodWithoutStock)
+	require.ElementsMatch(t, goods, []dto.GoodAndAmount{
+		{Name: "abc", Description: "abcdesc", ID: "id1", Amount: 20},
+		{Name: "def", Description: "defdesc", ID: "id2", Amount: 0},
+	})
+	require.NoError(t, err)
 }
