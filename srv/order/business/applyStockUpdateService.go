@@ -2,7 +2,6 @@ package business
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
@@ -29,7 +28,6 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 		if err != nil {
 			return err
 		}
-		fmt.Printf("order: %v\n", order)
 
 		isRelatedToReserv := false
 		for _, reserv := range order.Reservations {
@@ -54,32 +52,15 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 				OrderId:     model.OrderID(cmd.OrderID),
 				Goods:       goods,
 			}
-
 			order, err := s.setCompletedWarehousePort.SetCompletedWarehouse(completedCmd)
 			if err != nil {
 				return err
 			}
 
-			status := order.Status
 			if order.IsCompleted() {
-				status = "Completed"
-			}
-
-			// stock update for the order reservation
-			applyCmd := port.ApplyOrderUpdateCmd{
-				Id:           cmd.OrderID,
-				Status:       status,
-				Name:         order.Name,
-				Email:        order.Email,
-				Address:      order.Address,
-				Goods:        order.Goods,
-				Reservations: order.Reservations,
-				UpdateTime:   order.UpdateTime,
-				CreationTime: order.CreationTime,
-			}
-			err = s.applyOrderUpdatePort.ApplyOrderUpdate(applyCmd)
-			if err != nil {
-				return err
+				if err := s.setCompletedWarehousePort.SetComplete(model.OrderID(cmd.OrderID)); err != nil {
+					return err
+				}
 			}
 		}
 	}

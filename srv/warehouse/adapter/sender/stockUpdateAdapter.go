@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
@@ -53,6 +54,7 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 		OrderID:       cmd.OrderID,
 		ReservationID: cmd.ReservationID,
 		Type:          stockUpdateType,
+		Timestamp:     time.Now().Unix(),
 	}
 
 	payload, err := json.Marshal(streamMsg)

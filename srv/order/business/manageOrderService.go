@@ -78,7 +78,7 @@ func (s *ManageOrderService) GetAllOrders(ctx context.Context) ([]model.Order, e
 }
 
 func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) error {
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 
 	order, err := s.getOrderPort.GetOrder(model.OrderID(cmd.OrderId))
 	if err != nil {

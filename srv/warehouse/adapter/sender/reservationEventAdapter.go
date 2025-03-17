@@ -30,8 +30,9 @@ func (a *PublishReservationEventAdapter) StoreReservationEvent(ctx context.Conte
 	}
 
 	streamMsg := stream.ReservationEvent{
-		Id:    string(reservation.ID),
-		Goods: goods,
+		Id:          string(reservation.ID),
+		Goods:       goods,
+		WarehouseID: a.warehouseCfg.ID,
 	}
 
 	payload, err := json.Marshal(streamMsg)

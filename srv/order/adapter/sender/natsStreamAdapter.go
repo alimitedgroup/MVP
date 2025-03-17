@@ -27,7 +27,7 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 
 	var creationTime int64
 	if cmd.CreationTime == 0 {
-		creationTime = now.UnixNano()
+		creationTime = now.Unix()
 	} else {
 		creationTime = cmd.CreationTime
 	}
@@ -48,7 +48,7 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 		Goods:        goods,
 		Reservations: cmd.Reservations,
 		CreationTime: creationTime,
-		UpdateTime:   now.UnixNano(),
+		UpdateTime:   now.Unix(),
 	}
 
 	payload, err := json.Marshal(streamMsg)

@@ -1,6 +1,8 @@
 package persistence
 
-import "sync"
+import (
+	"sync"
+)
 
 type OrderRepositoryImpl struct {
 	m        sync.Mutex
@@ -43,4 +45,39 @@ func (s *OrderRepositoryImpl) SetOrder(orderId string, order Order) bool {
 	s.orderMap[orderId] = order
 
 	return exist
+}
+
+func (s *OrderRepositoryImpl) AddCompletedWarehouse(orderId string, warehouseId string, goods map[string]int64) (Order, error) {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	order, exist := s.orderMap[orderId]
+	if !exist {
+		return Order{}, ErrOrderNotFound
+	}
+
+	warehouseUsed := OrderWarehouseUsed{
+		WarehouseID: warehouseId,
+		Goods:       goods,
+	}
+	order.Warehouses = append(order.Warehouses, warehouseUsed)
+
+	s.orderMap[orderId] = order
+
+	return order, nil
+}
+
+func (s *OrderRepositoryImpl) SetComplete(orderId string) error {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	order, exist := s.orderMap[orderId]
+	if !exist {
+		return ErrOrderNotFound
+	}
+
+	order.Status = "Completed"
+	s.orderMap[orderId] = order
+
+	return nil
 }
