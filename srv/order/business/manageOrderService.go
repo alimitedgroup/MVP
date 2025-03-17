@@ -47,7 +47,10 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 		ConfirmedReservations: []port.ConfirmedReservation{},
 		ExcludeWarehouses:     []string{},
 	}
-	s.sendContactWarehousePort.SendContactWarehouses(ctx, contactCmd)
+	err = s.sendContactWarehousePort.SendContactWarehouses(ctx, contactCmd)
+	if err != nil {
+		return port.CreateOrderResponse{}, err
+	}
 
 	resp := port.CreateOrderResponse{
 		OrderID: orderId,
