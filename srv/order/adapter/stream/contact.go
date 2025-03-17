@@ -1,6 +1,8 @@
 package stream
 
-import "github.com/nats-io/nats.go/jetstream"
+import (
+	"github.com/nats-io/nats.go/jetstream"
+)
 
 var ContactWarehousesStreamConfig = jetstream.StreamConfig{
 	Name:     "order_contact_warehouses",
@@ -9,10 +11,28 @@ var ContactWarehousesStreamConfig = jetstream.StreamConfig{
 }
 
 type ContactWarehouses struct {
-	OrderId               string
+	Order                 ContactWarehousesOrder
+	TransferId            string
 	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
+}
+
+type ContactWarehousesOrder struct {
+	ID           string
+	Status       string
+	Name         string
+	Email        string
+	Address      string
+	UpdateTime   int64
+	CreationTime int64
+	Goods        []ContactWarehousesGood
+	Reservations []string
+}
+
+type ContactWarehousesGood struct {
+	GoodId   string
+	Quantity int64
 }
 
 type ConfirmedReservation struct {

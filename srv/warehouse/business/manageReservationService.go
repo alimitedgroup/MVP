@@ -33,6 +33,20 @@ func NewManageReservationService(
 }
 
 func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd port.CreateReservationCmd) (port.CreateReservationResponse, error) {
+	validStock := true
+	for _, good := range cmd.Goods {
+		stock := s.getStockPort.GetFreeStock(model.GoodId(good.GoodID))
+		if stock.Quantity < good.Quantity {
+			validStock = false
+			break
+		}
+	}
+
+	if !validStock {
+		return port.CreateReservationResponse{}, port.ErrNotEnoughStock
+	}
+
+	reservationId := uuid.New().String()
 	goods := make([]model.ReservationGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.ReservationGood{
@@ -40,11 +54,7 @@ func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd po
 			Quantity: good.Quantity,
 		})
 	}
-	reservationId := uuid.New().String()
 	reservation := model.Reservation{ID: model.ReservationId(reservationId), Goods: goods}
-
-	// TODO: check if the goods are available
-
 	err := s.createReservationEventPort.StoreReservationEvent(ctx, reservation)
 	if err != nil {
 		return port.CreateReservationResponse{}, err
@@ -115,7 +125,9 @@ func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.Co
 			return err
 		}
 
-		// TODO: unreserve the goods
+		if err := s.applyReservationEventPort.ApplyOrderFilled(reservation); err != nil {
+			return err
+		}
 	}
 
 	return nil

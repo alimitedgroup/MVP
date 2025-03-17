@@ -47,6 +47,7 @@ func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, c
 			continue
 		}
 
+		warehouseTotal := int64(0)
 		toReserveGoods := make(map[string]int64)
 
 		for goodID, quantity := range reqGoods {
@@ -62,12 +63,15 @@ func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, c
 			toReserveGoods[string(goodID)] = toReserveQty
 			reqGoods[model.GoodId(goodID)] -= toReserveQty
 			total -= toReserveQty
+			warehouseTotal += toReserveQty
 		}
 
-		availabilities = append(availabilities, port.WarehouseAvailability{
-			WarehouseID: warehouse.ID,
-			Goods:       toReserveGoods,
-		})
+		if warehouseTotal > 0 {
+			availabilities = append(availabilities, port.WarehouseAvailability{
+				WarehouseID: warehouse.ID,
+				Goods:       toReserveGoods,
+			})
+		}
 	}
 
 	if total > 0 {

@@ -11,6 +11,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
 	internalStream "github.com/alimitedgroup/MVP/srv/order/adapter/stream"
+	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 )
 
@@ -22,12 +23,13 @@ func NewNatsStreamAdapter(broker *broker.NatsMessageBroker) *NatsStreamAdapter {
 	return &NatsStreamAdapter{broker}
 }
 
-func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOrderUpdateCmd) error {
+func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOrderUpdateCmd) (model.Order, error) {
 	now := time.Now()
 
+	updateTime := now.UnixMilli()
 	var creationTime int64
 	if cmd.CreationTime == 0 {
-		creationTime = now.UnixMilli()
+		creationTime = updateTime
 	} else {
 		creationTime = cmd.CreationTime
 	}
@@ -48,22 +50,40 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 		Goods:        goods,
 		Reservations: cmd.Reservations,
 		CreationTime: creationTime,
-		UpdateTime:   now.UnixMilli(),
+		UpdateTime:   updateTime,
 	}
 
 	payload, err := json.Marshal(streamMsg)
 	if err != nil {
-		return err
+		return model.Order{}, err
 	}
 
 	resp, err := a.broker.Js.Publish(ctx, "order.update", payload)
 	if err != nil {
-		return err
+		return model.Order{}, err
 	}
 
 	_ = resp
 
-	return nil
+	modelGoods := make([]model.GoodStock, 0, len(goods))
+	for _, good := range cmd.Goods {
+		modelGoods = append(modelGoods, model.GoodStock{
+			ID:       model.GoodId(good.GoodId),
+			Quantity: good.Quantity,
+		})
+	}
+
+	return model.Order{
+		Id:           model.OrderID(cmd.ID),
+		Status:       cmd.Status,
+		Name:         cmd.Name,
+		Email:        cmd.Email,
+		Address:      cmd.Address,
+		Goods:        modelGoods,
+		Reservations: cmd.Reservations,
+		CreationTime: creationTime,
+		UpdateTime:   updateTime,
+	}, nil
 }
 
 func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.SendContactWarehouseCmd) error {
@@ -77,8 +97,27 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		})
 	}
 
+	goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Order.Goods))
+	for _, good := range cmd.Order.Goods {
+		goods = append(goods, internalStream.ContactWarehousesGood{
+			GoodId:   string(good.ID),
+			Quantity: good.Quantity,
+		})
+	}
+
 	streamMsg := internalStream.ContactWarehouses{
-		OrderId:               cmd.OrderId,
+		Order: internalStream.ContactWarehousesOrder{
+			ID:           string(cmd.Order.Id),
+			Status:       cmd.Order.Status,
+			Name:         cmd.Order.Name,
+			Email:        cmd.Order.Email,
+			Address:      cmd.Order.Address,
+			UpdateTime:   cmd.Order.UpdateTime,
+			CreationTime: cmd.Order.CreationTime,
+			Goods:        goods,
+			Reservations: cmd.Order.Reservations,
+		},
+		TransferId:            cmd.TransferId,
 		LastContact:           cmd.LastContact,
 		ConfirmedReservations: confirmed,
 		ExcludeWarehouses:     cmd.ExcludeWarehouses,

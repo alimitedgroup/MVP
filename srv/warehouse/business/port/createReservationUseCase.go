@@ -1,6 +1,9 @@
 package port
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 type ICreateReservationUseCase interface {
 	CreateReservation(context.Context, CreateReservationCmd) (CreateReservationResponse, error)
@@ -17,3 +20,5 @@ type ReservationGood struct {
 type CreateReservationResponse struct {
 	ReservationID string
 }
+
+var ErrNotEnoughStock = errors.New("not enough stock")

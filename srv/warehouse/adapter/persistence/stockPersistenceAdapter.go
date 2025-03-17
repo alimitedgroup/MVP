@@ -30,8 +30,26 @@ func (s *StockPersistanceAdapter) ApplyReservationEvent(reservation model.Reserv
 	return nil
 }
 
+func (s *StockPersistanceAdapter) ApplyOrderFilled(reservation model.Reservation) error {
+	for _, good := range reservation.Goods {
+		if err := s.stockRepo.UnReserveStock(string(good.GoodID), good.Quantity); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s *StockPersistanceAdapter) GetStock(goodId model.GoodId) model.GoodStock {
 	stock := s.stockRepo.GetStock(string(goodId))
+	return model.GoodStock{
+		ID:       goodId,
+		Quantity: stock,
+	}
+}
+
+func (s *StockPersistanceAdapter) GetFreeStock(goodId model.GoodId) model.GoodStock {
+	stock := s.stockRepo.GetFreeStock(string(goodId))
 	return model.GoodStock{
 		ID:       goodId,
 		Quantity: stock,

@@ -6,4 +6,5 @@ import (
 
 type IApplyReservationEventPort interface {
 	ApplyReservationEvent(model.Reservation) error
+	ApplyOrderFilled(model.Reservation) error
 }

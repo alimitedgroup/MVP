@@ -1,9 +1,13 @@
 package port
 
-import "context"
+import (
+	"context"
+
+	"github.com/alimitedgroup/MVP/srv/order/business/model"
+)
 
 type ISendOrderUpdatePort interface {
-	SendOrderUpdate(context.Context, SendOrderUpdateCmd) error
+	SendOrderUpdate(context.Context, SendOrderUpdateCmd) (model.Order, error)
 }
 
 type SendOrderUpdateCmd struct {

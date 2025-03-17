@@ -9,10 +9,27 @@ type IContactWarehousesUseCase interface {
 }
 
 type ContactWarehousesCmd struct {
-	OrderId               string
+	Order                 ContactWarehousesOrder
 	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
+}
+
+type ContactWarehousesOrder struct {
+	ID           string
+	Status       string
+	Name         string
+	Email        string
+	Address      string
+	UpdateTime   int64
+	CreationTime int64
+	Goods        []ContactWarehousesGood
+	Reservations []string
+}
+
+type ContactWarehousesGood struct {
+	GoodId   string
+	Quantity int64
 }
 
 type ConfirmedReservation struct {

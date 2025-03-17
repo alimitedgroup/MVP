@@ -54,7 +54,7 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 		OrderID:       cmd.OrderID,
 		ReservationID: cmd.ReservationID,
 		Type:          stockUpdateType,
-		Timestamp:     time.Now().Unix(),
+		Timestamp:     time.Now().UnixMilli(),
 	}
 
 	payload, err := json.Marshal(streamMsg)

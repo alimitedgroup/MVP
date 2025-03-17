@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
@@ -35,13 +36,13 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 	orderId := uuid.New().String()
 	saveCmd := createOrderCmdToSendOrderUpdateCmd(orderId, cmd)
 
-	err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, saveCmd)
+	order, err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, saveCmd)
 	if err != nil {
 		return port.CreateOrderResponse{}, err
 	}
 
 	contactCmd := port.SendContactWarehouseCmd{
-		OrderId:               orderId,
+		Order:                 order,
 		TransferId:            "",
 		LastContact:           0,
 		ConfirmedReservations: []port.ConfirmedReservation{},
@@ -80,21 +81,18 @@ func (s *ManageOrderService) GetAllOrders(ctx context.Context) ([]model.Order, e
 func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) error {
 	now := time.Now().UnixMilli()
 
-	order, err := s.getOrderPort.GetOrder(model.OrderID(cmd.OrderId))
-	if err != nil {
-		return err
-	}
-
-	availCmd := modelOrderAndContactCmdToCalculateAvailabilityCmd(order, cmd)
+	availCmd := contactCmdToCalculateAvailabilityCmd(cmd)
 	availResp, err := s.calculateAvailabilityUseCase.GetAvailable(ctx, availCmd)
 	if err != nil {
-		orderUpdateCmd := modelOrderToSendOrderUpdateCmdForCancel(order)
-		err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdateCmd)
+		orderUpdateCmd := contactCmdToSendOrderUpdateCmdForCancel(cmd)
+		_, err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdateCmd)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
+
+	log.Printf("availResp: %v", availResp)
 
 	confirmed := make([]port.ConfirmedReservation, 0, len(availResp.Warehouses)+len(cmd.ConfirmedReservations))
 	confirmed = append(confirmed, cmd.ConfirmedReservations...)
@@ -123,8 +121,27 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 	if remainingConfirmation > 0 {
 		// not all goods are reserved
 		// send another contact request, to take a snaptshot of the current reservations and retry later
+		goods := make([]model.GoodStock, 0, len(cmd.Order.Goods))
+		for _, good := range cmd.Order.Goods {
+			goods = append(goods, model.GoodStock{
+				ID:       model.GoodId(good.GoodId),
+				Quantity: good.Quantity,
+			})
+		}
+
 		sendContactCmd := port.SendContactWarehouseCmd{
-			OrderId:               cmd.OrderId,
+			Order: model.Order{
+				Id:           model.OrderID(cmd.Order.ID),
+				Status:       cmd.Order.Status,
+				Name:         cmd.Order.Name,
+				Email:        cmd.Order.Email,
+				Address:      cmd.Order.Address,
+				UpdateTime:   cmd.Order.UpdateTime,
+				CreationTime: cmd.Order.CreationTime,
+				Goods:        goods,
+				Reservations: cmd.Order.Reservations,
+				Warehouses:   []model.OrderWarehouseUsed{},
+			},
 			LastContact:           now,
 			ConfirmedReservations: confirmed,
 			ExcludeWarehouses:     errWarehouses,
@@ -134,8 +151,8 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 		}
 	} else {
 		// all goods are reserved
-		orderUpdateCmd := modelOrderAndConfirmedToSendOrderUpdateCmd(order, confirmed)
-		err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdateCmd)
+		orderUpdateCmd := contactCmdAndConfirmedToSendOrderUpdateCmd(cmd, confirmed)
+		_, err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdateCmd)
 		if err != nil {
 			return err
 		}
@@ -166,7 +183,7 @@ func createOrderCmdToSendOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd)
 	return saveCmd
 }
 
-func modelOrderAndContactCmdToCalculateAvailabilityCmd(order model.Order, cmd port.ContactWarehousesCmd) port.CalculateAvailabilityCmd {
+func contactCmdToCalculateAvailabilityCmd(cmd port.ContactWarehousesCmd) port.CalculateAvailabilityCmd {
 	used := make(map[string]int64)
 	for _, reserv := range cmd.ConfirmedReservations {
 		for good, quantity := range reserv.Goods {
@@ -177,9 +194,9 @@ func modelOrderAndContactCmdToCalculateAvailabilityCmd(order model.Order, cmd po
 		}
 	}
 
-	goods := make([]port.RequestedGood, 0, len(order.Goods))
-	for _, good := range order.Goods {
-		goodReserved, ok := used[string(good.ID)]
+	goods := make([]port.RequestedGood, 0, len(cmd.Order.Goods))
+	for _, good := range cmd.Order.Goods {
+		goodReserved, ok := used[good.GoodId]
 		if !ok {
 			goodReserved = 0
 		}
@@ -188,7 +205,7 @@ func modelOrderAndContactCmdToCalculateAvailabilityCmd(order model.Order, cmd po
 		}
 
 		goods = append(goods, port.RequestedGood{
-			GoodID:   string(good.ID),
+			GoodID:   good.GoodId,
 			Quantity: good.Quantity - goodReserved,
 		})
 	}
@@ -212,13 +229,10 @@ func warehouseAvailabilityToReservationCmd(warehouse port.WarehouseAvailability)
 	return reservCmd
 }
 
-func modelOrderAndConfirmedToSendOrderUpdateCmd(order model.Order, confirmed []port.ConfirmedReservation) port.SendOrderUpdateCmd {
-	goods := make([]port.SendOrderUpdateGood, 0, len(order.Goods))
-	for _, good := range order.Goods {
-		goods = append(goods, port.SendOrderUpdateGood{
-			GoodId:   string(good.ID),
-			Quantity: good.Quantity,
-		})
+func contactCmdAndConfirmedToSendOrderUpdateCmd(cmd port.ContactWarehousesCmd, confirmed []port.ConfirmedReservation) port.SendOrderUpdateCmd {
+	goods := make([]port.SendOrderUpdateGood, 0, len(cmd.Order.Goods))
+	for _, good := range cmd.Order.Goods {
+		goods = append(goods, port.SendOrderUpdateGood(good))
 	}
 
 	reservations := make([]string, 0, len(confirmed))
@@ -227,34 +241,31 @@ func modelOrderAndConfirmedToSendOrderUpdateCmd(order model.Order, confirmed []p
 	}
 
 	orderUpdatecmd := port.SendOrderUpdateCmd{
-		ID:           string(order.Id),
+		ID:           cmd.Order.ID,
 		Status:       "Filled",
-		Name:         order.Name,
-		Email:        order.Email,
-		CreationTime: order.CreationTime,
+		Name:         cmd.Order.Name,
+		Email:        cmd.Order.Email,
+		CreationTime: cmd.Order.CreationTime,
 		Goods:        goods,
 		Reservations: reservations,
 	}
 	return orderUpdatecmd
 }
 
-func modelOrderToSendOrderUpdateCmdForCancel(order model.Order) port.SendOrderUpdateCmd {
-	goods := make([]port.SendOrderUpdateGood, 0, len(order.Goods))
-	for _, good := range order.Goods {
-		goods = append(goods, port.SendOrderUpdateGood{
-			GoodId:   string(good.ID),
-			Quantity: good.Quantity,
-		})
+func contactCmdToSendOrderUpdateCmdForCancel(cmd port.ContactWarehousesCmd) port.SendOrderUpdateCmd {
+	goods := make([]port.SendOrderUpdateGood, 0, len(cmd.Order.Goods))
+	for _, good := range cmd.Order.Goods {
+		goods = append(goods, port.SendOrderUpdateGood(good))
 	}
 
 	orderUpdatecmd := port.SendOrderUpdateCmd{
-		ID:           string(order.Id),
+		ID:           cmd.Order.ID,
 		Status:       "Cancelled",
-		Name:         order.Name,
-		Email:        order.Email,
-		CreationTime: order.CreationTime,
+		Name:         cmd.Order.Name,
+		Email:        cmd.Order.Email,
+		CreationTime: cmd.Order.CreationTime,
 		Goods:        goods,
-		Reservations: order.Reservations,
+		Reservations: cmd.Order.Reservations,
 	}
 	return orderUpdatecmd
 }

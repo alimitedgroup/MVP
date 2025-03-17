@@ -27,7 +27,5 @@ func (r *StockUpdateRouter) Setup(ctx context.Context) error {
 	// wait restoring of the state before starting the server
 	r.restore.Wait()
 
-	// register request/reply handlers
-
 	return nil
 }

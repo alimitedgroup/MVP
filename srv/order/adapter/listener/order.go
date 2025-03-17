@@ -40,7 +40,6 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 	}
 
 	confirmed := make([]port.ConfirmedReservation, 0, len(event.ConfirmedReservations))
-
 	for _, reservation := range event.ConfirmedReservations {
 		confirmed = append(confirmed, port.ConfirmedReservation{
 			WarehouseId:   reservation.WarehouseId,
@@ -49,8 +48,27 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 		})
 	}
 
+	goods := make([]port.ContactWarehousesGood, 0, len(event.Order.Goods))
+
+	for _, good := range event.Order.Goods {
+		goods = append(goods, port.ContactWarehousesGood{
+			GoodId:   good.GoodId,
+			Quantity: good.Quantity,
+		})
+	}
+
 	cmd := port.ContactWarehousesCmd{
-		OrderId:               event.OrderId,
+		Order: port.ContactWarehousesOrder{
+			ID:           event.Order.ID,
+			Goods:        goods,
+			Status:       event.Order.Status,
+			Name:         event.Order.Name,
+			Email:        event.Order.Email,
+			Address:      event.Order.Address,
+			UpdateTime:   event.Order.UpdateTime,
+			CreationTime: event.Order.CreationTime,
+			Reservations: event.Order.Reservations,
+		},
 		LastContact:           event.LastContact,
 		ConfirmedReservations: confirmed,
 		ExcludeWarehouses:     event.ExcludeWarehouses,
