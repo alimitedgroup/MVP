@@ -26,7 +26,11 @@ var (
 )
 
 var Module = fx.Options(
-	fx.Provide(fx.Annotate(NewBusiness, fx.As(new(portin.Auth)))),
+	fx.Provide(fx.Annotate(
+		NewBusiness,
+		fx.As(new(portin.Auth)),
+		fx.As(new(portin.Warehouses)),
+	)),
 )
 
 func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut) *Business {

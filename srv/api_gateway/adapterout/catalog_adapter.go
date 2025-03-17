@@ -13,7 +13,7 @@ type CatalogAdapterOut struct {
 	Broker *broker.NatsMessageBroker
 }
 
-func NewCatalogAdapter(broker *broker.NatsMessageBroker) *CatalogAdapterOut {
+func NewCatalogAdapter(broker *broker.NatsMessageBroker) portout.CatalogPortOut {
 	return &CatalogAdapterOut{
 		Broker: broker,
 	}
