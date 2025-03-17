@@ -22,15 +22,11 @@ type RunParams struct {
 }
 
 func Run(ctx context.Context, p RunParams) error {
-	var err error
-
-	err = p.ListenerRoutes.Setup(ctx)
-	if err != nil {
+	if err := p.ListenerRoutes.Setup(ctx); err != nil {
 		return err
 	}
 
-	err = p.BrokerRoutes.Setup(ctx)
-	if err != nil {
+	if err := p.BrokerRoutes.Setup(ctx); err != nil {
 		return err
 	}
 

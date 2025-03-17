@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
@@ -28,6 +29,7 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 		if err != nil {
 			return err
 		}
+		fmt.Printf("order: %v\n", order)
 
 		isRelatedToReserv := false
 		for _, reserv := range order.Reservations {

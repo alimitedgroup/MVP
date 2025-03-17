@@ -2,11 +2,12 @@ package listener
 
 import (
 	"context"
-
-	"github.com/alimitedgroup/MVP/common/lib"
 )
 
-type ListenerRoutes []lib.BrokerRoute
+type ListenerRoutes struct {
+	StockUpdateRouter *StockUpdateRouter
+	OrderUpdateRouter *OrderRouter
+}
 
 func NewListenerRoutes(stockUpdateRouter *StockUpdateRouter, orderUpdateRouter *OrderRouter) ListenerRoutes {
 	return ListenerRoutes{
@@ -16,11 +17,13 @@ func NewListenerRoutes(stockUpdateRouter *StockUpdateRouter, orderUpdateRouter *
 }
 
 func (r ListenerRoutes) Setup(ctx context.Context) error {
-	for _, v := range r {
-		err := v.Setup(ctx)
-		if err != nil {
-			return err
-		}
+	if err := r.OrderUpdateRouter.Setup(ctx); err != nil {
+		return err
 	}
+
+	if err := r.StockUpdateRouter.Setup(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }

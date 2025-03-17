@@ -12,12 +12,13 @@ type GetOrderResponseDTO ResponseDTO[OrderInfo]
 type GetAllOrderResponseDTO ResponseDTO[[]OrderInfo]
 
 type OrderInfo struct {
-	OrderID string          `json:"order_id"`
-	Status  string          `json:"status"`
-	Name    string          `json:"name"`
-	Email   string          `json:"email"`
-	Address string          `json:"address"`
-	Goods   []OrderInfoGood `json:"goods"`
+	OrderID      string          `json:"order_id"`
+	Status       string          `json:"status"`
+	Name         string          `json:"name"`
+	Email        string          `json:"email"`
+	Address      string          `json:"address"`
+	Goods        []OrderInfoGood `json:"goods"`
+	Reservations []string        `json:"reservations"`
 }
 
 type OrderInfoGood struct {

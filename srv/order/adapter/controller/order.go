@@ -201,12 +201,13 @@ func ordersToGetAllGoodResponseDTO(model []model.Order) response.GetAllOrderResp
 		}
 
 		orders = append(orders, response.OrderInfo{
-			OrderID: string(order.Id),
-			Status:  order.Status,
-			Name:    order.Name,
-			Email:   order.Email,
-			Address: order.Address,
-			Goods:   goods,
+			OrderID:      string(order.Id),
+			Status:       order.Status,
+			Name:         order.Name,
+			Email:        order.Email,
+			Address:      order.Address,
+			Reservations: order.Reservations,
+			Goods:        goods,
 		})
 	}
 

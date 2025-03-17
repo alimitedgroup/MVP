@@ -132,3 +132,36 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore IRest
 
 	return nil
 }
+
+func (n *NatsMessageBroker) RegisterJsWithConsumerGroup(ctx context.Context, streamCfg jetstream.StreamConfig, consumerCfg jetstream.ConsumerConfig, handler JsHandler) error {
+	s, err := n.Js.CreateStream(ctx, streamCfg)
+	if err != nil {
+		return fmt.Errorf("failed to create stream: %w", err)
+	}
+
+	consumer, err := s.CreateOrUpdateConsumer(ctx, consumerCfg)
+	if err != nil {
+		return fmt.Errorf("failed to create consumer: %w", err)
+	}
+
+	var cc jetstream.ConsumeContext
+
+	cc, err = consumer.Consume(func(m jetstream.Msg) {
+		msgErr := handler(ctx, m)
+		if msgErr != nil {
+			cc.Stop()
+			log.Fatalf("failed to handle message: %v\n", msgErr)
+		} else {
+			if errAck := m.Ack(); errAck != nil {
+				cc.Stop()
+				log.Fatalf("failed to ack message: %v\nafter error: %v\n", errAck, err)
+			}
+		}
+	})
+	if err != nil {
+		return fmt.Errorf("failed to consume messages: %w", err)
+	}
+
+	return nil
+
+}
