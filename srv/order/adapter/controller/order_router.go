@@ -11,7 +11,7 @@ type OrderRouter struct {
 	broker          *broker.NatsMessageBroker
 }
 
-func NewStockRouter(orderController *OrderController, broker *broker.NatsMessageBroker) *OrderRouter {
+func NewOrderRouter(orderController *OrderController, broker *broker.NatsMessageBroker) *OrderRouter {
 	return &OrderRouter{orderController, broker}
 }
 

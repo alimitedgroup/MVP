@@ -9,8 +9,8 @@ type ListenerRoutes struct {
 	OrderUpdateRouter *OrderRouter
 }
 
-func NewListenerRoutes(stockUpdateRouter *StockUpdateRouter, orderUpdateRouter *OrderRouter) ListenerRoutes {
-	return ListenerRoutes{
+func NewListenerRoutes(stockUpdateRouter *StockUpdateRouter, orderUpdateRouter *OrderRouter) *ListenerRoutes {
+	return &ListenerRoutes{
 		stockUpdateRouter,
 		orderUpdateRouter,
 	}

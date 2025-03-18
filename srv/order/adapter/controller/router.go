@@ -13,8 +13,8 @@ type ControllerRoutes struct {
 	routes []lib.BrokerRoute
 }
 
-func NewBrokerRoutes(stockRouter *OrderRouter, healthCheckRouter *HealthCheckRouter, transferRouter *TransferRouter, broker *broker.NatsMessageBroker) ControllerRoutes {
-	return ControllerRoutes{
+func NewBrokerRoutes(stockRouter *OrderRouter, healthCheckRouter *HealthCheckRouter, transferRouter *TransferRouter, broker *broker.NatsMessageBroker) *ControllerRoutes {
+	return &ControllerRoutes{
 		routes: []lib.BrokerRoute{stockRouter, healthCheckRouter, transferRouter},
 		broker: broker,
 	}
