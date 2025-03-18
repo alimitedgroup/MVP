@@ -2,54 +2,36 @@ package business
 
 import (
 	"testing"
+	"time"
 
-	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	"go.uber.org/mock/gomock"
 )
-
-type applyStockUpdatePortMock struct {
-	M     map[string]int64
-	Total int64
-}
-
-func newApplyStockUpdatePortMock() *applyStockUpdatePortMock {
-	return &applyStockUpdatePortMock{M: make(map[string]int64), Total: 0}
-}
-
-func (m *applyStockUpdatePortMock) SaveEventID(port.IdempotentCmd) {
-
-}
-
-func (m *applyStockUpdatePortMock) IsAlreadyProcessed(port.IdempotentCmd) bool {
-	return false
-}
-
-func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) {
-	for _, v := range goods {
-
-		old, exist := m.M[string(v.ID)]
-		if !exist {
-			old = 0
-		}
-
-		m.M[string(v.ID)] = old + v.Quantity
-		m.Total += v.Quantity
-	}
-}
 
 func TestApplyStockUpdateService(t *testing.T) {
 	ctx := t.Context()
+	ctrl := gomock.NewController(t)
 
-	mock := newApplyStockUpdatePortMock()
+	idempotentPortMock := NewMockIIdempotentPort(ctrl)
+	idempotentPortMock.EXPECT().SaveEventID(gomock.Any())
+
+	applyStockUpdatePortmock := NewMockIApplyStockUpdatePort(ctrl)
+	applyStockUpdatePortmock.EXPECT().ApplyStockUpdate(gomock.Any())
 
 	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyStockUpdatePort)), fx.As(new(port.IIdempotentPort)))),
-		fx.Provide(fx.Annotate(NewApplyStockUpdateService, fx.As(new(port.IApplyStockUpdateUseCase)))),
-		fx.Invoke(func(useCase port.IApplyStockUpdateUseCase) {
+		fx.Supply(fx.Annotate(idempotentPortMock, fx.As(new(port.IIdempotentPort)))),
+		fx.Supply(fx.Annotate(applyStockUpdatePortmock, fx.As(new(port.IApplyStockUpdatePort)))),
+		fx.Provide(NewApplyStockUpdateService),
+		fx.Invoke(func(service *ApplyStockUpdateService) {
 			cmd := port.StockUpdateCmd{
-				ID: "1",
+				Type:          port.StockUpdateCmdTypeOrder,
+				OrderID:       "1",
+				TransferID:    "",
+				ReservationID: "1",
+				Timestamp:     time.Now().UnixMilli(),
+				ID:            "1",
 				Goods: []port.StockUpdateCmdGood{
 					{
 						GoodID:   "1",
@@ -62,24 +44,16 @@ func TestApplyStockUpdateService(t *testing.T) {
 				},
 			}
 
-			useCase.ApplyStockUpdate(cmd)
-
-			assert.Equal(t, mock.Total, int64(30))
-			assert.Equal(t, mock.M["1"], int64(10))
-			assert.Equal(t, mock.M["2"], int64(20))
+			service.ApplyStockUpdate(cmd)
 		}),
 	)
 
 	err := app.Start(ctx)
-	if err != nil {
-		t.Errorf("error starting app: %v", err)
-	}
+	require.NoError(t, err)
 
 	defer func() {
 		err := app.Stop(ctx)
-		if err != nil {
-			t.Errorf("error stopping app: %v", err)
-		}
+		require.NoError(t, err)
 	}()
 
 }

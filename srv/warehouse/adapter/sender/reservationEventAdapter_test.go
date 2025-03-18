@@ -88,7 +88,7 @@ func TestReservationEventAdapterNetworkErr(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	broker, err := broker.NewNatsMessageBroker(ns)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	ns.Close()
 
@@ -105,5 +105,5 @@ func TestReservationEventAdapterNetworkErr(t *testing.T) {
 	}
 
 	err = a.StoreReservationEvent(ctx, cmd)
-	require.NotNil(t, err)
+	require.Error(t, err)
 }

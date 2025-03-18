@@ -46,7 +46,7 @@ func TestStockPersistanceAdapterGetReserv(t *testing.T) {
 	a := NewStockPersistanceAdapter(mock)
 
 	reserv, err := a.GetReservation(model.ReservationId("1"))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, reserv.ID, model.ReservationId("1"))
 	require.Equal(t, reserv.Goods, []model.ReservationGood{{GoodID: "1", Quantity: 10}})
 }
@@ -60,7 +60,7 @@ func TestStockPersistanceAdapterGetReservNotFound(t *testing.T) {
 	a := NewStockPersistanceAdapter(mock)
 
 	reserv, err := a.GetReservation(model.ReservationId("1"))
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, reserv, model.Reservation{})
 }
 
@@ -82,7 +82,7 @@ func TestStockPersistanceAdapterApplyReservErr(t *testing.T) {
 
 	a := NewStockPersistanceAdapter(mock)
 	err := a.ApplyReservationEvent(model.Reservation{ID: "1", Goods: []model.ReservationGood{{GoodID: "1", Quantity: 10}}})
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestStockPersistanceAdapterApplyOrder(t *testing.T) {
@@ -93,7 +93,7 @@ func TestStockPersistanceAdapterApplyOrder(t *testing.T) {
 
 	a := NewStockPersistanceAdapter(mock)
 	err := a.ApplyOrderFilled(model.Reservation{ID: "1", Goods: []model.ReservationGood{{GoodID: "1", Quantity: 10}}})
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestStockPersistanceAdapterApplyOrderErr(t *testing.T) {
@@ -104,5 +104,5 @@ func TestStockPersistanceAdapterApplyOrderErr(t *testing.T) {
 
 	a := NewStockPersistanceAdapter(mock)
 	err := a.ApplyOrderFilled(model.Reservation{ID: "1", Goods: []model.ReservationGood{{GoodID: "1", Quantity: 10}}})
-	require.NotNil(t, err)
+	require.Error(t, err)
 }

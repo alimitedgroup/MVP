@@ -86,7 +86,7 @@ func TestStockUpdateAdapterNetworkErr(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	broker, err := broker.NewNatsMessageBroker(ns)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	ns.Close()
 
@@ -100,5 +100,5 @@ func TestStockUpdateAdapterNetworkErr(t *testing.T) {
 	}
 
 	err = a.CreateStockUpdate(ctx, cmd)
-	require.NotNil(t, err)
+	require.Error(t, err)
 }

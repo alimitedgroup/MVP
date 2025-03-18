@@ -29,7 +29,7 @@ func TestStockRepositoryImplReserveAndUnreserve(t *testing.T) {
 	require.Nil(t, repo.UnReserveStock("1", 5))
 
 	reserv, err := repo.GetReservation("1")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, reserv.Goods["1"], int64(5))
 }
 
@@ -40,7 +40,7 @@ func TestStockRepositoryImplReserveNotExistingGood(t *testing.T) {
 	require.NotNil(t, repo.UnReserveStock("1", 5))
 	require.Zero(t, repo.GetFreeStock("1"))
 	reserv, err := repo.GetReservation("1")
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Nil(t, reserv.Goods)
 }
 
