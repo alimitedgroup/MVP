@@ -16,8 +16,8 @@ type ReservationEventRouter struct {
 	restore             broker.IRestoreStreamControl
 }
 
-func NewReservationEventRouter(restoreFactory broker.IRestoreStreamControlFactory, reservationListener *ReservationEventListener, n *broker.NatsMessageBroker, cfg *config.WarehouseConfig) *ReservationEventRouter {
-	return &ReservationEventRouter{reservationListener, n, cfg, restoreFactory.Build()}
+func NewReservationEventRouter(restoreFactory broker.IRestoreStreamControlFactory, reservationListener *ReservationEventListener, broker *broker.NatsMessageBroker, cfg *config.WarehouseConfig) *ReservationEventRouter {
+	return &ReservationEventRouter{reservationListener, broker, cfg, restoreFactory.Build()}
 }
 
 func (r *ReservationEventRouter) Setup(ctx context.Context) error {

@@ -103,16 +103,6 @@ func TestStockUpdateListener(t *testing.T) {
 						t.Error(err)
 					}
 
-					// for {
-					// 	info, err := r.StockUpdateConsumer.Info(ctx)
-					// 	if err != nil {
-					// 		t.Error(err)
-					// 	}
-					// 	if info.NumAckPending == 0 {
-					// 		break
-					// 	}
-					// 	time.Sleep(10 * time.Millisecond)
-					// }
 					time.Sleep(100 * time.Millisecond)
 
 					assert.Equal(t, ack.Stream, "stock_update")
