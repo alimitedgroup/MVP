@@ -1,9 +1,7 @@
 package port
 
-import "context"
-
 type IApplyCatalogUpdateUseCase interface {
-	ApplyCatalogUpdate(ctx context.Context, cmd CatalogUpdateCmd) error
+	ApplyCatalogUpdate(cmd CatalogUpdateCmd)
 }
 
 type CatalogUpdateCmd struct {

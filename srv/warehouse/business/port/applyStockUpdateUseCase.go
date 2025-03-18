@@ -1,9 +1,7 @@
 package port
 
-import "context"
-
 type IApplyStockUpdateUseCase interface {
-	ApplyStockUpdate(context.Context, StockUpdateCmd) error
+	ApplyStockUpdate(StockUpdateCmd)
 }
 
 type StockUpdateCmd struct {

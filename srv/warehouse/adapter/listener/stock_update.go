@@ -24,10 +24,7 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 		return err
 	}
 	cmd := stockUpdateEventToApplyStockUpdateCmd(event)
-	err = l.applyStockUpdateUseCase.ApplyStockUpdate(ctx, cmd)
-	if err != nil {
-		return err
-	}
+	l.applyStockUpdateUseCase.ApplyStockUpdate(cmd)
 
 	return nil
 }

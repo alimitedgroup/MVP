@@ -1,8 +1,6 @@
 package business
 
 import (
-	"context"
-
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 )
@@ -16,7 +14,7 @@ func NewApplyStockUpdateService(applyStockUpdatePort port.IApplyStockUpdatePort,
 	return &ApplyStockUpdateService{applyStockUpdatePort, idempotentPort}
 }
 
-func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port.StockUpdateCmd) error {
+func (s *ApplyStockUpdateService) ApplyStockUpdate(cmd port.StockUpdateCmd) {
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
@@ -25,10 +23,7 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 		})
 	}
 
-	err := s.applyStockUpdatePort.ApplyStockUpdate(goods)
-	if err != nil {
-		return err
-	}
+	s.applyStockUpdatePort.ApplyStockUpdate(goods)
 
 	if cmd.Type == port.StockUpdateCmdTypeOrder || cmd.Type == port.StockUpdateCmdTypeTransfer {
 		idempotentCmd := port.IdempotentCmd{
@@ -37,6 +32,4 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 		}
 		s.idempotentPort.SaveEventID(idempotentCmd)
 	}
-
-	return nil
 }

@@ -12,10 +12,8 @@ func NewCatalogPersistanceAdapter(catalogRepo ICatalogRepository) *CatalogPersis
 	return &CatalogPersistanceAdapter{catalogRepo}
 }
 
-func (s *CatalogPersistanceAdapter) ApplyCatalogUpdate(good model.GoodInfo) error {
+func (s *CatalogPersistanceAdapter) ApplyCatalogUpdate(good model.GoodInfo) {
 	s.catalogRepo.SetGood(string(good.ID), good.Name, good.Description)
-
-	return nil
 }
 
 func (s *CatalogPersistanceAdapter) GetGood(goodId model.GoodID) *model.GoodInfo {

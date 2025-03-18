@@ -5,5 +5,5 @@ import (
 )
 
 type IApplyCatalogUpdatePort interface {
-	ApplyCatalogUpdate(good model.GoodInfo) error
+	ApplyCatalogUpdate(good model.GoodInfo)
 }

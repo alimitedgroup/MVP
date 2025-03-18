@@ -63,10 +63,7 @@ func TestApplyStockUpdateService(t *testing.T) {
 				},
 			}
 
-			err := useCase.ApplyStockUpdate(ctx, cmd)
-			if err != nil {
-				t.Errorf("error updating stock: %v", err)
-			}
+			useCase.ApplyStockUpdate(cmd)
 
 			assert.Equal(t, mock.Total, int64(30))
 			assert.Equal(t, mock.M["1"], int64(10))

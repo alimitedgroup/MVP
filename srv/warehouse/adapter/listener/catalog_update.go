@@ -30,10 +30,7 @@ func (l *CatalogListener) ListenGoodUpdate(ctx context.Context, msg jetstream.Ms
 		Description: event.GoodNewDescription,
 	}
 
-	err = l.applyCatalogUpdateUseCase.ApplyCatalogUpdate(ctx, cmd)
-	if err != nil {
-		return err
-	}
+	l.applyCatalogUpdateUseCase.ApplyCatalogUpdate(cmd)
 
 	return nil
 }

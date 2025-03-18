@@ -60,10 +60,7 @@ func TestStockPersistanceAdapter(t *testing.T) {
 				{ID: "2", Quantity: 20},
 			}
 
-			err := a.ApplyStockUpdate(goods)
-			if err != nil {
-				t.Error(err)
-			}
+			a.ApplyStockUpdate(goods)
 
 			assert.Equal(t, stockRepo.GetStock("1"), int64(10))
 			assert.Equal(t, mock.M["2"], int64(20))

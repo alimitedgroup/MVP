@@ -4,69 +4,43 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
-	"github.com/magiconair/properties/assert"
-	"go.uber.org/fx"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
-type catalogRepositoryMock struct {
-	M map[string]Good
+//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_catalogRepository.go -package persistence github.com/alimitedgroup/MVP/srv/warehouse/adapter/persistence ICatalogRepository
+
+func TestCatalogPersistanceAdapterSetAndGet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockICatalogRepository(ctrl)
+
+	mock.EXPECT().GetGood(gomock.Any()).Return(&Good{
+		Id:          "1",
+		Name:        "blue_hat",
+		Description: "very beautiful hat",
+	})
+	mock.EXPECT().SetGood(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+
+	a := NewCatalogPersistanceAdapter(mock)
+
+	a.ApplyCatalogUpdate(model.GoodInfo{
+		ID:          "1",
+		Name:        "blue_hat",
+		Description: "very beautiful hat",
+	})
+
+	goodInfo := a.GetGood("1")
+	require.NotNil(t, goodInfo)
+	require.Equal(t, goodInfo.ID, model.GoodID("1"))
 }
 
-func NewCatalogRepositoryMock() *catalogRepositoryMock {
-	return &catalogRepositoryMock{M: make(map[string]Good)}
-}
+func TestCatalogPersistanceAdapterGetNotExist(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockICatalogRepository(ctrl)
 
-func (s *catalogRepositoryMock) SetGood(goodId string, name string, description string) bool {
-	s.M[goodId] = Good{
-		Id:          goodId,
-		Name:        name,
-		Description: description,
-	}
-	return true
-}
+	mock.EXPECT().GetGood(gomock.Any()).Return(nil)
 
-func (s *catalogRepositoryMock) GetGood(goodId string) *Good {
-	good, exist := s.M[goodId]
-	if !exist {
-		return nil
-	}
+	a := NewCatalogPersistanceAdapter(mock)
 
-	return &good
-}
-
-func TestCatalogPersistanceAdapter(t *testing.T) {
-	ctx := t.Context()
-
-	mock := NewCatalogRepositoryMock()
-
-	app := fx.New(
-		fx.Supply(fx.Annotate(mock, fx.As(new(ICatalogRepository)))),
-		fx.Provide(NewCatalogPersistanceAdapter),
-		fx.Invoke(func(a *CatalogPersistanceAdapter, stockRepo ICatalogRepository) {
-			good := model.GoodInfo{
-				ID:          "1",
-				Name:        "blue_hat",
-				Description: "very beautiful hat",
-			}
-
-			err := a.ApplyCatalogUpdate(good)
-			if err != nil {
-				t.Error(err)
-			}
-
-			assert.Equal(t, stockRepo.GetGood("1").Name, "blue_hat")
-		}),
-	)
-
-	err := app.Start(ctx)
-	if err != nil {
-		t.Error(err)
-	}
-
-	defer func() {
-		err = app.Stop(ctx)
-		if err != nil {
-			t.Error(err)
-		}
-	}()
+	require.Nil(t, a.GetGood("1"))
 }

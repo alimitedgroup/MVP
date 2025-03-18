@@ -5,5 +5,5 @@ import (
 )
 
 type IApplyStockUpdatePort interface {
-	ApplyStockUpdate([]model.GoodStock) error
+	ApplyStockUpdate([]model.GoodStock)
 }

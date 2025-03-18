@@ -1,8 +1,6 @@
 package business
 
 import (
-	"context"
-
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 )
@@ -15,16 +13,11 @@ func NewApplyCatalogUpdateService(applyGoodUpdatePort port.IApplyCatalogUpdatePo
 	return &ApplyCatalogUpdateService{applyGoodUpdatePort}
 }
 
-func (s *ApplyCatalogUpdateService) ApplyCatalogUpdate(ctx context.Context, cmd port.CatalogUpdateCmd) error {
+func (s *ApplyCatalogUpdateService) ApplyCatalogUpdate(cmd port.CatalogUpdateCmd) {
 	good := model.GoodInfo{
 		ID:          model.GoodID(cmd.GoodID),
 		Name:        cmd.Name,
 		Description: cmd.Description,
 	}
-	err := s.applyCatalogUpdatePort.ApplyCatalogUpdate(good)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	s.applyCatalogUpdatePort.ApplyCatalogUpdate(good)
 }

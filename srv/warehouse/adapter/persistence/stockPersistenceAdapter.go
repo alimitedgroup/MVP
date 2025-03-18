@@ -12,12 +12,10 @@ func NewStockPersistanceAdapter(stockRepo IStockRepository) *StockPersistanceAda
 	return &StockPersistanceAdapter{stockRepo}
 }
 
-func (s *StockPersistanceAdapter) ApplyStockUpdate(goods []model.GoodStock) error {
+func (s *StockPersistanceAdapter) ApplyStockUpdate(goods []model.GoodStock) {
 	for _, good := range goods {
 		s.stockRepo.SetStock(string(good.ID), good.Quantity)
 	}
-
-	return nil
 }
 
 func (s *StockPersistanceAdapter) ApplyReservationEvent(reservation model.Reservation) error {

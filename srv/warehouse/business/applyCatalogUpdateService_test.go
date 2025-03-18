@@ -37,10 +37,7 @@ func TestApplyCatalogUpdateService(t *testing.T) {
 				Description: "very nice hat",
 			}
 
-			err := useCase.ApplyCatalogUpdate(ctx, cmd)
-			if err != nil {
-				t.Errorf("error updating catalog: %v", err)
-			}
+			useCase.ApplyCatalogUpdate(cmd)
 
 			assert.Equal(t, mock.M["1"].Name, "hat")
 		}),
