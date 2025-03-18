@@ -17,9 +17,8 @@ func newApplyCatalogUpdatePortMock() *applyCatalogUpdatePortMock {
 	return &applyCatalogUpdatePortMock{M: make(map[string]model.GoodInfo)}
 }
 
-func (m *applyCatalogUpdatePortMock) ApplyCatalogUpdate(good model.GoodInfo) error {
+func (m *applyCatalogUpdatePortMock) ApplyCatalogUpdate(good model.GoodInfo) {
 	m.M[string(good.ID)] = good
-	return nil
 }
 
 func TestApplyCatalogUpdateService(t *testing.T) {

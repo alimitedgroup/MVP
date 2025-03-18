@@ -26,7 +26,7 @@ func (m *applyStockUpdatePortMock) IsAlreadyProcessed(port.IdempotentCmd) bool {
 	return false
 }
 
-func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) error {
+func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) {
 	for _, v := range goods {
 
 		old, exist := m.M[string(v.ID)]
@@ -37,7 +37,6 @@ func (m *applyStockUpdatePortMock) ApplyStockUpdate(goods []model.GoodStock) err
 		m.M[string(v.ID)] = old + v.Quantity
 		m.Total += v.Quantity
 	}
-	return nil
 }
 
 func TestApplyStockUpdateService(t *testing.T) {

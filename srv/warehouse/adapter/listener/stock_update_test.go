@@ -26,7 +26,7 @@ func NewApplyStockUpdateMock() *applyStockUpdateMock {
 	return &applyStockUpdateMock{stockMap: make(map[string]int64)}
 }
 
-func (m *applyStockUpdateMock) ApplyStockUpdate(_ context.Context, cmd port.StockUpdateCmd) error {
+func (m *applyStockUpdateMock) ApplyStockUpdate(cmd port.StockUpdateCmd) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -39,7 +39,6 @@ func (m *applyStockUpdateMock) ApplyStockUpdate(_ context.Context, cmd port.Stoc
 			m.stockMap[good.GoodID] = old - good.Quantity
 		}
 	}
-	return nil
 }
 
 func (m *applyStockUpdateMock) GetStock(id string) int64 {

@@ -31,7 +31,7 @@ func newApplyCatalogUpdateMock() *applyCatalogUpdateMock {
 	return &applyCatalogUpdateMock{catalogMap: make(map[string]goodMock)}
 }
 
-func (m *applyCatalogUpdateMock) ApplyCatalogUpdate(ctx context.Context, cmd port.CatalogUpdateCmd) error {
+func (m *applyCatalogUpdateMock) ApplyCatalogUpdate(cmd port.CatalogUpdateCmd) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -41,7 +41,6 @@ func (m *applyCatalogUpdateMock) ApplyCatalogUpdate(ctx context.Context, cmd por
 		description: cmd.Description,
 	}
 
-	return nil
 }
 
 func (m *applyCatalogUpdateMock) GetGood(id string) goodMock {
