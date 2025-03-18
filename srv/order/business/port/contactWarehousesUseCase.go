@@ -2,10 +2,11 @@ package port
 
 import (
 	"context"
+	"time"
 )
 
 type IContactWarehousesUseCase interface {
-	ContactWarehouses(context.Context, ContactWarehousesCmd) error
+	ContactWarehouses(context.Context, ContactWarehousesCmd) (ContactWarehousesResponse, error)
 }
 
 type ContactWarehousesCmd struct {
@@ -15,6 +16,8 @@ type ContactWarehousesCmd struct {
 	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
+	RetryUntil            int64
+	RetryInTime           int64
 }
 
 type ContactWarehousesType string
@@ -56,4 +59,9 @@ type ConfirmedReservation struct {
 	WarehouseId   string
 	ReservationID string
 	Goods         map[string]int64
+}
+
+type ContactWarehousesResponse struct {
+	IsRetry    bool
+	RetryAfter time.Duration
 }

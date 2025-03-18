@@ -17,6 +17,8 @@ type SendContactWarehouseCmd struct {
 	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
+	RetryInTime           int64
+	RetryUntil            int64
 }
 
 type SendContactWarehouseType string

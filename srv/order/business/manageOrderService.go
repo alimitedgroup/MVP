@@ -2,7 +2,6 @@ package business
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
@@ -67,6 +66,8 @@ func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.Create
 		LastContact:           0,
 		ConfirmedReservations: []port.ConfirmedReservation{},
 		ExcludeWarehouses:     []string{},
+		RetryInTime:           0,
+		RetryUntil:            time.Now().Add(time.Hour * 12).UnixMilli(),
 	}
 	err = s.sendContactWarehousePort.SendContactWarehouses(ctx, contactCmd)
 	if err != nil {
@@ -92,6 +93,8 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 		LastContact:           0,
 		ConfirmedReservations: []port.ConfirmedReservation{},
 		ExcludeWarehouses:     []string{},
+		RetryInTime:           0,
+		RetryUntil:            time.Now().Add(time.Hour * 12).UnixMilli(),
 	}
 	err = s.sendContactWarehousePort.SendContactWarehouses(ctx, contactCmd)
 	if err != nil {
@@ -141,24 +144,29 @@ func (s *ManageOrderService) GetAllTransfers(ctx context.Context) ([]model.Trans
 	return transfers, nil
 }
 
-func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) error {
-	switch cmd.Type {
-	case port.ContactWarehousesTypeOrder:
-		err := s.contactWarehouseForOrder(ctx, cmd)
-		if err != nil {
-			return err
-		}
-	case port.ContactWarehousesTypeTransfer:
-		err := s.contactWarehouseForTransfer(ctx, cmd)
-		if err != nil {
-			return err
-		}
+func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) (port.ContactWarehousesResponse, error) {
+	var err error
+	var resp port.ContactWarehousesResponse
+
+	if time.UnixMilli(cmd.RetryInTime).After(time.Now()) {
+		retryAfter := time.Until(time.UnixMilli(cmd.RetryInTime))
+		return port.ContactWarehousesResponse{IsRetry: true, RetryAfter: retryAfter}, nil
 	}
 
-	return nil
+	switch cmd.Type {
+	case port.ContactWarehousesTypeOrder:
+		resp, err = s.contactWarehouseForOrder(ctx, cmd)
+	case port.ContactWarehousesTypeTransfer:
+		resp, err = s.contactWarehouseForTransfer(ctx, cmd)
+	}
+
+	if err != nil {
+		return port.ContactWarehousesResponse{}, err
+	}
+	return resp, nil
 }
 
-func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cmd port.ContactWarehousesCmd) error {
+func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cmd port.ContactWarehousesCmd) (port.ContactWarehousesResponse, error) {
 	items := make([]port.ReservationItem, 0, len(cmd.Transfer.Goods))
 	for _, good := range cmd.Transfer.Goods {
 		items = append(items, port.ReservationItem(good))
@@ -169,26 +177,15 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 	}
 	reservResp, err := s.requestReservationPort.RequestReservation(ctx, reservCmd)
 	if err != nil {
-		log.Printf("error: %v", err)
-		if err == port.ErrNotEnoughStock {
-			goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Transfer.Goods))
-			for _, good := range cmd.Transfer.Goods {
-				goods = append(goods, port.SendTransferUpdateGood(good))
-			}
-			sendTransferCmd := port.SendTransferUpdateCmd{
-				Status:        "Cancelled",
-				ID:            cmd.Transfer.ID,
-				CreationTime:  cmd.Transfer.CreationTime,
-				SenderId:      cmd.Transfer.SenderID,
-				ReceiverId:    cmd.Transfer.ReceiverID,
-				Goods:         goods,
-				ReservationId: reservResp.Id,
-			}
+		now := time.Now()
+		if err == port.ErrNotEnoughStock || time.UnixMilli(cmd.RetryUntil).Before(now) {
+			// TODO: error message in the order
+			sendTransferCmd := contactCmdToSendTransferUpdateCmdForCancel(cmd)
 			_, err = s.sendTransferUpdatePort.SendTransferUpdate(ctx, sendTransferCmd)
 			if err != nil {
-				return err
+				return port.ContactWarehousesResponse{}, err
 			}
-			return nil
+			return port.ContactWarehousesResponse{}, nil
 		}
 
 		goods := make([]model.GoodStock, 0, len(cmd.Transfer.Goods))
@@ -198,7 +195,6 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 				Quantity: good.Quantity,
 			})
 		}
-		now := time.Now().UnixMilli()
 		sendContactCmd := port.SendContactWarehouseCmd{
 			Type: port.SendContactWarehouseTypeTransfer,
 			Transfer: &model.Transfer{
@@ -212,14 +208,16 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 				ReservationID: "",
 			},
 			Order:                 nil,
-			LastContact:           now,
+			LastContact:           now.UnixMilli(),
+			RetryInTime:           now.Add(time.Second * 10).UnixMilli(),
+			RetryUntil:            cmd.RetryUntil,
 			ConfirmedReservations: []port.ConfirmedReservation{},
 			ExcludeWarehouses:     []string{},
 		}
 		if err = s.sendContactWarehousePort.SendContactWarehouses(ctx, sendContactCmd); err != nil {
-			return err
+			return port.ContactWarehousesResponse{}, err
 		}
-		return nil
+		return port.ContactWarehousesResponse{}, nil
 	}
 
 	goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Transfer.Goods))
@@ -237,14 +235,13 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 	}
 	_, err = s.sendTransferUpdatePort.SendTransferUpdate(ctx, sendTransferCmd)
 	if err != nil {
-		return err
+		return port.ContactWarehousesResponse{}, err
 	}
 
-	return nil
+	return port.ContactWarehousesResponse{IsRetry: false}, nil
 }
 
-func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd port.ContactWarehousesCmd) error {
-	now := time.Now().UnixMilli()
+func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd port.ContactWarehousesCmd) (port.ContactWarehousesResponse, error) {
 
 	availCmd := contactCmdToCalculateAvailabilityCmd(cmd)
 	availResp, err := s.calculateAvailabilityUseCase.GetAvailable(ctx, availCmd)
@@ -252,9 +249,9 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 		orderUpdateCmd := contactCmdToSendOrderUpdateCmdForCancel(cmd)
 		_, err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdateCmd)
 		if err != nil {
-			return err
+			return port.ContactWarehousesResponse{}, err
 		}
-		return nil
+		return port.ContactWarehousesResponse{}, nil
 	}
 
 	confirmed := make([]port.ConfirmedReservation, 0, len(availResp.Warehouses)+len(cmd.ConfirmedReservations))
@@ -282,8 +279,18 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 	}
 
 	if remainingConfirmation > 0 {
+		now := time.Now()
 		// not all goods are reserved
 		// send another contact request, to take a snaptshot of the current reservations and retry later
+		if time.UnixMilli(cmd.RetryUntil).Before(now) {
+			orderUpdateCmd := contactCmdToSendOrderUpdateCmdForCancel(cmd)
+			_, err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdateCmd)
+			if err != nil {
+				return port.ContactWarehousesResponse{}, err
+			}
+			return port.ContactWarehousesResponse{}, nil
+		}
+
 		goods := make([]model.GoodStock, 0, len(cmd.Order.Goods))
 		for _, good := range cmd.Order.Goods {
 			goods = append(goods, model.GoodStock{
@@ -306,23 +313,26 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 				Reservations: cmd.Order.Reservations,
 				Warehouses:   []model.OrderWarehouseUsed{},
 			},
-			LastContact:           now,
+			LastContact:           now.UnixMilli(),
 			ConfirmedReservations: confirmed,
 			ExcludeWarehouses:     errWarehouses,
+			RetryInTime:           now.Add(time.Second * 10).UnixMilli(),
+			RetryUntil:            cmd.RetryUntil,
 		}
 		if err = s.sendContactWarehousePort.SendContactWarehouses(ctx, sendContactCmd); err != nil {
-			return err
+			return port.ContactWarehousesResponse{}, err
 		}
+		return port.ContactWarehousesResponse{}, nil
 	} else {
 		// all goods are reserved
 		orderUpdateCmd := contactCmdAndConfirmedToSendOrderUpdateCmd(cmd, confirmed)
 		_, err := s.sendOrderUpdatePort.SendOrderUpdate(ctx, orderUpdateCmd)
 		if err != nil {
-			return err
+			return port.ContactWarehousesResponse{}, err
 		}
 	}
 
-	return nil
+	return port.ContactWarehousesResponse{}, nil
 
 }
 
@@ -433,4 +443,21 @@ func contactCmdToSendOrderUpdateCmdForCancel(cmd port.ContactWarehousesCmd) port
 		Reservations: cmd.Order.Reservations,
 	}
 	return orderUpdatecmd
+}
+
+func contactCmdToSendTransferUpdateCmdForCancel(cmd port.ContactWarehousesCmd) port.SendTransferUpdateCmd {
+	goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Transfer.Goods))
+	for _, good := range cmd.Transfer.Goods {
+		goods = append(goods, port.SendTransferUpdateGood(good))
+	}
+	sendTransferCmd := port.SendTransferUpdateCmd{
+		Status:        "Cancelled",
+		ID:            cmd.Transfer.ID,
+		CreationTime:  cmd.Transfer.CreationTime,
+		SenderId:      cmd.Transfer.SenderID,
+		ReceiverId:    cmd.Transfer.ReceiverID,
+		Goods:         goods,
+		ReservationId: cmd.Transfer.ReservationId,
+	}
+	return sendTransferCmd
 }

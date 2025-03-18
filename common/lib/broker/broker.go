@@ -149,6 +149,9 @@ func (n *NatsMessageBroker) RegisterJsWithConsumerGroup(ctx context.Context, str
 	cc, err = consumer.Consume(func(m jetstream.Msg) {
 		msgErr := handler(ctx, m)
 		if msgErr != nil {
+			if msgErr == ErrMsgNotAcked {
+				return
+			}
 			cc.Stop()
 			log.Fatalf("failed to handle message: %v\n", msgErr)
 		} else {
@@ -165,3 +168,5 @@ func (n *NatsMessageBroker) RegisterJsWithConsumerGroup(ctx context.Context, str
 	return nil
 
 }
+
+var ErrMsgNotAcked = fmt.Errorf("message not acked")

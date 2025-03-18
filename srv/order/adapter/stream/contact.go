@@ -5,18 +5,20 @@ import (
 )
 
 var ContactWarehousesStreamConfig = jetstream.StreamConfig{
-	Name:     "order_contact_warehouses",
-	Subjects: []string{"order.contact.warehouses"},
+	Name:     "contact_warehouses",
+	Subjects: []string{"contact.warehouses"},
 	Storage:  jetstream.FileStorage,
 }
 
 type ContactWarehouses struct {
-	Order                 *ContactWarehousesOrder
-	Transfer              *ContactWarehousesTransfer
-	LastContact           int64
-	ConfirmedReservations []ConfirmedReservation
-	ExcludeWarehouses     []string
-	Type                  ContactWarehousesType
+	Order                 *ContactWarehousesOrder    `json:"order,omitempty"`
+	Transfer              *ContactWarehousesTransfer `json:"transfer,omitempty"`
+	LastContact           int64                      `json:"last_contact"`
+	ConfirmedReservations []ConfirmedReservation     `json:"confirmed_reservations"`
+	ExcludeWarehouses     []string                   `json:"exclude_warehouses"`
+	Type                  ContactWarehousesType      `json:"type"`
+	RetryInTime           int64                      `json:"retry_in_time"`
+	RetryUntil            int64                      `json:"retry_until"`
 }
 
 type ContactWarehousesType string
@@ -27,39 +29,44 @@ var (
 )
 
 type ContactWarehousesOrder struct {
-	ID           string
-	Status       string
-	Name         string
-	FullName     string
-	Address      string
-	UpdateTime   int64
-	CreationTime int64
-	Goods        []ContactWarehousesGood
-	Reservations []string
+	ID           string                  `json:"id"`
+	Status       string                  `json:"status"`
+	Name         string                  `json:"name"`
+	FullName     string                  `json:"full_name"`
+	Address      string                  `json:"address"`
+	UpdateTime   int64                   `json:"update_time"`
+	CreationTime int64                   `json:"creation_time"`
+	Goods        []ContactWarehousesGood `json:"goods"`
+	Reservations []string                `json:"reservations"`
 }
 
 type ContactWarehousesTransfer struct {
-	ID            string
-	Status        string
-	SenderId      string
-	ReceiverId    string
-	UpdateTime    int64
-	CreationTime  int64
-	Goods         []ContactWarehousesGood
-	ReservationId string
+	ID            string                  `json:"id"`
+	Status        string                  `json:"status"`
+	SenderId      string                  `json:"sender_id"`
+	ReceiverId    string                  `json:"receiver_id"`
+	UpdateTime    int64                   `json:"update_time"`
+	CreationTime  int64                   `json:"creation_time"`
+	Goods         []ContactWarehousesGood `json:"goods"`
+	ReservationId string                  `json:"reservation_id"`
 }
 
 type ContactWarehousesGood struct {
-	GoodId   string
-	Quantity int64
+	GoodId   string `json:"good_id"`
+	Quantity int64  `json:"quantity"`
 }
 
 type ConfirmedReservation struct {
-	WarehouseId   string
-	ReservationID string
-	Goods         map[string]int64
+	WarehouseId   string           `json:"warehouse_id"`
+	ReservationID string           `json:"reservation_id"`
+	Goods         map[string]int64 `json:"goods"`
 }
 
 var ContactWarehousesStreamConsumerConfig = jetstream.ConsumerConfig{
-	Durable: "order_contact_warehouses",
+	Durable:       "contact_warehouses",
+	AckPolicy:     jetstream.AckExplicitPolicy,
+	DeliverPolicy: jetstream.DeliverAllPolicy,
+	// MaxDeliver:    100,
+	// AckWait:       time.Duration(24) * time.Hour,
+	// BackOff:       []time.Duration{10 * time.Second, 20 * time.Second, 40 * time.Second},
 }

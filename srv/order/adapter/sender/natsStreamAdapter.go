@@ -206,6 +206,8 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		LastContact:           cmd.LastContact,
 		ConfirmedReservations: confirmed,
 		ExcludeWarehouses:     cmd.ExcludeWarehouses,
+		RetryInTime:           cmd.RetryInTime,
+		RetryUntil:            cmd.RetryUntil,
 	}
 
 	payload, err := json.Marshal(streamMsg)
@@ -213,7 +215,7 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		return err
 	}
 
-	resp, err := a.broker.Js.Publish(ctx, "order.contact.warehouses", payload)
+	resp, err := a.broker.Js.Publish(ctx, "contact.warehouses", payload)
 	if err != nil {
 		return err
 	}
