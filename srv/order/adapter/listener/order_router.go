@@ -24,6 +24,10 @@ func (r *OrderRouter) Setup(ctx context.Context) error {
 		return err
 	}
 
+	if err := r.broker.RegisterJsHandler(ctx, r.restore, stream.TransferUpdateStreamConfig, r.orderListener.ListenTransferUpdate); err != nil {
+		return err
+	}
+
 	// wait restoring of the state before starting the server
 	r.restore.Wait()
 

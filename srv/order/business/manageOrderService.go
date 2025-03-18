@@ -13,7 +13,9 @@ import (
 
 type ManageOrderService struct {
 	getOrderPort                 port.IGetOrderPort
+	getTransferPort              port.IGetTransferPort
 	sendOrderUpdatePort          port.ISendOrderUpdatePort
+	sendTransferUpdatePort       port.ISendTransferUpdatePort
 	sendContactWarehousePort     port.ISendContactWarehousePort
 	requestReservationPort       port.IRequestReservationPort
 	calculateAvailabilityUseCase port.ICalculateAvailabilityUseCase
@@ -22,14 +24,56 @@ type ManageOrderService struct {
 type ManageOrderServiceParams struct {
 	fx.In
 	GetOrderPort                 port.IGetOrderPort
+	GetTransferPort              port.IGetTransferPort
 	SendOrderUpdatePort          port.ISendOrderUpdatePort
+	SendTransferUpdatePort       port.ISendTransferUpdatePort
 	SendContactWarehousePort     port.ISendContactWarehousePort
 	RequestReservationPort       port.IRequestReservationPort
 	CalculateAvailabilityUseCase port.ICalculateAvailabilityUseCase
 }
 
-func NewManageStockService(p ManageOrderServiceParams) *ManageOrderService {
-	return &ManageOrderService{p.GetOrderPort, p.SendOrderUpdatePort, p.SendContactWarehousePort, p.RequestReservationPort, p.CalculateAvailabilityUseCase}
+func NewManageOrderService(p ManageOrderServiceParams) *ManageOrderService {
+	return &ManageOrderService{p.GetOrderPort, p.GetTransferPort, p.SendOrderUpdatePort, p.SendTransferUpdatePort, p.SendContactWarehousePort, p.RequestReservationPort, p.CalculateAvailabilityUseCase}
+}
+
+func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.CreateTransferCmd) (port.CreateTransferResponse, error) {
+	transferId := uuid.New().String()
+
+	goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Goods))
+	for _, good := range cmd.Goods {
+		goods = append(goods, port.SendTransferUpdateGood{
+			GoodId:   good.GoodID,
+			Quantity: good.Quantity,
+		})
+	}
+
+	transferCmd := port.SendTransferUpdateCmd{
+		ID:            transferId,
+		Status:        "Created",
+		SenderId:      cmd.SenderId,
+		ReceiverId:    cmd.ReceiverId,
+		ReservationId: "",
+		Goods:         goods,
+	}
+	transfer, err := s.sendTransferUpdatePort.SendTransferUpdate(ctx, transferCmd)
+	if err != nil {
+		return port.CreateTransferResponse{}, err
+	}
+
+	contactCmd := port.SendContactWarehouseCmd{
+		Type:                  port.SendContactWarehouseTypeTransfer,
+		Order:                 nil,
+		Transfer:              &transfer,
+		LastContact:           0,
+		ConfirmedReservations: []port.ConfirmedReservation{},
+		ExcludeWarehouses:     []string{},
+	}
+	err = s.sendContactWarehousePort.SendContactWarehouses(ctx, contactCmd)
+	if err != nil {
+		return port.CreateTransferResponse{}, err
+	}
+
+	return port.CreateTransferResponse{TransferID: transferId}, nil
 }
 
 func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrderCmd) (port.CreateOrderResponse, error) {
@@ -42,8 +86,9 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 	}
 
 	contactCmd := port.SendContactWarehouseCmd{
-		Order:                 order,
-		TransferId:            "",
+		Type:                  port.SendContactWarehouseTypeOrder,
+		Order:                 &order,
+		Transfer:              nil,
 		LastContact:           0,
 		ConfirmedReservations: []port.ConfirmedReservation{},
 		ExcludeWarehouses:     []string{},
@@ -78,7 +123,127 @@ func (s *ManageOrderService) GetAllOrders(ctx context.Context) ([]model.Order, e
 	return orders, nil
 }
 
+func (s *ManageOrderService) GetTransfer(ctx context.Context, transferId string) (model.Transfer, error) {
+	transfer, err := s.getTransferPort.GetTransfer(model.TransferID(transferId))
+	if err != nil {
+		return model.Transfer{}, err
+	}
+
+	return transfer, nil
+}
+
+func (s *ManageOrderService) GetAllTransfers(ctx context.Context) ([]model.Transfer, error) {
+	transfers, err := s.getTransferPort.GetAllTransfer()
+	if err != nil {
+		return nil, err
+	}
+
+	return transfers, nil
+}
+
 func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) error {
+	switch cmd.Type {
+	case port.ContactWarehousesTypeOrder:
+		err := s.contactWarehouseForOrder(ctx, cmd)
+		if err != nil {
+			return err
+		}
+	case port.ContactWarehousesTypeTransfer:
+		err := s.contactWarehouseForTransfer(ctx, cmd)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cmd port.ContactWarehousesCmd) error {
+	items := make([]port.ReservationItem, 0, len(cmd.Transfer.Goods))
+	for _, good := range cmd.Transfer.Goods {
+		items = append(items, port.ReservationItem(good))
+	}
+	reservCmd := port.RequestReservationCmd{
+		WarehouseId: cmd.Transfer.SenderID,
+		Items:       items,
+	}
+	reservResp, err := s.requestReservationPort.RequestReservation(ctx, reservCmd)
+	if err != nil {
+		log.Printf("error: %v", err)
+		if err == port.ErrNotEnoughStock {
+			goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Transfer.Goods))
+			for _, good := range cmd.Transfer.Goods {
+				goods = append(goods, port.SendTransferUpdateGood(good))
+			}
+			sendTransferCmd := port.SendTransferUpdateCmd{
+				Status:        "Cancelled",
+				ID:            cmd.Transfer.ID,
+				CreationTime:  cmd.Transfer.CreationTime,
+				SenderId:      cmd.Transfer.SenderID,
+				ReceiverId:    cmd.Transfer.ReceiverID,
+				Goods:         goods,
+				ReservationId: reservResp.Id,
+			}
+			_, err = s.sendTransferUpdatePort.SendTransferUpdate(ctx, sendTransferCmd)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		goods := make([]model.GoodStock, 0, len(cmd.Transfer.Goods))
+		for _, good := range cmd.Transfer.Goods {
+			goods = append(goods, model.GoodStock{
+				ID:       model.GoodId(good.GoodId),
+				Quantity: good.Quantity,
+			})
+		}
+		now := time.Now().UnixMilli()
+		sendContactCmd := port.SendContactWarehouseCmd{
+			Type: port.SendContactWarehouseTypeTransfer,
+			Transfer: &model.Transfer{
+				Id:            model.TransferID(cmd.Transfer.ID),
+				Status:        cmd.Transfer.Status,
+				UpdateTime:    cmd.Transfer.UpdateTime,
+				CreationTime:  cmd.Transfer.CreationTime,
+				SenderId:      model.WarehouseID(cmd.Transfer.SenderID),
+				ReceiverId:    model.WarehouseID(cmd.Transfer.ReceiverID),
+				Goods:         goods,
+				ReservationID: "",
+			},
+			Order:                 nil,
+			LastContact:           now,
+			ConfirmedReservations: []port.ConfirmedReservation{},
+			ExcludeWarehouses:     []string{},
+		}
+		if err = s.sendContactWarehousePort.SendContactWarehouses(ctx, sendContactCmd); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Transfer.Goods))
+	for _, good := range cmd.Transfer.Goods {
+		goods = append(goods, port.SendTransferUpdateGood(good))
+	}
+	sendTransferCmd := port.SendTransferUpdateCmd{
+		Status:        "Filled",
+		ID:            cmd.Transfer.ID,
+		CreationTime:  cmd.Transfer.CreationTime,
+		SenderId:      cmd.Transfer.SenderID,
+		ReceiverId:    cmd.Transfer.ReceiverID,
+		Goods:         goods,
+		ReservationId: reservResp.Id,
+	}
+	_, err = s.sendTransferUpdatePort.SendTransferUpdate(ctx, sendTransferCmd)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd port.ContactWarehousesCmd) error {
 	now := time.Now().UnixMilli()
 
 	availCmd := contactCmdToCalculateAvailabilityCmd(cmd)
@@ -91,8 +256,6 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 		}
 		return nil
 	}
-
-	log.Printf("availResp: %v", availResp)
 
 	confirmed := make([]port.ConfirmedReservation, 0, len(availResp.Warehouses)+len(cmd.ConfirmedReservations))
 	confirmed = append(confirmed, cmd.ConfirmedReservations...)
@@ -130,7 +293,8 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 		}
 
 		sendContactCmd := port.SendContactWarehouseCmd{
-			Order: model.Order{
+			Type: port.SendContactWarehouseTypeOrder,
+			Order: &model.Order{
 				Id:           model.OrderID(cmd.Order.ID),
 				Status:       cmd.Order.Status,
 				Name:         cmd.Order.Name,
@@ -159,6 +323,7 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 	}
 
 	return nil
+
 }
 
 func createOrderCmdToSendOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd) port.SendOrderUpdateCmd {

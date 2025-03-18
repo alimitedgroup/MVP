@@ -11,12 +11,13 @@ import (
 )
 
 type OrderListener struct {
-	applyOrderUpdateUseCase port.IApplyOrderUpdateUseCase
-	contactWarehouseUseCase port.IContactWarehousesUseCase
+	applyOrderUpdateUseCase    port.IApplyOrderUpdateUseCase
+	applyTransferUpdateUseCase port.IApplyTransferUpdateUseCase
+	contactWarehouseUseCase    port.IContactWarehousesUseCase
 }
 
-func NewOrderListener(applyOrderUpdateUseCase port.IApplyOrderUpdateUseCase, contactWarehouseUseCase port.IContactWarehousesUseCase) *OrderListener {
-	return &OrderListener{applyOrderUpdateUseCase, contactWarehouseUseCase}
+func NewOrderListener(applyOrderUpdateUseCase port.IApplyOrderUpdateUseCase, contactWarehouseUseCase port.IContactWarehousesUseCase, applyTransferUpdateUseCase port.IApplyTransferUpdateUseCase) *OrderListener {
+	return &OrderListener{applyOrderUpdateUseCase, applyTransferUpdateUseCase, contactWarehouseUseCase}
 }
 
 func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg) error {
@@ -27,6 +28,20 @@ func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg
 
 	cmd := orderUpdateEventToApplyOrderUpdateCmd(event)
 	if err := l.applyOrderUpdateUseCase.ApplyOrderUpdate(ctx, cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (l *OrderListener) ListenTransferUpdate(ctx context.Context, msg jetstream.Msg) error {
+	var event stream.TransferUpdate
+	if err := json.Unmarshal(msg.Data(), &event); err != nil {
+		return err
+	}
+
+	cmd := transferUpdateEventToApplyTransferUpdateCmd(event)
+	if err := l.applyTransferUpdateUseCase.ApplyTransferUpdate(ctx, cmd); err != nil {
 		return err
 	}
 
@@ -48,17 +63,18 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 		})
 	}
 
-	goods := make([]port.ContactWarehousesGood, 0, len(event.Order.Goods))
+	var order *port.ContactWarehousesOrder
+	var transfer *port.ContactWarehousesTransfer
+	if event.Type == internalStream.ContactWarehousesTypeOrder {
+		goods := make([]port.ContactWarehousesGood, 0, len(event.Order.Goods))
 
-	for _, good := range event.Order.Goods {
-		goods = append(goods, port.ContactWarehousesGood{
-			GoodId:   good.GoodId,
-			Quantity: good.Quantity,
-		})
-	}
-
-	cmd := port.ContactWarehousesCmd{
-		Order: port.ContactWarehousesOrder{
+		for _, good := range event.Order.Goods {
+			goods = append(goods, port.ContactWarehousesGood{
+				GoodId:   good.GoodId,
+				Quantity: good.Quantity,
+			})
+		}
+		order = &port.ContactWarehousesOrder{
 			ID:           event.Order.ID,
 			Goods:        goods,
 			Status:       event.Order.Status,
@@ -68,7 +84,33 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 			UpdateTime:   event.Order.UpdateTime,
 			CreationTime: event.Order.CreationTime,
 			Reservations: event.Order.Reservations,
-		},
+		}
+	} else if event.Type == internalStream.ContactWarehousesTypeTransfer {
+		goods := make([]port.ContactWarehousesGood, 0, len(event.Transfer.Goods))
+
+		for _, good := range event.Transfer.Goods {
+			goods = append(goods, port.ContactWarehousesGood{
+				GoodId:   good.GoodId,
+				Quantity: good.Quantity,
+			})
+		}
+
+		transfer = &port.ContactWarehousesTransfer{
+			ID:            event.Transfer.ID,
+			Goods:         goods,
+			SenderID:      event.Transfer.SenderId,
+			ReceiverID:    event.Transfer.ReceiverId,
+			Status:        event.Transfer.Status,
+			UpdateTime:    event.Transfer.UpdateTime,
+			CreationTime:  event.Transfer.CreationTime,
+			ReservationId: event.Transfer.ReservationId,
+		}
+	}
+
+	cmd := port.ContactWarehousesCmd{
+		Type:                  port.ContactWarehousesType(event.Type),
+		Order:                 order,
+		Transfer:              transfer,
 		LastContact:           event.LastContact,
 		ConfirmedReservations: confirmed,
 		ExcludeWarehouses:     event.ExcludeWarehouses,
@@ -95,11 +137,34 @@ func orderUpdateEventToApplyOrderUpdateCmd(event stream.OrderUpdate) port.OrderU
 		Goods:        goods,
 		Status:       event.Status,
 		Name:         event.Name,
-		FullName:     event.Email,
+		FullName:     event.FullName,
 		Address:      event.Address,
 		Reservations: event.Reservations,
 		UpdateTime:   event.UpdateTime,
 		CreationTime: event.CreationTime,
+	}
+
+	return cmd
+}
+
+func transferUpdateEventToApplyTransferUpdateCmd(event stream.TransferUpdate) port.TransferUpdateCmd {
+	goods := make([]port.TransferUpdateGood, 0, len(event.Goods))
+	for _, good := range event.Goods {
+		goods = append(goods, port.TransferUpdateGood{
+			GoodID:   good.GoodID,
+			Quantity: good.Quantity,
+		})
+	}
+
+	cmd := port.TransferUpdateCmd{
+		ID:            event.ID,
+		Goods:         goods,
+		SenderId:      event.SenderID,
+		ReceiverId:    event.ReceiverID,
+		Status:        event.Status,
+		ReservationId: event.ReservationId,
+		UpdateTime:    event.UpdateTime,
+		CreationTime:  event.CreationTime,
 	}
 
 	return cmd

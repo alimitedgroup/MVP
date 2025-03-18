@@ -42,6 +42,8 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 		stockUpdateType = stream.StockUpdateTypeRemove
 	case port.CreateStockUpdateCmdTypeOrder:
 		stockUpdateType = stream.StockUpdateTypeOrder
+	case port.CreateStockUpdateCmdTypeTransfer:
+		stockUpdateType = stream.StockUpdateTypeTransfer
 	default:
 		return fmt.Errorf("unknown stock update type %s", cmd.Type)
 	}

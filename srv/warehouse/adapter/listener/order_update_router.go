@@ -32,6 +32,14 @@ func (r *OrderUpdateRouter) Setup(ctx context.Context) error {
 		return err
 	}
 
+	transferUpdateConsumerConfig := jetstream.ConsumerConfig{
+		Durable: fmt.Sprintf("transfer-update-warehouse-%s", r.cfg.ID),
+	}
+	err = r.broker.RegisterJsWithConsumerGroup(ctx, stream.TransferUpdateStreamConfig, transferUpdateConsumerConfig, r.reservationListener.ListenTransferUpdate)
+	if err != nil {
+		return err
+	}
+
 	// wait restoring of the state before starting the server
 	r.restore.Wait()
 

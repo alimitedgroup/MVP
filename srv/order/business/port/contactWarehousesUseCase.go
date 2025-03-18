@@ -9,11 +9,20 @@ type IContactWarehousesUseCase interface {
 }
 
 type ContactWarehousesCmd struct {
-	Order                 ContactWarehousesOrder
+	Type                  ContactWarehousesType
+	Order                 *ContactWarehousesOrder
+	Transfer              *ContactWarehousesTransfer
 	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
 }
+
+type ContactWarehousesType string
+
+var (
+	ContactWarehousesTypeOrder    ContactWarehousesType = "order"
+	ContactWarehousesTypeTransfer ContactWarehousesType = "transfer"
+)
 
 type ContactWarehousesOrder struct {
 	ID           string
@@ -25,6 +34,17 @@ type ContactWarehousesOrder struct {
 	CreationTime int64
 	Goods        []ContactWarehousesGood
 	Reservations []string
+}
+
+type ContactWarehousesTransfer struct {
+	ID            string
+	Status        string
+	SenderID      string
+	ReceiverID    string
+	UpdateTime    int64
+	CreationTime  int64
+	Goods         []ContactWarehousesGood
+	ReservationId string
 }
 
 type ContactWarehousesGood struct {

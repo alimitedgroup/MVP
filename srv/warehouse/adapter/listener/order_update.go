@@ -10,11 +10,12 @@ import (
 )
 
 type OrderUpdateListener struct {
-	confirmOrderUseCase port.IConfirmOrderUseCase
+	confirmOrderUseCase    port.IConfirmOrderUseCase
+	confirmTransferUseCase port.IConfirmTransferUseCase
 }
 
-func NewOrderUpdateListener(confirmOrderUseCase port.IConfirmOrderUseCase) *OrderUpdateListener {
-	return &OrderUpdateListener{confirmOrderUseCase}
+func NewOrderUpdateListener(confirmOrderUseCase port.IConfirmOrderUseCase, confirmTransferUseCase port.IConfirmTransferUseCase) *OrderUpdateListener {
+	return &OrderUpdateListener{confirmOrderUseCase, confirmTransferUseCase}
 }
 
 func (l *OrderUpdateListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg) error {
@@ -38,6 +39,36 @@ func (l *OrderUpdateListener) ListenOrderUpdate(ctx context.Context, msg jetstre
 		Goods:        goods,
 	}
 	err = l.confirmOrderUseCase.ConfirmOrder(ctx, cmd)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (l *OrderUpdateListener) ListenTransferUpdate(ctx context.Context, msg jetstream.Msg) error {
+	var event stream.TransferUpdate
+	err := json.Unmarshal(msg.Data(), &event)
+	if err != nil {
+		return err
+	}
+
+	goods := make([]port.TransferUpdateGood, 0, len(event.Goods))
+	for _, good := range event.Goods {
+		goods = append(goods, port.TransferUpdateGood{
+			GoodID:   good.GoodID,
+			Quantity: good.Quantity,
+		})
+	}
+	cmd := port.ConfirmTransferCmd{
+		TransferID:    event.ID,
+		Status:        event.Status,
+		SenderID:      event.SenderID,
+		ReceiverID:    event.ReceiverID,
+		ReservationId: event.ReservationId,
+		Goods:         goods,
+	}
+	err = l.confirmTransferUseCase.ConfirmTransfer(ctx, cmd)
 	if err != nil {
 		return err
 	}

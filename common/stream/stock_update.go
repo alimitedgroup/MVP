@@ -24,9 +24,10 @@ type StockUpdate struct {
 type StockUpdateType string
 
 const (
-	StockUpdateTypeAdd    StockUpdateType = "add"
-	StockUpdateTypeRemove StockUpdateType = "remove"
-	StockUpdateTypeOrder  StockUpdateType = "order"
+	StockUpdateTypeAdd      StockUpdateType = "add"
+	StockUpdateTypeRemove   StockUpdateType = "remove"
+	StockUpdateTypeOrder    StockUpdateType = "order"
+	StockUpdateTypeTransfer StockUpdateType = "transfer"
 )
 
 type StockUpdateGood struct {

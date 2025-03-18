@@ -1,6 +1,8 @@
 package port
 
-import "context"
+import (
+	"context"
+)
 
 type IRequestReservationPort interface {
 	RequestReservation(context.Context, RequestReservationCmd) (RequestReservationResponse, error)

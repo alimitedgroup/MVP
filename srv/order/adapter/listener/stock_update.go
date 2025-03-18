@@ -44,6 +44,8 @@ func StockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockU
 		cmdType = port.StockUpdateCmdTypeRemove
 	case stream.StockUpdateTypeOrder:
 		cmdType = port.StockUpdateCmdTypeOrder
+	case stream.StockUpdateTypeTransfer:
+		cmdType = port.StockUpdateCmdTypeTransfer
 	default:
 		log.Fatal("unknown stock update type")
 	}

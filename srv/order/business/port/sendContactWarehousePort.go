@@ -11,9 +11,17 @@ type ISendContactWarehousePort interface {
 }
 
 type SendContactWarehouseCmd struct {
-	Order                 model.Order
-	TransferId            string
+	Order                 *model.Order
+	Transfer              *model.Transfer
+	Type                  SendContactWarehouseType
 	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
 }
+
+type SendContactWarehouseType string
+
+var (
+	SendContactWarehouseTypeOrder    SendContactWarehouseType = "order"
+	SendContactWarehouseTypeTransfer SendContactWarehouseType = "transfer"
+)

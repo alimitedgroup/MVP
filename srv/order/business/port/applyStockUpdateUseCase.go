@@ -20,9 +20,10 @@ type StockUpdateCmd struct {
 type StockUpdateCmdType string
 
 const (
-	StockUpdateCmdTypeAdd    StockUpdateCmdType = "add"
-	StockUpdateCmdTypeRemove StockUpdateCmdType = "remove"
-	StockUpdateCmdTypeOrder  StockUpdateCmdType = "order"
+	StockUpdateCmdTypeAdd      StockUpdateCmdType = "add"
+	StockUpdateCmdTypeRemove   StockUpdateCmdType = "remove"
+	StockUpdateCmdTypeOrder    StockUpdateCmdType = "order"
+	StockUpdateCmdTypeTransfer StockUpdateCmdType = "transfer"
 )
 
 type StockUpdateCmdGood struct {

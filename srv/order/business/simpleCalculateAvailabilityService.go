@@ -37,15 +37,17 @@ func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, c
 
 	availabilities := make([]port.WarehouseAvailability, 0, len(warehouses))
 
-	excluded := make(map[string]struct{})
-	for _, warehouseID := range cmd.ExcludedWarehouses {
-		excluded[warehouseID] = struct{}{}
-	}
+	// NOTE: disable excluded warehoues for now
+
+	// excluded := make(map[string]struct{})
+	// for _, warehouseID := range cmd.ExcludedWarehouses {
+	// 	excluded[warehouseID] = struct{}{}
+	// }
 
 	for _, warehouse := range warehouses {
-		if _, ok := excluded[warehouse.ID]; ok {
-			continue
-		}
+		// if _, ok := excluded[warehouse.ID]; ok {
+		// 	continue
+		// }
 
 		warehouseTotal := int64(0)
 		toReserveGoods := make(map[string]int64)

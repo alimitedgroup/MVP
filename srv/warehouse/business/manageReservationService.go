@@ -142,3 +142,75 @@ func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.Co
 
 	return nil
 }
+
+func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port.ConfirmTransferCmd) error {
+	if cmd.Status != "Filled" {
+		return nil
+	}
+
+	if cmd.SenderID == s.cfg.ID {
+		reservation, err := s.getReservationPort.GetReservation(model.ReservationId(cmd.ReservationId))
+		if err != nil {
+			// TODO: handle other errors
+			return nil
+		}
+
+		goods := make([]port.CreateStockUpdateCmdGood, 0, len(reservation.Goods))
+		for _, reservGood := range reservation.Goods {
+			goodStock := s.getStockPort.GetStock(reservGood.GoodID)
+
+			goods = append(goods, port.CreateStockUpdateCmdGood{
+				Good: model.GoodStock{
+					ID:       reservGood.GoodID,
+					Quantity: goodStock.Quantity - reservGood.Quantity,
+				},
+				QuantityDiff: reservGood.Quantity,
+			})
+		}
+
+		createCmd := port.CreateStockUpdateCmd{
+			Type:          port.CreateStockUpdateCmdTypeTransfer,
+			Goods:         goods,
+			OrderID:       "",
+			TransferID:    cmd.TransferID,
+			ReservationID: string(reservation.ID),
+		}
+		err = s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
+		if err != nil {
+			return err
+		}
+
+		if err := s.applyReservationEventPort.ApplyOrderFilled(reservation); err != nil {
+			return err
+		}
+	} else if cmd.ReceiverID == s.cfg.ID {
+
+		goods := make([]port.CreateStockUpdateCmdGood, 0, len(cmd.Goods))
+
+		for _, toAdd := range cmd.Goods {
+			goodStock := s.getStockPort.GetStock(model.GoodId(toAdd.GoodID))
+
+			goods = append(goods, port.CreateStockUpdateCmdGood{
+				Good: model.GoodStock{
+					ID:       model.GoodId(toAdd.GoodID),
+					Quantity: goodStock.Quantity + toAdd.Quantity,
+				},
+				QuantityDiff: toAdd.Quantity,
+			})
+		}
+
+		createCmd := port.CreateStockUpdateCmd{
+			Type:          port.CreateStockUpdateCmdTypeTransfer,
+			Goods:         goods,
+			OrderID:       "",
+			TransferID:    cmd.TransferID,
+			ReservationID: string(cmd.ReservationId),
+		}
+		err := s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

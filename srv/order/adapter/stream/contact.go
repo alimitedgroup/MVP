@@ -11,12 +11,20 @@ var ContactWarehousesStreamConfig = jetstream.StreamConfig{
 }
 
 type ContactWarehouses struct {
-	Order                 ContactWarehousesOrder
-	TransferId            string
+	Order                 *ContactWarehousesOrder
+	Transfer              *ContactWarehousesTransfer
 	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
+	Type                  ContactWarehousesType
 }
+
+type ContactWarehousesType string
+
+var (
+	ContactWarehousesTypeOrder    ContactWarehousesType = "order"
+	ContactWarehousesTypeTransfer ContactWarehousesType = "transfer"
+)
 
 type ContactWarehousesOrder struct {
 	ID           string
@@ -28,6 +36,17 @@ type ContactWarehousesOrder struct {
 	CreationTime int64
 	Goods        []ContactWarehousesGood
 	Reservations []string
+}
+
+type ContactWarehousesTransfer struct {
+	ID            string
+	Status        string
+	SenderId      string
+	ReceiverId    string
+	UpdateTime    int64
+	CreationTime  int64
+	Goods         []ContactWarehousesGood
+	ReservationId string
 }
 
 type ContactWarehousesGood struct {

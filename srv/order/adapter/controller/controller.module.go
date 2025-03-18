@@ -8,4 +8,6 @@ var Module = fx.Options(
 	fx.Provide(NewBrokerRoutes),
 	fx.Provide(NewStockRouter),
 	fx.Provide(NewHealthCheckRouter),
+	fx.Provide(NewTransferController),
+	fx.Provide(NewTransferRouter),
 )

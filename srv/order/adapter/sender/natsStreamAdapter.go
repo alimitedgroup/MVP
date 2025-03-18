@@ -45,7 +45,7 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 		ID:           cmd.ID,
 		Status:       cmd.Status,
 		Name:         cmd.Name,
-		Email:        cmd.FullName,
+		FullName:     cmd.FullName,
 		Address:      cmd.Address,
 		Goods:        goods,
 		Reservations: cmd.Reservations,
@@ -86,6 +86,66 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 	}, nil
 }
 
+func (a *NatsStreamAdapter) SendTransferUpdate(ctx context.Context, cmd port.SendTransferUpdateCmd) (model.Transfer, error) {
+	now := time.Now()
+
+	updateTime := now.UnixMilli()
+	var creationTime int64
+	if cmd.CreationTime == 0 {
+		creationTime = updateTime
+	} else {
+		creationTime = cmd.CreationTime
+	}
+
+	goods := make([]stream.TransferUpdateGood, 0, len(cmd.Goods))
+	for _, good := range cmd.Goods {
+		goods = append(goods, stream.TransferUpdateGood{
+			GoodID:   good.GoodId,
+			Quantity: good.Quantity,
+		})
+	}
+	streamMsg := stream.TransferUpdate{
+		ID:            cmd.ID,
+		Status:        cmd.Status,
+		SenderID:      cmd.SenderId,
+		ReceiverID:    cmd.ReceiverId,
+		ReservationId: cmd.ReservationId,
+		Goods:         goods,
+		CreationTime:  creationTime,
+		UpdateTime:    updateTime,
+	}
+
+	payload, err := json.Marshal(streamMsg)
+	if err != nil {
+		return model.Transfer{}, err
+	}
+
+	resp, err := a.broker.Js.Publish(ctx, "transfer.update", payload)
+	if err != nil {
+		return model.Transfer{}, err
+	}
+
+	_ = resp
+
+	modelGoods := make([]model.GoodStock, 0, len(goods))
+	for _, good := range cmd.Goods {
+		modelGoods = append(modelGoods, model.GoodStock{
+			ID:       model.GoodId(good.GoodId),
+			Quantity: good.Quantity,
+		})
+	}
+
+	return model.Transfer{
+		Id:           model.TransferID(cmd.ID),
+		Status:       cmd.Status,
+		SenderId:     model.WarehouseID(cmd.SenderId),
+		ReceiverId:   model.WarehouseID(cmd.ReceiverId),
+		Goods:        modelGoods,
+		CreationTime: creationTime,
+		UpdateTime:   updateTime,
+	}, nil
+}
+
 func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.SendContactWarehouseCmd) error {
 	confirmed := make([]internalStream.ConfirmedReservation, 0, len(cmd.ConfirmedReservations))
 
@@ -97,16 +157,17 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		})
 	}
 
-	goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Order.Goods))
-	for _, good := range cmd.Order.Goods {
-		goods = append(goods, internalStream.ContactWarehousesGood{
-			GoodId:   string(good.ID),
-			Quantity: good.Quantity,
-		})
-	}
-
-	streamMsg := internalStream.ContactWarehouses{
-		Order: internalStream.ContactWarehousesOrder{
+	var transfer *internalStream.ContactWarehousesTransfer
+	var order *internalStream.ContactWarehousesOrder
+	if cmd.Type == port.SendContactWarehouseTypeOrder {
+		goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Order.Goods))
+		for _, good := range cmd.Order.Goods {
+			goods = append(goods, internalStream.ContactWarehousesGood{
+				GoodId:   string(good.ID),
+				Quantity: good.Quantity,
+			})
+		}
+		order = &internalStream.ContactWarehousesOrder{
 			ID:           string(cmd.Order.Id),
 			Status:       cmd.Order.Status,
 			Name:         cmd.Order.Name,
@@ -116,8 +177,32 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 			CreationTime: cmd.Order.CreationTime,
 			Goods:        goods,
 			Reservations: cmd.Order.Reservations,
-		},
-		TransferId:            cmd.TransferId,
+		}
+
+	} else if cmd.Type == port.SendContactWarehouseTypeTransfer {
+		goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Transfer.Goods))
+		for _, good := range cmd.Transfer.Goods {
+			goods = append(goods, internalStream.ContactWarehousesGood{
+				GoodId:   string(good.ID),
+				Quantity: good.Quantity,
+			})
+		}
+		transfer = &internalStream.ContactWarehousesTransfer{
+			ID:            string(cmd.Transfer.Id),
+			Status:        cmd.Transfer.Status,
+			SenderId:      string(cmd.Transfer.SenderId),
+			ReceiverId:    string(cmd.Transfer.ReceiverId),
+			UpdateTime:    cmd.Transfer.UpdateTime,
+			CreationTime:  cmd.Transfer.CreationTime,
+			Goods:         goods,
+			ReservationId: cmd.Transfer.ReservationID,
+		}
+	}
+
+	streamMsg := internalStream.ContactWarehouses{
+		Type:                  internalStream.ContactWarehousesType(cmd.Type),
+		Order:                 order,
+		Transfer:              transfer,
 		LastContact:           cmd.LastContact,
 		ConfirmedReservations: confirmed,
 		ExcludeWarehouses:     cmd.ExcludeWarehouses,
@@ -164,6 +249,10 @@ func (a *NatsStreamAdapter) RequestReservation(ctx context.Context, cmd port.Req
 	var respDto response.ReserveStockResponseDTO
 	if err := json.Unmarshal(resp.Data, &respDto); err != nil {
 		return port.RequestReservationResponse{}, err
+	}
+
+	if respDto.Error != "" {
+		return port.RequestReservationResponse{}, port.ErrNotEnoughStock
 	}
 
 	return port.RequestReservationResponse{Id: respDto.Message.ReservationID}, nil
