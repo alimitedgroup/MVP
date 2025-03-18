@@ -7,16 +7,24 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	gomock "go.uber.org/mock/gomock"
 )
 
+//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_reservation.go -package controller github.com/alimitedgroup/MVP/srv/warehouse/business/port ICreateReservationUseCase
+
 func TestReservationController(t *testing.T) {
-	t.Skip("not implemented")
 	ctx := t.Context()
+	ctrl := gomock.NewController(t)
+
+	mock := NewMockICreateReservationUseCase(ctrl)
+	mock.EXPECT().CreateReservation(gomock.Any(), gomock.Any()).Return(port.CreateReservationResponse{ReservationID: "1"}, nil)
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	cfg := config.WarehouseConfig{ID: "1"}
@@ -24,6 +32,7 @@ func TestReservationController(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(ns),
+		fx.Supply(fx.Annotate(mock, fx.As(new(port.ICreateReservationUseCase)))),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewReservationController),
 		fx.Provide(NewReservationRouter),
@@ -31,26 +40,29 @@ func TestReservationController(t *testing.T) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
-					resp, err := ns.Request(fmt.Sprintf("warehouse.%s.reservation.add", cfg.ID), []byte{}, 1*time.Second)
-					if err != nil {
-						t.Error(err)
+					dto := request.ReserveStockRequestDTO{
+						Goods: []request.ReserveStockItem{
+							{
+								GoodID:   "1",
+								Quantity: 10,
+							},
+						},
 					}
+					payload, err := json.Marshal(dto)
+					require.NoError(t, err)
 
-					var respDto response.ResponseDTO[string]
+					resp, err := ns.Request(fmt.Sprintf("warehouse.%s.reservation.create", cfg.ID), payload, 1*time.Second)
+					require.NoError(t, err)
+
+					var respDto response.ReserveStockResponseDTO
 					err = json.Unmarshal(resp.Data, &respDto)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
-					assert.Equal(t, respDto.Message, "ok")
+					require.Empty(t, respDto.Error)
+					require.Equal(t, respDto.Message, response.ReserveStockInfo{ReservationID: "1"})
 
-					return nil
-				},
-				OnStop: func(ctx context.Context) error {
 					return nil
 				},
 			})

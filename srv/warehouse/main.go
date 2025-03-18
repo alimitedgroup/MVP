@@ -46,9 +46,6 @@ func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
 			err := Run(ctx, p)
 			return err
 		},
-		OnStop: func(ctx context.Context) error {
-			return nil
-		},
 	})
 }
 

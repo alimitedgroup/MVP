@@ -12,46 +12,22 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	gomock "go.uber.org/mock/gomock"
 )
 
-type mockStock struct {
-	stockMap map[string]int64
-}
-
-func NewMockStock() *mockStock {
-	return &mockStock{stockMap: make(map[string]int64)}
-}
-
-func (m *mockStock) AddStock(ctx context.Context, cmd port.AddStockCmd) error {
-	old, ok := m.stockMap[cmd.GoodID]
-	if !ok {
-		old = 0
-	}
-
-	m.stockMap[cmd.GoodID] = old + cmd.Quantity
-	return nil
-}
-
-func (m *mockStock) RemoveStock(ctx context.Context, cmd port.RemoveStockCmd) error {
-	old, ok := m.stockMap[cmd.GoodID]
-	if !ok {
-		return fmt.Errorf("stock not found")
-	}
-
-	if old < cmd.Quantity {
-		return fmt.Errorf("stock not enough")
-	}
-
-	m.stockMap[cmd.GoodID] = old - cmd.Quantity
-	return nil
-}
+//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_stock.go -package controller github.com/alimitedgroup/MVP/srv/warehouse/business/port IAddStockUseCase,IRemoveStockUseCase
 
 func TestStockController(t *testing.T) {
 	ctx := t.Context()
+	ctrl := gomock.NewController(t)
 
-	mock := NewMockStock()
+	addStockMock := NewMockIAddStockUseCase(ctrl)
+	addStockMock.EXPECT().AddStock(gomock.Any(), gomock.Any()).Return(nil)
+
+	removeStockMock := NewMockIRemoveStockUseCase(ctrl)
+	removeStockMock.EXPECT().RemoveStock(gomock.Any(), gomock.Any()).Return(nil)
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	cfg := config.WarehouseConfig{ID: "1"}
@@ -62,62 +38,108 @@ func TestStockController(t *testing.T) {
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),
-		fx.Supply(fx.Annotate(mock, fx.As(new(port.IAddStockUseCase)), fx.As(new(port.IRemoveStockUseCase)))),
+		fx.Supply(fx.Annotate(addStockMock, fx.As(new(port.IAddStockUseCase)))),
+		fx.Supply(fx.Annotate(removeStockMock, fx.As(new(port.IRemoveStockUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					err := r.Setup(ctx)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
 					addDto := request.AddStockRequestDTO{
 						GoodID:   "1",
 						Quantity: 10,
 					}
 					addPayload, err := json.Marshal(addDto)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
 					addResp, err := ns.Request(fmt.Sprintf("warehouse.%s.stock.add", cfg.ID), addPayload, 1*time.Second)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
 					var addRespDto response.ResponseDTO[string]
 					err = json.Unmarshal(addResp.Data, &addRespDto)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
-					assert.Equal(t, addRespDto.Message, "ok")
+					require.Equal(t, addRespDto.Message, "ok")
 
 					remDto := request.AddStockRequestDTO{
 						GoodID:   "1",
 						Quantity: 10,
 					}
 					remPayload, err := json.Marshal(remDto)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
 					remResp, err := ns.Request(fmt.Sprintf("warehouse.%s.stock.remove", cfg.ID), remPayload, 1*time.Second)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
 					var remRespDto response.ResponseDTO[string]
 					err = json.Unmarshal(remResp.Data, &remRespDto)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
-					assert.Equal(t, remRespDto.Message, "ok")
+					require.Equal(t, remRespDto.Message, "ok")
 
 					return nil
 				},
-				OnStop: func(ctx context.Context) error {
+			})
+		}),
+	)
+
+	err := app.Start(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		err = app.Stop(ctx)
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+}
+
+func TestStockControllerAddStockErr(t *testing.T) {
+	ctx := t.Context()
+	ctrl := gomock.NewController(t)
+
+	addStockMock := NewMockIAddStockUseCase(ctrl)
+	addStockMock.EXPECT().AddStock(gomock.Any(), gomock.Any()).Return(fmt.Errorf("mock error"))
+
+	removeStockMock := NewMockIRemoveStockUseCase(ctrl)
+
+	ns, _ := broker.NewInProcessNATSServer(t)
+	cfg := config.WarehouseConfig{ID: "1"}
+
+	app := fx.New(
+		fx.Supply(&cfg),
+		fx.Supply(ns),
+		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(NewStockController),
+		fx.Provide(NewStockRouter),
+		fx.Supply(fx.Annotate(addStockMock, fx.As(new(port.IAddStockUseCase)))),
+		fx.Supply(fx.Annotate(removeStockMock, fx.As(new(port.IRemoveStockUseCase)))),
+		fx.Invoke(func(lc fx.Lifecycle, r *StockRouter) {
+			lc.Append(fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					err := r.Setup(ctx)
+					require.NoError(t, err)
+
+					addDto := request.AddStockRequestDTO{
+						GoodID:   "1",
+						Quantity: 10,
+					}
+					addPayload, err := json.Marshal(addDto)
+					require.NoError(t, err)
+
+					addResp, err := ns.Request(fmt.Sprintf("warehouse.%s.stock.add", cfg.ID), addPayload, 1*time.Second)
+					require.NoError(t, err)
+
+					var addRespDto response.ResponseDTO[string]
+					err = json.Unmarshal(addResp.Data, &addRespDto)
+					require.NoError(t, err)
+
+					require.Empty(t, addRespDto.Message)
+					require.NotEmpty(t, addRespDto.Error)
+
 					return nil
 				},
 			})
@@ -136,4 +158,66 @@ func TestStockController(t *testing.T) {
 		}
 	}()
 
+}
+
+func TestStockControllerRemStockErr(t *testing.T) {
+	ctx := t.Context()
+	ctrl := gomock.NewController(t)
+
+	addStockMock := NewMockIAddStockUseCase(ctrl)
+
+	removeStockMock := NewMockIRemoveStockUseCase(ctrl)
+	removeStockMock.EXPECT().RemoveStock(gomock.Any(), gomock.Any()).Return(fmt.Errorf("mock error"))
+
+	ns, _ := broker.NewInProcessNATSServer(t)
+	cfg := config.WarehouseConfig{ID: "1"}
+
+	app := fx.New(
+		fx.Supply(&cfg),
+		fx.Supply(ns),
+		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(NewStockController),
+		fx.Provide(NewStockRouter),
+		fx.Supply(fx.Annotate(addStockMock, fx.As(new(port.IAddStockUseCase)))),
+		fx.Supply(fx.Annotate(removeStockMock, fx.As(new(port.IRemoveStockUseCase)))),
+		fx.Invoke(func(lc fx.Lifecycle, r *StockRouter) {
+			lc.Append(fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					err := r.Setup(ctx)
+					require.NoError(t, err)
+
+					remDto := request.AddStockRequestDTO{
+						GoodID:   "1",
+						Quantity: 10,
+					}
+					remPayload, err := json.Marshal(remDto)
+					require.NoError(t, err)
+
+					remResp, err := ns.Request(fmt.Sprintf("warehouse.%s.stock.remove", cfg.ID), remPayload, 1*time.Second)
+					require.NoError(t, err)
+
+					var remRespDto response.ResponseDTO[string]
+					err = json.Unmarshal(remResp.Data, &remRespDto)
+					require.NoError(t, err)
+
+					require.Empty(t, remRespDto.Message)
+					require.NotEmpty(t, remRespDto.Error)
+
+					return nil
+				},
+			})
+		}),
+	)
+
+	err := app.Start(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		err = app.Stop(ctx)
+		if err != nil {
+			t.Error(err)
+		}
+	}()
 }

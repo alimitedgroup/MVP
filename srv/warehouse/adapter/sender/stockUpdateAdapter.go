@@ -34,20 +34,6 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 		})
 	}
 
-	var stockUpdateType stream.StockUpdateType
-	switch cmd.Type {
-	case port.CreateStockUpdateCmdTypeAdd:
-		stockUpdateType = stream.StockUpdateTypeAdd
-	case port.CreateStockUpdateCmdTypeRemove:
-		stockUpdateType = stream.StockUpdateTypeRemove
-	case port.CreateStockUpdateCmdTypeOrder:
-		stockUpdateType = stream.StockUpdateTypeOrder
-	case port.CreateStockUpdateCmdTypeTransfer:
-		stockUpdateType = stream.StockUpdateTypeTransfer
-	default:
-		return fmt.Errorf("unknown stock update type %s", cmd.Type)
-	}
-
 	streamMsg := stream.StockUpdate{
 		ID:            stockUpdateId,
 		WarehouseID:   a.warehouseCfg.ID,
@@ -55,7 +41,7 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 		TransferID:    cmd.TransferID,
 		OrderID:       cmd.OrderID,
 		ReservationID: cmd.ReservationID,
-		Type:          stockUpdateType,
+		Type:          stream.StockUpdateType(cmd.Type),
 		Timestamp:     time.Now().UnixMilli(),
 	}
 
