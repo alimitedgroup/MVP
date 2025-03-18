@@ -32,9 +32,6 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      - name: Generate
-        run: go generate ./...
-
       - name: Build
         run: go build -v ./...
 
@@ -62,8 +59,12 @@ jobs:
         run: |
           if [ $(gocyclo -over 15 . | wc -l) -gt 0 ]; then
             echo "Complexity too high in some functions"
+            gocyclo -over 15 . 
             exit 1
           fi
+
+      - name: Generate
+        run: go generate ./...
 
       - name: Run tests
         run: go test -race -covermode atomic -coverprofile=covprofile ./...
