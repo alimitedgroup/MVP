@@ -40,7 +40,7 @@ func (s *StockPersistanceAdapter) ApplyOrderFilled(reservation model.Reservation
 	return nil
 }
 
-func (s *StockPersistanceAdapter) GetStock(goodId model.GoodId) model.GoodStock {
+func (s *StockPersistanceAdapter) GetStock(goodId model.GoodID) model.GoodStock {
 	stock := s.stockRepo.GetStock(string(goodId))
 	return model.GoodStock{
 		ID:       goodId,
@@ -48,7 +48,7 @@ func (s *StockPersistanceAdapter) GetStock(goodId model.GoodId) model.GoodStock 
 	}
 }
 
-func (s *StockPersistanceAdapter) GetFreeStock(goodId model.GoodId) model.GoodStock {
+func (s *StockPersistanceAdapter) GetFreeStock(goodId model.GoodID) model.GoodStock {
 	stock := s.stockRepo.GetFreeStock(string(goodId))
 	return model.GoodStock{
 		ID:       goodId,
@@ -66,7 +66,7 @@ func (s *StockPersistanceAdapter) GetReservation(reservationId model.Reservation
 
 	for goodId, qty := range reserv.Goods {
 		goods = append(goods, model.ReservationGood{
-			GoodID:   model.GoodId(goodId),
+			GoodID:   model.GoodID(goodId),
 			Quantity: qty,
 		})
 	}

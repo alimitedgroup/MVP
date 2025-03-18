@@ -17,7 +17,7 @@ type Order struct {
 
 type OrderWarehouseUsed struct {
 	WarehouseID string
-	Goods       map[GoodId]int64
+	Goods       map[GoodID]int64
 }
 
 func (o *Order) IsCompleted() bool {

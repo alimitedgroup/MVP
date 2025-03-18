@@ -25,7 +25,7 @@ func (l *CatalogListener) ListenGoodUpdate(ctx context.Context, msg jetstream.Ms
 	}
 
 	cmd := port.CatalogUpdateCmd{
-		GoodId:      event.GoodID,
+		GoodID:      event.GoodID,
 		Name:        event.GoodNewName,
 		Description: event.GoodNewDescription,
 	}

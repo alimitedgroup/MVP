@@ -7,7 +7,7 @@ type IApplyCatalogUpdateUseCase interface {
 }
 
 type CatalogUpdateCmd struct {
-	GoodId      string
+	GoodID      string
 	Name        string
 	Description string
 }

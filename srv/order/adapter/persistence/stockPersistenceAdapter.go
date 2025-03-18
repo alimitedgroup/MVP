@@ -22,7 +22,7 @@ func (s *StockPersistanceAdapter) ApplyStockUpdate(cmd port.ApplyStockUpdateCmd)
 }
 
 func (s *StockPersistanceAdapter) GetStock(cmd port.GetStockCmd) (model.GoodStock, error) {
-	stock, err := s.stockRepo.GetStock(cmd.WarehouseID, string(cmd.GoodID))
+	stock, err := s.stockRepo.GetStock(string(cmd.WarehouseID), string(cmd.GoodID))
 	if err != nil {
 		if err == ErrWarehouseNotFound {
 			return model.GoodStock{}, port.ErrStockNotFound
@@ -33,7 +33,7 @@ func (s *StockPersistanceAdapter) GetStock(cmd port.GetStockCmd) (model.GoodStoc
 	return model.GoodStock{ID: cmd.GoodID, Quantity: stock}, nil
 }
 
-func (s *StockPersistanceAdapter) GetGlobalStock(GoodID model.GoodId) model.GoodStock {
+func (s *StockPersistanceAdapter) GetGlobalStock(GoodID model.GoodID) model.GoodStock {
 	stock := s.stockRepo.GetGlobalStock(string(GoodID))
 	return model.GoodStock{ID: GoodID, Quantity: stock}
 }
@@ -43,7 +43,7 @@ func (s *StockPersistanceAdapter) GetWarehouses() []model.Warehouse {
 
 	warehouses := make([]model.Warehouse, 0, len(warehousesIds))
 	for _, warehouseId := range warehousesIds {
-		warehouses = append(warehouses, model.Warehouse{ID: warehouseId})
+		warehouses = append(warehouses, model.Warehouse{ID: model.WarehouseID(warehouseId)})
 	}
 
 	return warehouses

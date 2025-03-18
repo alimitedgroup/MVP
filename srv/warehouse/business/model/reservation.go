@@ -8,6 +8,6 @@ type Reservation struct {
 type ReservationId string
 
 type ReservationGood struct {
-	GoodID   GoodId
+	GoodID   GoodID
 	Quantity int64
 }

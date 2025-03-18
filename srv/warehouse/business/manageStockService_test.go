@@ -26,21 +26,21 @@ func newMockPortsImpl() *mockPortsImpl {
 	return &mockPortsImpl{info: make(map[string]mockGood)}
 }
 
-func (m *mockPortsImpl) GetStock(id model.GoodId) model.GoodStock {
+func (m *mockPortsImpl) GetStock(id model.GoodID) model.GoodStock {
 	if v, ok := m.info[string(id)]; ok {
 		return model.GoodStock{ID: id, Quantity: v.qty}
 	}
 	return model.GoodStock{ID: id, Quantity: 0}
 }
 
-func (m *mockPortsImpl) GetFreeStock(id model.GoodId) model.GoodStock {
+func (m *mockPortsImpl) GetFreeStock(id model.GoodID) model.GoodStock {
 	return m.GetStock(id)
 }
 
 func (m *mockPortsImpl) AddGood(id string, name string, description string) {
 	m.info[id] = mockGood{
 		info: model.GoodInfo{
-			ID:          model.GoodId(id),
+			ID:          model.GoodID(id),
 			Name:        name,
 			Description: description,
 		},
@@ -49,7 +49,7 @@ func (m *mockPortsImpl) AddGood(id string, name string, description string) {
 	}
 }
 
-func (m *mockPortsImpl) GetGood(id model.GoodId) *model.GoodInfo {
+func (m *mockPortsImpl) GetGood(id model.GoodID) *model.GoodInfo {
 	if v, ok := m.info[string(id)]; ok {
 		return &v.info
 	}
@@ -82,7 +82,7 @@ func TestManageStockService(t *testing.T) {
 				mock.AddGood("1", "hat", "very nice hat")
 
 				addStockCmd := port.AddStockCmd{
-					ID:       "1",
+					GoodID:   "1",
 					Quantity: 10,
 				}
 				err := addStockUseCase.AddStock(ctx, addStockCmd)
@@ -94,7 +94,7 @@ func TestManageStockService(t *testing.T) {
 				assert.Equal(t, mock.GetStock("1").Quantity, int64(10))
 
 				remStockCmd := port.RemoveStockCmd{
-					ID:       "1",
+					GoodID:   "1",
 					Quantity: 10,
 				}
 				err = removeStockUseCase.RemoveStock(ctx, remStockCmd)

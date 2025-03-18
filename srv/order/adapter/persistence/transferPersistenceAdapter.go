@@ -79,7 +79,7 @@ func repoTransferToModelTransfer(transfer Transfer) model.Transfer {
 	goods := make([]model.GoodStock, 0, len(transfer.Goods))
 	for _, good := range transfer.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodId(good.GoodID),
+			ID:       model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}

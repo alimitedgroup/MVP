@@ -3,7 +3,6 @@ package listener
 import (
 	"context"
 	"encoding/json"
-	"log"
 
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
@@ -34,38 +33,17 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 }
 
 func stockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
-	var cmdType port.StockUpdateCmdType
-	switch event.Type {
-	case stream.StockUpdateTypeAdd:
-		cmdType = port.StockUpdateCmdTypeAdd
-	case stream.StockUpdateTypeRemove:
-		cmdType = port.StockUpdateCmdTypeRemove
-	case stream.StockUpdateTypeOrder:
-		cmdType = port.StockUpdateCmdTypeOrder
-	case stream.StockUpdateTypeTransfer:
-		cmdType = port.StockUpdateCmdTypeTransfer
-	default:
-		log.Fatal("unknown stock update type")
+	goods := make([]port.StockUpdateCmdGood, 0, len(event.Goods))
+	for _, good := range event.Goods {
+		goods = append(goods, port.StockUpdateCmdGood(good))
 	}
-
-	cmd := port.StockUpdateCmd{
+	return port.StockUpdateCmd{
 		ID:            event.ID,
-		Type:          cmdType,
+		Type:          port.StockUpdateCmdType(event.Type),
 		OrderID:       event.OrderID,
 		TransferID:    event.TransferID,
 		ReservationID: event.ReservationID,
 		Timestamp:     event.Timestamp,
+		Goods:         goods,
 	}
-
-	cmd.Goods = make([]port.StockUpdateCmdGood, 0, len(event.Goods))
-
-	for _, good := range event.Goods {
-		cmd.Goods = append(cmd.Goods, port.StockUpdateCmdGood{
-			GoodID:   good.GoodID,
-			Quantity: good.Quantity,
-			Delta:    good.Delta,
-		})
-	}
-
-	return cmd
 }

@@ -27,10 +27,7 @@ func (c *ReservationController) CreateReservationHandler(ctx context.Context, ms
 
 	goods := make([]port.ReservationGood, 0, len(dto.Goods))
 	for _, good := range dto.Goods {
-		goods = append(goods, port.ReservationGood{
-			GoodID:   good.GoodID,
-			Quantity: good.Quantity,
-		})
+		goods = append(goods, port.ReservationGood(good))
 	}
 
 	cmd := port.CreateReservationCmd{Goods: goods}

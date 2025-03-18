@@ -97,7 +97,7 @@ func repoOrderToModelOrder(order Order) model.Order {
 	goods := make([]model.GoodStock, 0, len(order.Goods))
 	for _, good := range order.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodId(good.GoodID),
+			ID:       model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
@@ -105,9 +105,9 @@ func repoOrderToModelOrder(order Order) model.Order {
 	warehouses := make([]model.OrderWarehouseUsed, 0, len(order.Warehouses))
 
 	for _, warehouse := range order.Warehouses {
-		goods := make(map[model.GoodId]int64)
+		goods := make(map[model.GoodID]int64)
 		for goodId, quantity := range warehouse.Goods {
-			goods[model.GoodId(goodId)] = quantity
+			goods[model.GoodID(goodId)] = quantity
 		}
 		warehouses = append(warehouses, model.OrderWarehouseUsed{
 			WarehouseID: warehouse.WarehouseID,

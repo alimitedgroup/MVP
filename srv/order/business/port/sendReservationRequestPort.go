@@ -14,7 +14,7 @@ type RequestReservationCmd struct {
 }
 
 type ReservationItem struct {
-	GoodId   string
+	GoodID   string
 	Quantity int64
 }
 

@@ -40,10 +40,7 @@ func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.Create
 
 	goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
-		goods = append(goods, port.SendTransferUpdateGood{
-			GoodId:   good.GoodID,
-			Quantity: good.Quantity,
-		})
+		goods = append(goods, port.SendTransferUpdateGood(good))
 	}
 
 	transferCmd := port.SendTransferUpdateCmd{
@@ -63,7 +60,6 @@ func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.Create
 		Type:                  port.SendContactWarehouseTypeTransfer,
 		Order:                 nil,
 		Transfer:              &transfer,
-		LastContact:           0,
 		ConfirmedReservations: []port.ConfirmedReservation{},
 		ExcludeWarehouses:     []string{},
 		RetryInTime:           0,
@@ -90,7 +86,6 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 		Type:                  port.SendContactWarehouseTypeOrder,
 		Order:                 &order,
 		Transfer:              nil,
-		LastContact:           0,
 		ConfirmedReservations: []port.ConfirmedReservation{},
 		ExcludeWarehouses:     []string{},
 		RetryInTime:           0,
@@ -191,7 +186,7 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 		goods := make([]model.GoodStock, 0, len(cmd.Transfer.Goods))
 		for _, good := range cmd.Transfer.Goods {
 			goods = append(goods, model.GoodStock{
-				ID:       model.GoodId(good.GoodId),
+				ID:       model.GoodID(good.GoodID),
 				Quantity: good.Quantity,
 			})
 		}
@@ -208,7 +203,6 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 				ReservationID: "",
 			},
 			Order:                 nil,
-			LastContact:           now.UnixMilli(),
 			RetryInTime:           now.Add(time.Second * 10).UnixMilli(),
 			RetryUntil:            cmd.RetryUntil,
 			ConfirmedReservations: []port.ConfirmedReservation{},
@@ -294,7 +288,7 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 		goods := make([]model.GoodStock, 0, len(cmd.Order.Goods))
 		for _, good := range cmd.Order.Goods {
 			goods = append(goods, model.GoodStock{
-				ID:       model.GoodId(good.GoodId),
+				ID:       model.GoodID(good.GoodID),
 				Quantity: good.Quantity,
 			})
 		}
@@ -313,7 +307,6 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 				Reservations: cmd.Order.Reservations,
 				Warehouses:   []model.OrderWarehouseUsed{},
 			},
-			LastContact:           now.UnixMilli(),
 			ConfirmedReservations: confirmed,
 			ExcludeWarehouses:     errWarehouses,
 			RetryInTime:           now.Add(time.Second * 10).UnixMilli(),
@@ -339,10 +332,7 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 func createOrderCmdToSendOrderUpdateCmd(orderId string, cmd port.CreateOrderCmd) port.SendOrderUpdateCmd {
 	goods := make([]port.SendOrderUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
-		goods = append(goods, port.SendOrderUpdateGood{
-			GoodId:   good.GoodID,
-			Quantity: good.Quantity,
-		})
+		goods = append(goods, port.SendOrderUpdateGood(good))
 	}
 
 	saveCmd := port.SendOrderUpdateCmd{
@@ -371,7 +361,7 @@ func contactCmdToCalculateAvailabilityCmd(cmd port.ContactWarehousesCmd) port.Ca
 
 	goods := make([]port.RequestedGood, 0, len(cmd.Order.Goods))
 	for _, good := range cmd.Order.Goods {
-		goodReserved, ok := used[good.GoodId]
+		goodReserved, ok := used[good.GoodID]
 		if !ok {
 			goodReserved = 0
 		}
@@ -380,7 +370,7 @@ func contactCmdToCalculateAvailabilityCmd(cmd port.ContactWarehousesCmd) port.Ca
 		}
 
 		goods = append(goods, port.RequestedGood{
-			GoodID:   good.GoodId,
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity - goodReserved,
 		})
 	}
@@ -393,7 +383,7 @@ func warehouseAvailabilityToReservationCmd(warehouse port.WarehouseAvailability)
 	items := make([]port.ReservationItem, 0, len(warehouse.Goods))
 	for good, stock := range warehouse.Goods {
 		items = append(items, port.ReservationItem{
-			GoodId:   good,
+			GoodID:   good,
 			Quantity: stock,
 		})
 	}

@@ -32,7 +32,7 @@ func TestApplyCatalogUpdateService(t *testing.T) {
 		fx.Provide(fx.Annotate(NewApplyCatalogUpdateService, fx.As(new(port.IApplyCatalogUpdateUseCase)))),
 		fx.Invoke(func(useCase port.IApplyCatalogUpdateUseCase) {
 			cmd := port.CatalogUpdateCmd{
-				GoodId:      "1",
+				GoodID:      "1",
 				Name:        "hat",
 				Description: "very nice hat",
 			}

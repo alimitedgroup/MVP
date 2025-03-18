@@ -14,7 +14,6 @@ type SendContactWarehouseCmd struct {
 	Order                 *model.Order
 	Transfer              *model.Transfer
 	Type                  SendContactWarehouseType
-	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
 	RetryInTime           int64

@@ -37,7 +37,7 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 	goods := make([]stream.OrderUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, stream.OrderUpdateGood{
-			GoodID:   good.GoodId,
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
@@ -68,7 +68,7 @@ func (a *NatsStreamAdapter) SendOrderUpdate(ctx context.Context, cmd port.SendOr
 	modelGoods := make([]model.GoodStock, 0, len(goods))
 	for _, good := range cmd.Goods {
 		modelGoods = append(modelGoods, model.GoodStock{
-			ID:       model.GoodId(good.GoodId),
+			ID:       model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
@@ -100,7 +100,7 @@ func (a *NatsStreamAdapter) SendTransferUpdate(ctx context.Context, cmd port.Sen
 	goods := make([]stream.TransferUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, stream.TransferUpdateGood{
-			GoodID:   good.GoodId,
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
@@ -130,7 +130,7 @@ func (a *NatsStreamAdapter) SendTransferUpdate(ctx context.Context, cmd port.Sen
 	modelGoods := make([]model.GoodStock, 0, len(goods))
 	for _, good := range cmd.Goods {
 		modelGoods = append(modelGoods, model.GoodStock{
-			ID:       model.GoodId(good.GoodId),
+			ID:       model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
@@ -163,7 +163,7 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Order.Goods))
 		for _, good := range cmd.Order.Goods {
 			goods = append(goods, internalStream.ContactWarehousesGood{
-				GoodId:   string(good.ID),
+				GoodID:   string(good.ID),
 				Quantity: good.Quantity,
 			})
 		}
@@ -183,7 +183,7 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Transfer.Goods))
 		for _, good := range cmd.Transfer.Goods {
 			goods = append(goods, internalStream.ContactWarehousesGood{
-				GoodId:   string(good.ID),
+				GoodID:   string(good.ID),
 				Quantity: good.Quantity,
 			})
 		}
@@ -203,7 +203,6 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		Type:                  internalStream.ContactWarehousesType(cmd.Type),
 		Order:                 order,
 		Transfer:              transfer,
-		LastContact:           cmd.LastContact,
 		ConfirmedReservations: confirmed,
 		ExcludeWarehouses:     cmd.ExcludeWarehouses,
 		RetryInTime:           cmd.RetryInTime,
@@ -229,7 +228,7 @@ func (a *NatsStreamAdapter) RequestReservation(ctx context.Context, cmd port.Req
 	goods := make([]request.ReserveStockItem, 0, len(cmd.Items))
 	for _, good := range cmd.Items {
 		goods = append(goods, request.ReserveStockItem{
-			GoodID:   good.GoodId,
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}

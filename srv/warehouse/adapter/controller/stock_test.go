@@ -25,17 +25,17 @@ func NewMockStock() *mockStock {
 }
 
 func (m *mockStock) AddStock(ctx context.Context, cmd port.AddStockCmd) error {
-	old, ok := m.stockMap[cmd.ID]
+	old, ok := m.stockMap[cmd.GoodID]
 	if !ok {
 		old = 0
 	}
 
-	m.stockMap[cmd.ID] = old + cmd.Quantity
+	m.stockMap[cmd.GoodID] = old + cmd.Quantity
 	return nil
 }
 
 func (m *mockStock) RemoveStock(ctx context.Context, cmd port.RemoveStockCmd) error {
-	old, ok := m.stockMap[cmd.ID]
+	old, ok := m.stockMap[cmd.GoodID]
 	if !ok {
 		return fmt.Errorf("stock not found")
 	}
@@ -44,7 +44,7 @@ func (m *mockStock) RemoveStock(ctx context.Context, cmd port.RemoveStockCmd) er
 		return fmt.Errorf("stock not enough")
 	}
 
-	m.stockMap[cmd.ID] = old - cmd.Quantity
+	m.stockMap[cmd.GoodID] = old - cmd.Quantity
 	return nil
 }
 

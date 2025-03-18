@@ -38,7 +38,7 @@ func orderUpdateCmdToApplyOrderUpdateCmd(cmd port.OrderUpdateCmd) port.ApplyOrde
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodId(good.GoodID),
+			ID:       model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
@@ -61,7 +61,7 @@ func transferUpdateCmdToApplyTransferUpdateCmd(cmd port.TransferUpdateCmd) port.
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodId(good.GoodID),
+			ID:       model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}

@@ -27,10 +27,7 @@ func (l *OrderUpdateListener) ListenOrderUpdate(ctx context.Context, msg jetstre
 
 	goods := make([]port.OrderUpdateGood, 0, len(event.Goods))
 	for _, good := range event.Goods {
-		goods = append(goods, port.OrderUpdateGood{
-			GoodID:   good.GoodID,
-			Quantity: good.Quantity,
-		})
+		goods = append(goods, port.OrderUpdateGood(good))
 	}
 	cmd := port.ConfirmOrderCmd{
 		OrderID:      event.ID,
@@ -55,10 +52,7 @@ func (l *OrderUpdateListener) ListenTransferUpdate(ctx context.Context, msg jets
 
 	goods := make([]port.TransferUpdateGood, 0, len(event.Goods))
 	for _, good := range event.Goods {
-		goods = append(goods, port.TransferUpdateGood{
-			GoodID:   good.GoodID,
-			Quantity: good.Quantity,
-		})
+		goods = append(goods, port.TransferUpdateGood(good))
 	}
 	cmd := port.ConfirmTransferCmd{
 		TransferID:    event.ID,

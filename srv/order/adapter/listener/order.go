@@ -71,7 +71,7 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 
 		for _, good := range event.Order.Goods {
 			goods = append(goods, port.ContactWarehousesGood{
-				GoodId:   good.GoodId,
+				GoodID:   good.GoodID,
 				Quantity: good.Quantity,
 			})
 		}
@@ -91,7 +91,7 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 
 		for _, good := range event.Transfer.Goods {
 			goods = append(goods, port.ContactWarehousesGood{
-				GoodId:   good.GoodId,
+				GoodID:   good.GoodID,
 				Quantity: good.Quantity,
 			})
 		}
@@ -112,7 +112,6 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 		Type:                  port.ContactWarehousesType(event.Type),
 		Order:                 order,
 		Transfer:              transfer,
-		LastContact:           event.LastContact,
 		ConfirmedReservations: confirmed,
 		ExcludeWarehouses:     event.ExcludeWarehouses,
 		RetryInTime:           event.RetryInTime,

@@ -28,11 +28,7 @@ func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) er
 		return err
 	}
 
-	cmd := port.AddStockCmd{
-		ID:       dto.GoodID,
-		Quantity: dto.Quantity,
-	}
-
+	cmd := port.AddStockCmd(dto)
 	err = c.addStockUseCase.AddStock(ctx, cmd)
 	if err != nil {
 		resp := response.ResponseDTO[any]{
@@ -66,11 +62,7 @@ func (c *StockController) RemoveStockHandler(ctx context.Context, msg *nats.Msg)
 		return err
 	}
 
-	cmd := port.RemoveStockCmd{
-		ID:       dto.GoodID,
-		Quantity: dto.Quantity,
-	}
-
+	cmd := port.RemoveStockCmd(dto)
 	err = c.removeStockUseCase.RemoveStock(ctx, cmd)
 	if err != nil {
 		resp := response.ResponseDTO[any]{

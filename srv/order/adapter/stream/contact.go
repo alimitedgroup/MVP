@@ -13,7 +13,6 @@ var ContactWarehousesStreamConfig = jetstream.StreamConfig{
 type ContactWarehouses struct {
 	Order                 *ContactWarehousesOrder    `json:"order,omitempty"`
 	Transfer              *ContactWarehousesTransfer `json:"transfer,omitempty"`
-	LastContact           int64                      `json:"last_contact"`
 	ConfirmedReservations []ConfirmedReservation     `json:"confirmed_reservations"`
 	ExcludeWarehouses     []string                   `json:"exclude_warehouses"`
 	Type                  ContactWarehousesType      `json:"type"`
@@ -52,7 +51,7 @@ type ContactWarehousesTransfer struct {
 }
 
 type ContactWarehousesGood struct {
-	GoodId   string `json:"good_id"`
+	GoodID   string `json:"good_id"`
 	Quantity int64  `json:"quantity"`
 }
 

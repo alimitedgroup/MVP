@@ -13,7 +13,6 @@ type ContactWarehousesCmd struct {
 	Type                  ContactWarehousesType
 	Order                 *ContactWarehousesOrder
 	Transfer              *ContactWarehousesTransfer
-	LastContact           int64
 	ConfirmedReservations []ConfirmedReservation
 	ExcludeWarehouses     []string
 	RetryUntil            int64
@@ -51,7 +50,7 @@ type ContactWarehousesTransfer struct {
 }
 
 type ContactWarehousesGood struct {
-	GoodId   string
+	GoodID   string
 	Quantity int64
 }
 

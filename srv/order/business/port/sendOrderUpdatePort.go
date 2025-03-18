@@ -22,6 +22,6 @@ type SendOrderUpdateCmd struct {
 }
 
 type SendOrderUpdateGood struct {
-	GoodId   string
+	GoodID   string
 	Quantity int64
 }

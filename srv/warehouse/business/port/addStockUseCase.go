@@ -7,6 +7,6 @@ type IAddStockUseCase interface {
 }
 
 type AddStockCmd struct {
-	ID       string
+	GoodID   string
 	Quantity int64
 }

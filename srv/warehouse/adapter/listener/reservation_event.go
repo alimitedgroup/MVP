@@ -26,10 +26,7 @@ func (l *ReservationEventListener) ListenReservationEvent(ctx context.Context, m
 
 	goods := make([]port.ReservationGood, 0, len(event.Goods))
 	for _, good := range event.Goods {
-		goods = append(goods, port.ReservationGood{
-			GoodID:   good.GoodID,
-			Quantity: good.Quantity,
-		})
+		goods = append(goods, port.ReservationGood(good))
 	}
 	cmd := port.ApplyReservationEventCmd{
 		Id:    event.Id,

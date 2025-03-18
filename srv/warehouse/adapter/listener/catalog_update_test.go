@@ -35,8 +35,8 @@ func (m *applyCatalogUpdateMock) ApplyCatalogUpdate(ctx context.Context, cmd por
 	m.Lock()
 	defer m.Unlock()
 
-	m.catalogMap[cmd.GoodId] = goodMock{
-		id:          cmd.GoodId,
+	m.catalogMap[cmd.GoodID] = goodMock{
+		id:          cmd.GoodID,
 		name:        cmd.Name,
 		description: cmd.Description,
 	}

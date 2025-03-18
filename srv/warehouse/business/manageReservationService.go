@@ -37,7 +37,7 @@ func NewManageReservationService(
 func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd port.CreateReservationCmd) (port.CreateReservationResponse, error) {
 	validStock := true
 	for _, good := range cmd.Goods {
-		stock := s.getStockPort.GetFreeStock(model.GoodId(good.GoodID))
+		stock := s.getStockPort.GetFreeStock(model.GoodID(good.GoodID))
 		if stock.Quantity < good.Quantity {
 			validStock = false
 			break
@@ -52,7 +52,7 @@ func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd po
 	goods := make([]model.ReservationGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.ReservationGood{
-			GoodID:   model.GoodId(good.GoodID),
+			GoodID:   model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
@@ -73,7 +73,7 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.ReservationGood{
-			GoodID:   model.GoodId(good.GoodID),
+			GoodID:   model.GoodID(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
@@ -127,8 +127,8 @@ func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.Co
 			Type:          port.CreateStockUpdateCmdTypeOrder,
 			Goods:         goods,
 			OrderID:       cmd.OrderID,
-			ReservationID: reserv,
 			TransferID:    "",
+			ReservationID: reserv,
 		}
 		err = s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
 		if err != nil {
@@ -184,15 +184,14 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 			return err
 		}
 	} else if cmd.ReceiverID == s.cfg.ID {
-
 		goods := make([]port.CreateStockUpdateCmdGood, 0, len(cmd.Goods))
 
 		for _, toAdd := range cmd.Goods {
-			goodStock := s.getStockPort.GetStock(model.GoodId(toAdd.GoodID))
+			goodStock := s.getStockPort.GetStock(model.GoodID(toAdd.GoodID))
 
 			goods = append(goods, port.CreateStockUpdateCmdGood{
 				Good: model.GoodStock{
-					ID:       model.GoodId(toAdd.GoodID),
+					ID:       model.GoodID(toAdd.GoodID),
 					Quantity: goodStock.Quantity + toAdd.Quantity,
 				},
 				QuantityDiff: toAdd.Quantity,
@@ -204,7 +203,7 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 			Goods:         goods,
 			OrderID:       "",
 			TransferID:    cmd.TransferID,
-			ReservationID: string(cmd.ReservationId),
+			ReservationID: cmd.ReservationId,
 		}
 		err := s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
 		if err != nil {

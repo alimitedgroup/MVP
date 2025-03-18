@@ -7,6 +7,6 @@ type IRemoveStockUseCase interface {
 }
 
 type RemoveStockCmd struct {
-	ID       string
+	GoodID   string
 	Quantity int64
 }
