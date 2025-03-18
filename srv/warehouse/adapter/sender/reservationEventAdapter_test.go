@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/stream"
+	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
-	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/magiconair/properties/assert"
 	"github.com/nats-io/nats.go/jetstream"
@@ -15,7 +14,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func TestStockUpdateAdapter(t *testing.T) {
+func TestReservationEventAdapter(t *testing.T) {
 	ctx := t.Context()
 	cfg := &config.WarehouseConfig{
 		ID: "1",
@@ -27,7 +26,7 @@ func TestStockUpdateAdapter(t *testing.T) {
 		t.Error(err)
 	}
 
-	s, err := js.CreateStream(ctx, stream.StockUpdateStreamConfig)
+	s, err := js.CreateStream(ctx, stream.ReservationEventStreamConfig)
 	if err != nil {
 		t.Errorf("failed to create stream: %v", err)
 	}
@@ -36,18 +35,21 @@ func TestStockUpdateAdapter(t *testing.T) {
 		fx.Supply(ns),
 		fx.Supply(cfg),
 		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewPublishStockUpdateAdapter),
-		fx.Invoke(func(lc fx.Lifecycle, a *PublishStockUpdateAdapter) {
+		fx.Provide(NewPublishReservationEventAdapter),
+		fx.Invoke(func(lc fx.Lifecycle, a *PublishReservationEventAdapter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
-					cmd := port.CreateStockUpdateCmd{
-						Type: port.CreateStockUpdateCmdTypeAdd,
-						Goods: []port.CreateStockUpdateCmdGood{
-							{Good: model.GoodStock{ID: "1", Quantity: 10}, QuantityDiff: 10},
+					cmd := model.Reservation{
+						ID: "1",
+						Goods: []model.ReservationGood{
+							{
+								GoodID:   "1",
+								Quantity: 10,
+							},
 						},
 					}
 
-					err := a.CreateStockUpdate(ctx, cmd)
+					err := a.StoreReservationEvent(ctx, cmd)
 					if err != nil {
 						t.Error(err)
 					}
@@ -77,7 +79,7 @@ func TestStockUpdateAdapter(t *testing.T) {
 	}()
 }
 
-func TestStockUpdateAdapterNetworkErr(t *testing.T) {
+func TestReservationEventAdapterNetworkErr(t *testing.T) {
 	ctx := t.Context()
 	cfg := &config.WarehouseConfig{
 		ID: "1",
@@ -90,15 +92,18 @@ func TestStockUpdateAdapterNetworkErr(t *testing.T) {
 
 	ns.Close()
 
-	a := NewPublishStockUpdateAdapter(broker, cfg)
+	a := NewPublishReservationEventAdapter(broker, cfg)
 
-	cmd := port.CreateStockUpdateCmd{
-		Type: port.CreateStockUpdateCmdTypeAdd,
-		Goods: []port.CreateStockUpdateCmdGood{
-			{Good: model.GoodStock{ID: "1", Quantity: 10}, QuantityDiff: 10},
+	cmd := model.Reservation{
+		ID: "1",
+		Goods: []model.ReservationGood{
+			{
+				GoodID:   "1",
+				Quantity: 10,
+			},
 		},
 	}
 
-	err = a.CreateStockUpdate(ctx, cmd)
+	err = a.StoreReservationEvent(ctx, cmd)
 	require.NotNil(t, err)
 }
