@@ -14,8 +14,8 @@ type ListenerRoutes struct {
 func NewListenerRoutes(
 	stockUpdateRouter *StockUpdateRouter, catalogRouter *CatalogRouter,
 	reservationRouter *ReservationEventRouter, orderUpdateRouter *OrderUpdateRouter,
-) ListenerRoutes {
-	return ListenerRoutes{
+) *ListenerRoutes {
+	return &ListenerRoutes{
 		stockUpdateRouter,
 		catalogRouter,
 		reservationRouter,
@@ -23,6 +23,7 @@ func NewListenerRoutes(
 	}
 }
 
+// NOTE: must setup() in this order
 func (r ListenerRoutes) Setup(ctx context.Context) error {
 	if err := r.CatalogRouter.Setup(ctx); err != nil {
 		return err

@@ -18,8 +18,8 @@ import (
 type RunParams struct {
 	fx.In
 
-	BrokerRoutes   controller.BrokerRoutes
-	ListenerRoutes listener.ListenerRoutes
+	BrokerRoutes   *controller.BrokerRoutes
+	ListenerRoutes *listener.ListenerRoutes
 }
 
 func Run(ctx context.Context, p RunParams) error {

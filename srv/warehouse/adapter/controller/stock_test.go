@@ -17,8 +17,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_stock.go -package controller github.com/alimitedgroup/MVP/srv/warehouse/business/port IAddStockUseCase,IRemoveStockUseCase
-
 func TestStockController(t *testing.T) {
 	ctx := t.Context()
 	ctrl := gomock.NewController(t)

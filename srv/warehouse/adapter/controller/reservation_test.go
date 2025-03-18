@@ -17,8 +17,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_reservation.go -package controller github.com/alimitedgroup/MVP/srv/warehouse/business/port ICreateReservationUseCase
-
 func TestReservationController(t *testing.T) {
 	ctx := t.Context()
 	ctrl := gomock.NewController(t)
