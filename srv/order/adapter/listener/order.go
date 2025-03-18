@@ -3,7 +3,6 @@ package listener
 import (
 	"context"
 	"encoding/json"
-	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
@@ -125,13 +124,10 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 		return err
 	}
 
-	log.Printf("ContactWarehouses: %v", cmd)
-	log.Printf("Retry: %v", retry)
 	if retry.IsRetry {
 		if err := msg.NakWithDelay(retry.RetryAfter); err != nil {
 			return err
 		}
-		log.Printf("NakWithDelay: %v", retry.RetryAfter)
 		return broker.ErrMsgNotAcked
 	}
 
