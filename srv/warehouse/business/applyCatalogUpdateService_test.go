@@ -6,6 +6,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 )
 
@@ -43,15 +44,10 @@ func TestApplyCatalogUpdateService(t *testing.T) {
 	)
 
 	err := app.Start(ctx)
-	if err != nil {
-		t.Errorf("error starting app: %v", err)
-	}
-
+	require.NoError(t, err)
 	defer func() {
 		err := app.Stop(ctx)
-		if err != nil {
-			t.Errorf("error stopping app: %v", err)
-		}
+		require.NoError(t, err)
 	}()
 
 }

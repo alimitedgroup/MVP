@@ -8,8 +8,6 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_idempotentRepositoryIml.go -package persistence github.com/alimitedgroup/MVP/srv/warehouse/adapter/persistence IIdempotentRepository
-
 func TestIdempotentAdapterGet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockIIdempotentRepository(ctrl)

@@ -5,6 +5,8 @@ import (
 	"go.uber.org/fx"
 )
 
+//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_persistence.go -package persistence github.com/alimitedgroup/MVP/srv/warehouse/adapter/persistence ICatalogRepository,IStockRepository,IIdempotentRepository
+
 var Module = fx.Options(
 	fx.Provide(fx.Annotate(NewStockRepositoryImpl, fx.As(new(IStockRepository)))),
 	fx.Provide(fx.Annotate(
