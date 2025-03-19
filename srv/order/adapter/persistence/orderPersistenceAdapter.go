@@ -43,9 +43,9 @@ func (s *OrderPersistanceAdapter) SetComplete(orderId model.OrderID) error {
 func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd) error {
 	var warehouses []OrderWarehouseUsed
 	if old, err := s.orderRepo.GetOrder(string(cmd.Id)); err == nil {
-		warehouses = make([]OrderWarehouseUsed, 0, len(cmd.Reservations))
-	} else {
 		warehouses = old.Warehouses
+	} else {
+		warehouses = []OrderWarehouseUsed{}
 	}
 
 	goods := make([]OrderUpdateGood, 0, len(cmd.Goods))
