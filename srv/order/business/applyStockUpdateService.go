@@ -67,10 +67,14 @@ func (s *ApplyStockUpdateService) applyStockUpdateFromTransfer(cmd port.StockUpd
 		if err := s.setCompleteTransferPort.IncrementLinkedStockUpdate(transfer.Id); err != nil {
 			return err
 		}
+		transfer, err = s.getTransferPort.GetTransfer(transfer.Id)
+		if err != nil {
+			return err
+		}
 	}
 
 	if transfer.LinkedStockUpdate == 2 {
-		if err := s.setCompleteTransferPort.SetComplete(model.TransferID(cmd.TransferID)); err != nil {
+		if err := s.setCompleteTransferPort.SetComplete(transfer.Id); err != nil {
 			return err
 		}
 	}

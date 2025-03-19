@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
@@ -63,11 +64,46 @@ func runTestApplyStockUpdateService(t *testing.T, build func(*applyStockUpdateSe
 }
 
 func TestApplyStockUpdateServiceStock(t *testing.T) {
-	t.Skip()
 	ctx := t.Context()
 	runTestApplyStockUpdateService(t,
 		func(suite *applyStockUpdateServiceMockSuite) {
+			now := time.Now().UnixMilli()
 			suite.applyStockUpdatePort.EXPECT().ApplyStockUpdate(gomock.Any())
+			suite.getOrderPort.EXPECT().GetOrder(gomock.Any()).Return(model.Order{
+				Id:           "1",
+				Status:       "Filled",
+				UpdateTime:   now,
+				CreationTime: now,
+				Name:         "order 1",
+				FullName:     "test test",
+				Address:      "via roma 1",
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+				Reservations: []string{"1"},
+				Warehouses:   []model.OrderWarehouseUsed{},
+			}, nil)
+			suite.setCompletedWarehousePort.EXPECT().SetCompletedWarehouse(gomock.Any()).Return(model.Order{
+				Id:           "1",
+				Status:       "Filled",
+				UpdateTime:   now,
+				CreationTime: now,
+				Name:         "order 1",
+				FullName:     "test test",
+				Address:      "via roma 1",
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+				Reservations: []string{"1"},
+				Warehouses:   []model.OrderWarehouseUsed{{WarehouseID: "1", Goods: map[model.GoodID]int64{"1": 1}}},
+			}, nil)
+			suite.setCompletedWarehousePort.EXPECT().SetComplete(gomock.Any()).Return(nil)
 		},
 		func() fx.Option { return fx.Options() },
 		func() interface{} {
@@ -95,11 +131,46 @@ func TestApplyStockUpdateServiceStock(t *testing.T) {
 }
 
 func TestApplyStockUpdateServiceTransfer(t *testing.T) {
-	t.Skip()
 	ctx := t.Context()
 	runTestApplyStockUpdateService(t,
 		func(suite *applyStockUpdateServiceMockSuite) {
+			now := time.Now().UnixMilli()
 			suite.applyStockUpdatePort.EXPECT().ApplyStockUpdate(gomock.Any())
+			firstCall := suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).Return(model.Transfer{
+				Id:                "1",
+				Status:            "Filled",
+				SenderId:          "1",
+				ReceiverId:        "2",
+				ReservationID:     "1",
+				CreationTime:      now,
+				UpdateTime:        now,
+				LinkedStockUpdate: 1,
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+
+			suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).After(firstCall).Return(model.Transfer{
+				Id:                "1",
+				Status:            "Filled",
+				SenderId:          "1",
+				ReceiverId:        "2",
+				ReservationID:     "1",
+				CreationTime:      now,
+				UpdateTime:        now,
+				LinkedStockUpdate: 2,
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+			suite.setCompleteTransferPort.EXPECT().IncrementLinkedStockUpdate(gomock.Any()).Return(nil)
+			suite.setCompleteTransferPort.EXPECT().SetComplete(gomock.Any()).Return(nil)
 		},
 		func() fx.Option { return fx.Options() },
 		func() interface{} {
