@@ -85,15 +85,15 @@ func repoTransferToModelTransfer(transfer Transfer) model.Transfer {
 	}
 
 	return model.Transfer{
-		Id:               model.TransferID(transfer.ID),
-		Status:           transfer.Status,
-		SenderId:         model.WarehouseID(transfer.SenderID),
-		ReceiverId:       model.WarehouseID(transfer.ReceiverID),
-		Goods:            goods,
-		LinedStockUpdate: transfer.LinkedStockUpdate,
-		ReservationID:    transfer.ReservationId,
-		UpdateTime:       transfer.UpdateTime,
-		CreationTime:     transfer.CreationTime,
+		Id:                model.TransferID(transfer.ID),
+		Status:            transfer.Status,
+		SenderId:          model.WarehouseID(transfer.SenderID),
+		ReceiverId:        model.WarehouseID(transfer.ReceiverID),
+		Goods:             goods,
+		LinkedStockUpdate: transfer.LinkedStockUpdate,
+		ReservationID:     transfer.ReservationId,
+		UpdateTime:        transfer.UpdateTime,
+		CreationTime:      transfer.CreationTime,
 	}
 }
 

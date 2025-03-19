@@ -72,7 +72,7 @@ func (s *ApplyStockUpdateService) applyStockUpdateFromTransfer(cmd port.StockUpd
 		}
 	}
 
-	if transfer.LinedStockUpdate == 2 {
+	if transfer.LinkedStockUpdate == 2 {
 		if err := s.setCompleteTransferPort.SetComplete(model.TransferID(cmd.TransferID)); err != nil {
 			return err
 		}
