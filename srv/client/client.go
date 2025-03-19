@@ -11,36 +11,23 @@ import (
 	"go.uber.org/fx"
 )
 
-// ---- Strutture per le risposte dell'API ----
-
-// AuthResponse rappresenta la risposta dell'endpoint di autenticazione
-type AuthResponse struct {
-	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expiresAt"`
-}
-
-// TokenValidateResponse rappresenta la risposta della validazione token
-type TokenValidateResponse struct {
-	Valid bool   `json:"valid"`
-	Role  string `json:"role,omitempty"`
-}
-
-// PingResponse rappresenta la risposta dell'endpoint di ping
+// Response structures for different API endpoints
 type PingResponse struct {
 	Message string `json:"message"`
 }
 
-// IsLoggedResponse rappresenta la risposta dell'endpoint di verifica login
+type AuthLoginResponse struct {
+	Token string `json:"token"`
+}
+
 type IsLoggedResponse struct {
 	Role string `json:"role"`
 }
 
-// GetWarehousesResponse rappresenta la risposta dell'endpoint dei magazzini
 type GetWarehousesResponse struct {
 	Ids []string `json:"ids"`
 }
 
-// GoodAndAmount rappresenta un prodotto con la sua quantità
 type GoodAndAmount struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -48,187 +35,62 @@ type GoodAndAmount struct {
 	Amount      int64  `json:"amount"`
 }
 
-// GetGoodsResponse rappresenta la risposta dell'endpoint dei prodotti
 type GetGoodsResponse struct {
 	Goods []GoodAndAmount `json:"goods"`
 }
 
-// ErrorResponse rappresenta una risposta di errore dall'API
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message"`
 	Code    string `json:"code"`
 }
 
-// ---- Configurazione del client ----
-
-// APIClientConfig contiene la configurazione per l'APIClient
-type APIClientConfig struct {
-	BaseURL               string
-	AuthServiceURL        string
-	Timeout               time.Duration
-	TokenRefreshThreshold time.Duration // Tempo prima della scadenza per refreshare il token
+// ClientConfig holds configuration for the API client
+type ClientConfig struct {
+	BaseURL string
+	Timeout time.Duration
 }
 
-// APIClientParams definisce i parametri di dependency injection per costruire un APIClient
-type APIClientParams struct {
+// ClientParams defines dependency injection parameters for constructing a Client
+type ClientParams struct {
 	fx.In
 
-	Config APIClientConfig
+	Config ClientConfig
 }
 
-// APIClient rappresenta il client per l'API e il servizio di autenticazione
-type APIClient struct {
-	BaseURL               string
-	AuthServiceURL        string
-	HTTPClient            *http.Client
-	Token                 string
-	TokenExpiry           time.Time
-	TokenRefreshThreshold time.Duration
+// Client represents the API client
+type Client struct {
+	BaseURL    string
+	HTTPClient *http.Client
+	Token      string
 }
 
-// ProvideAPIClientConfig crea una configurazione predefinita per APIClient
-func ProvideAPIClientConfig() APIClientConfig {
-	return APIClientConfig{
-		BaseURL:               "http://api-service:8080",
-		AuthServiceURL:        "http://authenticator-service:8080",
-		Timeout:               time.Second * 30,
-		TokenRefreshThreshold: time.Hour * 24, // Refresha se manca meno di 1 giorno alla scadenza
-	}
-}
-
-// NewAPIClient crea un nuovo APIClient con dependency injection
-func NewAPIClient(p APIClientParams) *APIClient {
-	return &APIClient{
-		BaseURL:        p.Config.BaseURL,
-		AuthServiceURL: p.Config.AuthServiceURL,
+// NewClient creates a new API client with dependency injection
+func NewClient(p ClientParams) *Client {
+	return &Client{
+		BaseURL: p.Config.BaseURL,
 		HTTPClient: &http.Client{
 			Timeout: p.Config.Timeout,
 		},
-		TokenRefreshThreshold: p.Config.TokenRefreshThreshold,
 	}
 }
 
-// APIModule fornisce i componenti fx per APIClient
-var APIModule = fx.Options(
-	fx.Provide(ProvideAPIClientConfig),
-	fx.Provide(NewAPIClient),
+// ProvideClientConfig creates a ClientConfig with default values
+func ProvideClientConfig() ClientConfig {
+	return ClientConfig{
+		BaseURL: "http://localhost:8080",
+		Timeout: time.Second * 30,
+	}
+}
+
+// Module provides fx components for API client
+var Module = fx.Options(
+	fx.Provide(ProvideClientConfig),
+	fx.Provide(NewClient),
 )
 
-// ---- Metodi di autenticazione ----
-
-// Login autentica un utente e ottiene un token
-func (c *APIClient) Login(username, password string) error {
-	// Prepara i dati per la richiesta di login
-	data := map[string]string{
-		"username": username,
-		"password": password,
-	}
-
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("errore nella codifica JSON dei dati di login: %w", err)
-	}
-
-	req, err := http.NewRequest("POST", c.AuthServiceURL+"/api/v1/auth/login", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("errore nella creazione della richiesta di login: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	var authResp AuthResponse
-	if err := c.sendRequest(req, &authResp); err != nil {
-		return fmt.Errorf("errore nell'autenticazione: %w", err)
-	}
-
-	// Salva il token e la sua scadenza
-	c.Token = authResp.Token
-	c.TokenExpiry = authResp.ExpiresAt
-
-	return nil
-}
-
-// LoginWithUsernameForm autentica un utente utilizzando form data invece di JSON
-// Questo è un metodo alternativo per supportare l'API esistente
-func (c *APIClient) LoginWithUsernameForm(username string) error {
-	data := bytes.NewBufferString(fmt.Sprintf("username=%s", username))
-	req, err := http.NewRequest("POST", c.BaseURL+"/api/v1/login", data)
-	if err != nil {
-		return fmt.Errorf("errore nella creazione della richiesta: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	var authResp struct {
-		Token string `json:"token"`
-	}
-	if err := c.sendRequest(req, &authResp); err != nil {
-		return fmt.Errorf("errore nell'autenticazione: %w", err)
-	}
-
-	// Salva il token (qui non abbiamo informazioni sulla scadenza)
-	c.Token = authResp.Token
-	// Imposta una scadenza predefinita di 1 settimana come da specifica
-	c.TokenExpiry = time.Now().Add(7 * 24 * time.Hour)
-
-	return nil
-}
-
-// ValidateToken verifica se il token corrente è valido
-func (c *APIClient) ValidateToken() (*TokenValidateResponse, error) {
-	if c.Token == "" {
-		return nil, fmt.Errorf("nessun token disponibile, effettuare il login")
-	}
-
-	req, err := http.NewRequest("GET", c.AuthServiceURL+"/api/v1/auth/validate", nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+c.Token)
-
-	res := TokenValidateResponse{}
-	if err := c.sendRequest(req, &res); err != nil {
-		return nil, fmt.Errorf("errore nella validazione del token: %w", err)
-	}
-
-	return &res, nil
-}
-
-// RefreshTokenIfNeeded rinnova il token se è vicino alla scadenza
-func (c *APIClient) RefreshTokenIfNeeded() error {
-	// Se non c'è un token, non c'è niente da refreshare
-	if c.Token == "" {
-		return fmt.Errorf("nessun token disponibile, effettuare il login")
-	}
-
-	// Controlla se il token è vicino alla scadenza
-	if time.Until(c.TokenExpiry) > c.TokenRefreshThreshold {
-		// Il token è ancora valido per abbastanza tempo
-		return nil
-	}
-
-	// Richiedi un nuovo token usando il token corrente
-	req, err := http.NewRequest("POST", c.AuthServiceURL+"/api/v1/auth/refresh", nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", "Bearer "+c.Token)
-
-	var authResp AuthResponse
-	if err := c.sendRequest(req, &authResp); err != nil {
-		return fmt.Errorf("errore nel refresh del token: %w", err)
-	}
-
-	// Aggiorna il token e la sua scadenza
-	c.Token = authResp.Token
-	c.TokenExpiry = authResp.ExpiresAt
-
-	return nil
-}
-
-// ---- Metodi dell'API generale ----
-
-// Ping verifica se il server API è online
-func (c *APIClient) Ping() (*PingResponse, error) {
+// Ping checks if the API server is up and running
+func (c *Client) Ping() (*PingResponse, error) {
 	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/ping", nil)
 	if err != nil {
 		return nil, err
@@ -242,10 +104,30 @@ func (c *APIClient) Ping() (*PingResponse, error) {
 	return &res, nil
 }
 
-// IsLogged verifica se l'utente è autenticato e ottiene il ruolo
-func (c *APIClient) IsLogged() (*IsLoggedResponse, error) {
+// Login authenticates a user and retrieves a token
+func (c *Client) Login(username string) (*AuthLoginResponse, error) {
+	data := bytes.NewBufferString(fmt.Sprintf("username=%s", username))
+	req, err := http.NewRequest("POST", c.BaseURL+"/api/v1/login", data)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	res := AuthLoginResponse{}
+	if err := c.sendRequest(req, &res); err != nil {
+		return nil, err
+	}
+
+	// Store the token for future authenticated requests
+	c.Token = res.Token
+
+	return &res, nil
+}
+
+// IsLogged checks if the current token is valid and returns user role
+func (c *Client) IsLogged() (*IsLoggedResponse, error) {
 	if c.Token == "" {
-		return nil, fmt.Errorf("non autenticato, effettuare prima il login")
+		return nil, fmt.Errorf("not authenticated, please login first")
 	}
 
 	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/is_logged", nil)
@@ -262,21 +144,11 @@ func (c *APIClient) IsLogged() (*IsLoggedResponse, error) {
 	return &res, nil
 }
 
-// GetWarehouses ottiene la lista dei magazzini
-func (c *APIClient) GetWarehouses() (*GetWarehousesResponse, error) {
-	// Aggiorna il token se necessario
-	if err := c.RefreshTokenIfNeeded(); err != nil {
-		return nil, fmt.Errorf("errore nel refresh del token: %w", err)
-	}
-
+// GetWarehouses lists all warehouses
+func (c *Client) GetWarehouses() (*GetWarehousesResponse, error) {
 	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/warehouses", nil)
 	if err != nil {
 		return nil, err
-	}
-
-	// Aggiungi il token di autorizzazione se disponibile
-	if c.Token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.Token)
 	}
 
 	res := GetWarehousesResponse{}
@@ -287,21 +159,11 @@ func (c *APIClient) GetWarehouses() (*GetWarehousesResponse, error) {
 	return &res, nil
 }
 
-// GetGoods ottiene la lista dei prodotti con le relative quantità
-func (c *APIClient) GetGoods() (*GetGoodsResponse, error) {
-	// Aggiorna il token se necessario
-	if err := c.RefreshTokenIfNeeded(); err != nil {
-		return nil, fmt.Errorf("errore nel refresh del token: %w", err)
-	}
-
+// GetGoods lists all goods with their quantities
+func (c *Client) GetGoods() (*GetGoodsResponse, error) {
 	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/goods", nil)
 	if err != nil {
 		return nil, err
-	}
-
-	// Aggiungi il token di autorizzazione se disponibile
-	if c.Token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.Token)
 	}
 
 	res := GetGoodsResponse{}
@@ -312,10 +174,8 @@ func (c *APIClient) GetGoods() (*GetGoodsResponse, error) {
 	return &res, nil
 }
 
-// ---- Metodi di supporto ----
-
-// sendRequest invia la richiesta e deserializza la risposta
-func (c *APIClient) sendRequest(req *http.Request, v interface{}) error {
+// sendRequest does the actual request and unmarshals the response
+func (c *Client) sendRequest(req *http.Request, v interface{}) error {
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return err
@@ -328,13 +188,58 @@ func (c *APIClient) sendRequest(req *http.Request, v interface{}) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		// Prova a deserializzare una risposta di errore
+		// Try to unmarshal error response
 		var errorResponse ErrorResponse
 		if err := json.Unmarshal(body, &errorResponse); err == nil {
-			return fmt.Errorf("errore API: %s (codice: %s)", errorResponse.Message, errorResponse.Code)
+			return fmt.Errorf("API error: %s (code: %s)", errorResponse.Message, errorResponse.Code)
 		}
-		return fmt.Errorf("richiesta API fallita con status code %d: %s", resp.StatusCode, body)
+		return fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode, body)
 	}
 
 	return json.Unmarshal(body, v)
+}
+
+// Example application using the client
+func main() {
+	app := fx.New(
+		// Include our API client module
+		Module,
+
+		// Override default config if needed
+		fx.Decorate(func() ClientConfig {
+			return ClientConfig{
+				BaseURL: "https://api.example.com",
+				Timeout: time.Second * 60,
+			}
+		}),
+
+		// Use the client in the application
+		fx.Invoke(func(client *Client) {
+			// Use the client here...
+			ping, err := client.Ping()
+			if err != nil {
+				fmt.Printf("Error pinging API: %v\n", err)
+				return
+			}
+			fmt.Printf("API response: %s\n", ping.Message)
+
+			// Login and use authenticated endpoints
+			auth, err := client.Login("testuser")
+			if err != nil {
+				fmt.Printf("Error logging in: %v\n", err)
+				return
+			}
+			fmt.Printf("Logged in with token: %s\n", auth.Token)
+
+			// Get user role
+			logged, err := client.IsLogged()
+			if err != nil {
+				fmt.Printf("Error checking login: %v\n", err)
+				return
+			}
+			fmt.Printf("User role: %s\n", logged.Role)
+		}),
+	)
+
+	app.Run()
 }
