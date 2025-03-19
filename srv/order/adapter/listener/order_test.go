@@ -8,6 +8,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
+	internalStream "github.com/alimitedgroup/MVP/srv/order/adapter/stream"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
@@ -140,6 +141,113 @@ func TestOrderListenerApplyTransferUpdate(t *testing.T) {
 						resp, err := js.Publish(ctx, "transfer.update", payload)
 						require.NoError(t, err)
 						require.Equal(t, resp.Stream, "transfer_update")
+
+						time.Sleep(100 * time.Millisecond)
+
+						return nil
+					},
+				})
+			}
+		},
+	)
+}
+
+func TestOrderListenerContactWarehousesTransfer(t *testing.T) {
+	ns, _ := broker.NewInProcessNATSServer(t)
+	js, err := jetstream.New(ns)
+	require.NoError(t, err)
+
+	runTestOrderListener(t,
+		func(suite *orderListenerMockSuite) {
+			suite.contactWarehouseUseCaseMock.EXPECT().ContactWarehouses(gomock.Any(), gomock.Any()).Return(port.ContactWarehousesResponse{IsRetry: false}, nil)
+		},
+		func() fx.Option {
+			return fx.Options(fx.Supply(ns))
+		},
+		func() interface{} {
+			return func(lc fx.Lifecycle, r *OrderRouter) {
+				lc.Append(fx.Hook{
+					OnStart: func(ctx context.Context) error {
+						err := r.Setup(ctx)
+						require.NoError(t, err)
+
+						event := internalStream.ContactWarehouses{
+							Order: nil,
+							Transfer: &internalStream.ContactWarehousesTransfer{
+								ID:            "1",
+								Status:        "Created",
+								SenderId:      "1",
+								ReceiverId:    "2",
+								ReservationId: "",
+								CreationTime:  time.Now().UnixMilli(),
+								UpdateTime:    time.Now().UnixMilli(),
+								Goods:         []internalStream.ContactWarehousesGood{{GoodID: "1", Quantity: 1}},
+							},
+							Type:              internalStream.ContactWarehousesTypeTransfer,
+							ExcludeWarehouses: []string{},
+							RetryInTime:       0,
+							RetryUntil:        time.Now().Add(1 * time.Hour).UnixMilli(),
+						}
+						payload, err := json.Marshal(event)
+						require.NoError(t, err)
+
+						resp, err := js.Publish(ctx, "contact.warehouses", payload)
+						require.NoError(t, err)
+						require.Equal(t, resp.Stream, "contact_warehouses")
+
+						time.Sleep(100 * time.Millisecond)
+
+						return nil
+					},
+				})
+			}
+		},
+	)
+}
+
+func TestOrderListenerContactWarehousesOrder(t *testing.T) {
+	ns, _ := broker.NewInProcessNATSServer(t)
+	js, err := jetstream.New(ns)
+	require.NoError(t, err)
+
+	runTestOrderListener(t,
+		func(suite *orderListenerMockSuite) {
+			suite.contactWarehouseUseCaseMock.EXPECT().ContactWarehouses(gomock.Any(), gomock.Any()).Return(port.ContactWarehousesResponse{IsRetry: false}, nil)
+		},
+		func() fx.Option {
+			return fx.Options(fx.Supply(ns))
+		},
+		func() interface{} {
+			return func(lc fx.Lifecycle, r *OrderRouter) {
+				lc.Append(fx.Hook{
+					OnStart: func(ctx context.Context) error {
+						err := r.Setup(ctx)
+						require.NoError(t, err)
+
+						event := internalStream.ContactWarehouses{
+							Transfer: nil,
+							Order: &internalStream.ContactWarehousesOrder{
+								ID:           "1",
+								Status:       "Created",
+								Name:         "Test",
+								FullName:     "Test Test",
+								Address:      "via roma 11",
+								Reservations: []string{},
+								CreationTime: time.Now().UnixMilli(),
+								UpdateTime:   time.Now().UnixMilli(),
+								Goods:        []internalStream.ContactWarehousesGood{{GoodID: "1", Quantity: 1}},
+							},
+							Type:              internalStream.ContactWarehousesTypeOrder,
+							ExcludeWarehouses: []string{},
+							RetryInTime:       0,
+							RetryUntil:        time.Now().Add(1 * time.Hour).UnixMilli(),
+						}
+						payload, err := json.Marshal(event)
+						require.NoError(t, err)
+
+						resp, err := js.Publish(ctx, "contact.warehouses", payload)
+						require.NoError(t, err)
+						require.Equal(t, resp.Stream, "contact_warehouses")
 
 						time.Sleep(100 * time.Millisecond)
 
