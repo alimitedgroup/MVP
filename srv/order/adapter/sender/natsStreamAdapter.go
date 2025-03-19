@@ -225,8 +225,8 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 }
 
 func (a *NatsStreamAdapter) RequestReservation(ctx context.Context, cmd port.RequestReservationCmd) (port.RequestReservationResponse, error) {
-	goods := make([]request.ReserveStockItem, 0, len(cmd.Items))
-	for _, good := range cmd.Items {
+	goods := make([]request.ReserveStockItem, 0, len(cmd.Goods))
+	for _, good := range cmd.Goods {
 		goods = append(goods, request.ReserveStockItem{
 			GoodID:   good.GoodID,
 			Quantity: good.Quantity,

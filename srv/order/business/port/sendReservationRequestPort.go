@@ -10,10 +10,10 @@ type IRequestReservationPort interface {
 
 type RequestReservationCmd struct {
 	WarehouseId string
-	Items       []ReservationItem
+	Goods       []ReservationGood
 }
 
-type ReservationItem struct {
+type ReservationGood struct {
 	GoodID   string
 	Quantity int64
 }

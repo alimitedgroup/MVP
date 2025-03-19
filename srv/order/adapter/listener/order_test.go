@@ -258,3 +258,57 @@ func TestOrderListenerContactWarehousesOrder(t *testing.T) {
 		},
 	)
 }
+
+func TestOrderListenerContactWarehousesOrderWithRetry(t *testing.T) {
+	ns, _ := broker.NewInProcessNATSServer(t)
+	js, err := jetstream.New(ns)
+	require.NoError(t, err)
+
+	runTestOrderListener(t,
+		func(suite *orderListenerMockSuite) {
+			suite.contactWarehouseUseCaseMock.EXPECT().ContactWarehouses(gomock.Any(), gomock.Any()).Return(port.ContactWarehousesResponse{IsRetry: true, RetryAfter: 1 * time.Hour}, nil)
+		},
+		func() fx.Option {
+			return fx.Options(fx.Supply(ns))
+		},
+		func() interface{} {
+			return func(lc fx.Lifecycle, r *OrderRouter) {
+				lc.Append(fx.Hook{
+					OnStart: func(ctx context.Context) error {
+						err := r.Setup(ctx)
+						require.NoError(t, err)
+
+						event := internalStream.ContactWarehouses{
+							Transfer: nil,
+							Order: &internalStream.ContactWarehousesOrder{
+								ID:           "1",
+								Status:       "Created",
+								Name:         "Test",
+								FullName:     "Test Test",
+								Address:      "via roma 11",
+								Reservations: []string{},
+								CreationTime: time.Now().UnixMilli(),
+								UpdateTime:   time.Now().UnixMilli(),
+								Goods:        []internalStream.ContactWarehousesGood{{GoodID: "1", Quantity: 1}},
+							},
+							Type:              internalStream.ContactWarehousesTypeOrder,
+							ExcludeWarehouses: []string{},
+							RetryInTime:       (1 * time.Hour).Milliseconds(),
+							RetryUntil:        time.Now().Add(1 * time.Hour).UnixMilli(),
+						}
+						payload, err := json.Marshal(event)
+						require.NoError(t, err)
+
+						resp, err := js.Publish(ctx, "contact.warehouses", payload)
+						require.NoError(t, err)
+						require.Equal(t, resp.Stream, "contact_warehouses")
+
+						time.Sleep(100 * time.Millisecond)
+
+						return nil
+					},
+				})
+			}
+		},
+	)
+}

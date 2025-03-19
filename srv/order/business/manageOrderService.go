@@ -162,13 +162,13 @@ func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.Con
 }
 
 func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cmd port.ContactWarehousesCmd) (port.ContactWarehousesResponse, error) {
-	items := make([]port.ReservationItem, 0, len(cmd.Transfer.Goods))
+	items := make([]port.ReservationGood, 0, len(cmd.Transfer.Goods))
 	for _, good := range cmd.Transfer.Goods {
-		items = append(items, port.ReservationItem(good))
+		items = append(items, port.ReservationGood(good))
 	}
 	reservCmd := port.RequestReservationCmd{
 		WarehouseId: cmd.Transfer.SenderID,
-		Items:       items,
+		Goods:       items,
 	}
 	reservResp, err := s.requestReservationPort.RequestReservation(ctx, reservCmd)
 	if err != nil {
@@ -380,16 +380,16 @@ func contactCmdToCalculateAvailabilityCmd(cmd port.ContactWarehousesCmd) port.Ca
 }
 
 func warehouseAvailabilityToReservationCmd(warehouse port.WarehouseAvailability) port.RequestReservationCmd {
-	items := make([]port.ReservationItem, 0, len(warehouse.Goods))
+	items := make([]port.ReservationGood, 0, len(warehouse.Goods))
 	for good, stock := range warehouse.Goods {
-		items = append(items, port.ReservationItem{
+		items = append(items, port.ReservationGood{
 			GoodID:   good,
 			Quantity: stock,
 		})
 	}
 	reservCmd := port.RequestReservationCmd{
 		WarehouseId: warehouse.WarehouseID,
-		Items:       items,
+		Goods:       items,
 	}
 	return reservCmd
 }
