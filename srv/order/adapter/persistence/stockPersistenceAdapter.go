@@ -13,12 +13,10 @@ func NewStockPersistanceAdapter(stockRepo IStockRepository) *StockPersistanceAda
 	return &StockPersistanceAdapter{stockRepo}
 }
 
-func (s *StockPersistanceAdapter) ApplyStockUpdate(cmd port.ApplyStockUpdateCmd) error {
+func (s *StockPersistanceAdapter) ApplyStockUpdate(cmd port.ApplyStockUpdateCmd) {
 	for _, good := range cmd.Goods {
 		s.stockRepo.SetStock(cmd.WarehouseID, string(good.ID), good.Quantity)
 	}
-
-	return nil
 }
 
 func (s *StockPersistanceAdapter) GetStock(cmd port.GetStockCmd) (model.GoodStock, error) {

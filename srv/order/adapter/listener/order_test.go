@@ -66,7 +66,7 @@ func TestOrderListenerApplyOrderUpdate(t *testing.T) {
 
 	runTestOrderListener(t,
 		func(suite *orderListenerMockSuite) {
-			suite.applyOrderUpdateUseCaseMock.EXPECT().ApplyOrderUpdate(gomock.Any(), gomock.Any()).Return(nil)
+			suite.applyOrderUpdateUseCaseMock.EXPECT().ApplyOrderUpdate(gomock.Any(), gomock.Any())
 		},
 		func() fx.Option {
 			return fx.Options(fx.Supply(ns))
@@ -113,7 +113,7 @@ func TestOrderListenerApplyTransferUpdate(t *testing.T) {
 
 	runTestOrderListener(t,
 		func(suite *orderListenerMockSuite) {
-			suite.applyTransferUpdateUseCaseMock.EXPECT().ApplyTransferUpdate(gomock.Any(), gomock.Any()).Return(nil)
+			suite.applyTransferUpdateUseCaseMock.EXPECT().ApplyTransferUpdate(gomock.Any(), gomock.Any())
 		},
 		func() fx.Option {
 			return fx.Options(fx.Supply(ns))

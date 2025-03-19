@@ -35,10 +35,10 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 }
 
 func StockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
-	goods := make([]port.StockUpdateCmdGood, 0, len(event.Goods))
+	goods := make([]port.StockUpdateGood, 0, len(event.Goods))
 
 	for _, good := range event.Goods {
-		goods = append(goods, port.StockUpdateCmdGood{
+		goods = append(goods, port.StockUpdateGood{
 			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 			Delta:    good.Delta,

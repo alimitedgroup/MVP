@@ -5,7 +5,7 @@ import (
 )
 
 type IApplyStockUpdatePort interface {
-	ApplyStockUpdate(ApplyStockUpdateCmd) error
+	ApplyStockUpdate(ApplyStockUpdateCmd)
 }
 
 type ApplyStockUpdateCmd struct {

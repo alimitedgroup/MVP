@@ -30,8 +30,7 @@ func TestStockPersistenceAdapterApplyStockUpdate(t *testing.T) {
 			},
 		},
 	}
-	err := adapter.ApplyStockUpdate(cmd)
-	require.NoError(t, err)
+	adapter.ApplyStockUpdate(cmd)
 }
 
 func TestStockPersistenceAdapterGetWarehouses(t *testing.T) {

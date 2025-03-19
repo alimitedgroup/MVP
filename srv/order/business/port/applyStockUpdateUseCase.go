@@ -10,7 +10,7 @@ type StockUpdateCmd struct {
 	ID            string
 	WarehouseID   string
 	Type          StockUpdateCmdType
-	Goods         []StockUpdateCmdGood
+	Goods         []StockUpdateGood
 	OrderID       string
 	TransferID    string
 	ReservationID string
@@ -26,7 +26,7 @@ const (
 	StockUpdateCmdTypeTransfer StockUpdateCmdType = "transfer"
 )
 
-type StockUpdateCmdGood struct {
+type StockUpdateGood struct {
 	GoodID   string
 	Quantity int64
 	Delta    int64

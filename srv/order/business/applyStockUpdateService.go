@@ -52,10 +52,7 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 		WarehouseID: cmd.WarehouseID,
 		Goods:       goods,
 	}
-	err := s.applyStockUpdatePort.ApplyStockUpdate(portCmd)
-	if err != nil {
-		return err
-	}
+	s.applyStockUpdatePort.ApplyStockUpdate(portCmd)
 
 	return nil
 }
