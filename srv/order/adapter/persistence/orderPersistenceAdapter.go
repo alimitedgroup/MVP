@@ -83,14 +83,11 @@ func (s *OrderPersistanceAdapter) GetOrder(orderId model.OrderID) (model.Order, 
 	return modelOrder, nil
 }
 
-func (s *OrderPersistanceAdapter) GetAllOrder() ([]model.Order, error) {
-	orders, err := s.orderRepo.GetOrders()
-	if err != nil {
-		return nil, err
-	}
+func (s *OrderPersistanceAdapter) GetAllOrder() []model.Order {
+	orders := s.orderRepo.GetOrders()
 
 	modelOrder := repoOrdersToModelOrders(orders)
-	return modelOrder, nil
+	return modelOrder
 }
 
 func repoOrderToModelOrder(order Order) model.Order {

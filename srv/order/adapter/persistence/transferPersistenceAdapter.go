@@ -65,14 +65,10 @@ func (s *TransferPersistanceAdapter) GetTransfer(transferId model.TransferID) (m
 	return modelTransfer, nil
 }
 
-func (s *TransferPersistanceAdapter) GetAllTransfer() ([]model.Transfer, error) {
-	transfers, err := s.transferRepo.GetTransfers()
-	if err != nil {
-		return nil, err
-	}
-
+func (s *TransferPersistanceAdapter) GetAllTransfer() []model.Transfer {
+	transfers := s.transferRepo.GetTransfers()
 	modelTransfer := repoTransfersToModelTransfers(transfers)
-	return modelTransfer, nil
+	return modelTransfer
 }
 
 func repoTransferToModelTransfer(transfer Transfer) model.Transfer {

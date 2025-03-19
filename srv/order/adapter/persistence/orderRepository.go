@@ -6,7 +6,7 @@ import (
 
 type IOrderRepository interface {
 	GetOrder(orderId string) (Order, error)
-	GetOrders() ([]Order, error)
+	GetOrders() []Order
 	SetOrder(orderId string, order Order) bool
 	AddCompletedWarehouse(orderId string, warehouseId string, goods map[string]int64) (Order, error)
 	SetComplete(orderId string) error

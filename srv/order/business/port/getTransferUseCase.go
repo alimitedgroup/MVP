@@ -9,7 +9,7 @@ import (
 
 type IGetTransferUseCase interface {
 	GetTransfer(context.Context, string) (model.Transfer, error)
-	GetAllTransfers(context.Context) ([]model.Transfer, error)
+	GetAllTransfers(context.Context) []model.Transfer
 }
 
 var ErrTransferNotFound = errors.New("transfer not found")

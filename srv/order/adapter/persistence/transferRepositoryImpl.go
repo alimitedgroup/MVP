@@ -23,7 +23,7 @@ func (s *TransferRepositoryImpl) GetTransfer(transferId string) (Transfer, error
 	return transfer, nil
 }
 
-func (s *TransferRepositoryImpl) GetTransfers() ([]Transfer, error) {
+func (s *TransferRepositoryImpl) GetTransfers() []Transfer {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -32,7 +32,7 @@ func (s *TransferRepositoryImpl) GetTransfers() ([]Transfer, error) {
 		transfers = append(transfers, transfer)
 	}
 
-	return transfers, nil
+	return transfers
 }
 
 func (s *TransferRepositoryImpl) SetTransfer(transferId string, transfer Transfer) bool {

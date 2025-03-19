@@ -6,7 +6,7 @@ import (
 
 type ITransferRepository interface {
 	GetTransfer(transferId string) (Transfer, error)
-	GetTransfers() ([]Transfer, error)
+	GetTransfers() []Transfer
 	SetTransfer(transferId string, transfer Transfer) bool
 	SetComplete(transferId string) error
 	IncrementLinkedStockUpdate(transferId string) error

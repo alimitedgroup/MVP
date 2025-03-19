@@ -88,10 +88,7 @@ func (c *TransferController) TransferGetHandler(ctx context.Context, msg *nats.M
 }
 
 func (c *TransferController) TransferGetAllHandler(ctx context.Context, msg *nats.Msg) error {
-	transfers, err := c.getTransferUseCase.GetAllTransfers(ctx)
-	if err != nil {
-		return err
-	}
+	transfers := c.getTransferUseCase.GetAllTransfers(ctx)
 
 	transfersDto := make([]response.TransferInfo, 0, len(transfers))
 	for _, transfer := range transfers {

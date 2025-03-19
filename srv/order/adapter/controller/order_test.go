@@ -140,7 +140,7 @@ func TestOrderControllerGetOrder(t *testing.T) {
 				},
 			},
 		},
-	}, nil)
+	})
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 

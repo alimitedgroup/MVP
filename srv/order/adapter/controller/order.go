@@ -124,16 +124,7 @@ func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) er
 }
 
 func (c *OrderController) OrderGetAllHandler(ctx context.Context, msg *nats.Msg) error {
-	orders, err := c.getOrderUseCase.GetAllOrders(ctx)
-	if err != nil {
-		resp := response.ErrorResponseDTO{
-			Error: err.Error(),
-		}
-		if err := broker.RespondToMsg(msg, resp); err != nil {
-			return err
-		}
-	}
-
+	orders := c.getOrderUseCase.GetAllOrders(ctx)
 	respDto := ordersToGetAllGoodResponseDTO(orders)
 	if err := broker.RespondToMsg(msg, respDto); err != nil {
 		return err

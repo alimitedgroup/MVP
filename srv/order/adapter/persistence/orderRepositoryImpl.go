@@ -25,7 +25,7 @@ func (s *OrderRepositoryImpl) GetOrder(orderId string) (Order, error) {
 	return order, nil
 }
 
-func (s *OrderRepositoryImpl) GetOrders() ([]Order, error) {
+func (s *OrderRepositoryImpl) GetOrders() []Order {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -34,7 +34,7 @@ func (s *OrderRepositoryImpl) GetOrders() ([]Order, error) {
 		orders = append(orders, order)
 	}
 
-	return orders, nil
+	return orders
 }
 
 func (s *OrderRepositoryImpl) SetOrder(orderId string, order Order) bool {

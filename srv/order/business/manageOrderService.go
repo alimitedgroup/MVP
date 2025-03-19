@@ -112,13 +112,9 @@ func (s *ManageOrderService) GetOrder(ctx context.Context, orderId string) (mode
 	return order, nil
 }
 
-func (s *ManageOrderService) GetAllOrders(ctx context.Context) ([]model.Order, error) {
-	orders, err := s.getOrderPort.GetAllOrder()
-	if err != nil {
-		return nil, err
-	}
-
-	return orders, nil
+func (s *ManageOrderService) GetAllOrders(ctx context.Context) []model.Order {
+	orders := s.getOrderPort.GetAllOrder()
+	return orders
 }
 
 func (s *ManageOrderService) GetTransfer(ctx context.Context, transferId string) (model.Transfer, error) {
@@ -130,13 +126,9 @@ func (s *ManageOrderService) GetTransfer(ctx context.Context, transferId string)
 	return transfer, nil
 }
 
-func (s *ManageOrderService) GetAllTransfers(ctx context.Context) ([]model.Transfer, error) {
-	transfers, err := s.getTransferPort.GetAllTransfer()
-	if err != nil {
-		return nil, err
-	}
-
-	return transfers, nil
+func (s *ManageOrderService) GetAllTransfers(ctx context.Context) []model.Transfer {
+	transfers := s.getTransferPort.GetAllTransfer()
+	return transfers
 }
 
 func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) (port.ContactWarehousesResponse, error) {
