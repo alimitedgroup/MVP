@@ -22,10 +22,7 @@ func (s Subject) String() string {
 
 type RequestHandler func(context.Context, *nats.Msg) error
 
-const ApiGatewayQueue Queue = "api_gateway"
 const NoQueue Queue = ""
-
-var StockUpdateSubject Subject = "stock.update"
 
 type JsHandler func(context.Context, jetstream.Msg) error
 

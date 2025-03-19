@@ -1,0 +1,152 @@
+package listener
+
+import (
+	"context"
+	"encoding/json"
+	"testing"
+	"time"
+
+	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/stream"
+	"github.com/alimitedgroup/MVP/srv/order/business/port"
+	"github.com/nats-io/nats.go/jetstream"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/fx"
+	gomock "go.uber.org/mock/gomock"
+)
+
+type orderListenerMockSuite struct {
+	applyOrderUpdateUseCaseMock    *MockIApplyOrderUpdateUseCase
+	applyTransferUpdateUseCaseMock *MockIApplyTransferUpdateUseCase
+	contactWarehouseUseCaseMock    *MockIContactWarehousesUseCase
+}
+
+func NewOrderListenerMockSuite(t *testing.T) *orderListenerMockSuite {
+	ctrl := gomock.NewController(t)
+
+	return &orderListenerMockSuite{
+		applyOrderUpdateUseCaseMock:    NewMockIApplyOrderUpdateUseCase(ctrl),
+		applyTransferUpdateUseCaseMock: NewMockIApplyTransferUpdateUseCase(ctrl),
+		contactWarehouseUseCaseMock:    NewMockIContactWarehousesUseCase(ctrl),
+	}
+}
+
+func runTestOrderListener(t *testing.T, build func(*orderListenerMockSuite), buildOptions func() fx.Option, runLifeCycle func() interface{}) {
+	ctx := t.Context()
+	suite := NewOrderListenerMockSuite(t)
+
+	build(suite)
+
+	app := fx.New(
+		fx.Supply(fx.Annotate(suite.applyOrderUpdateUseCaseMock, fx.As(new(port.IApplyOrderUpdateUseCase)))),
+		fx.Supply(fx.Annotate(suite.applyTransferUpdateUseCaseMock, fx.As(new(port.IApplyTransferUpdateUseCase)))),
+		fx.Supply(fx.Annotate(suite.contactWarehouseUseCaseMock, fx.As(new(port.IContactWarehousesUseCase)))),
+		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(NewOrderListener),
+		fx.Provide(NewOrderRouter),
+		fx.Invoke(runLifeCycle()),
+		buildOptions(),
+	)
+
+	err := app.Start(ctx)
+	require.NoError(t, err)
+
+	defer func() {
+		err := app.Stop(ctx)
+		require.NoError(t, err)
+	}()
+}
+
+func TestOrderListenerApplyOrderUpdate(t *testing.T) {
+	ns, _ := broker.NewInProcessNATSServer(t)
+	js, err := jetstream.New(ns)
+	require.NoError(t, err)
+
+	runTestOrderListener(t,
+		func(suite *orderListenerMockSuite) {
+			suite.applyOrderUpdateUseCaseMock.EXPECT().ApplyOrderUpdate(gomock.Any(), gomock.Any()).Return(nil)
+		},
+		func() fx.Option {
+			return fx.Options(fx.Supply(ns))
+		},
+		func() interface{} {
+			return func(lc fx.Lifecycle, r *OrderRouter) {
+				lc.Append(fx.Hook{
+					OnStart: func(ctx context.Context) error {
+						err := r.Setup(ctx)
+						require.NoError(t, err)
+
+						event := stream.OrderUpdate{
+							ID:           "1",
+							Status:       "Created",
+							Name:         "Test",
+							FullName:     "Test Test",
+							Address:      "via roma 11",
+							Reservations: []string{},
+							CreationTime: time.Now().UnixMilli(),
+							UpdateTime:   time.Now().UnixMilli(),
+							Goods:        []stream.OrderUpdateGood{{GoodID: "1", Quantity: 1}},
+						}
+						payload, err := json.Marshal(event)
+						require.NoError(t, err)
+
+						resp, err := js.Publish(ctx, "order.update", payload)
+						require.NoError(t, err)
+						require.Equal(t, resp.Stream, "order_update")
+
+						time.Sleep(100 * time.Millisecond)
+
+						return nil
+					},
+				})
+			}
+		},
+	)
+}
+
+func TestOrderListenerApplyTransferUpdate(t *testing.T) {
+	ns, _ := broker.NewInProcessNATSServer(t)
+	js, err := jetstream.New(ns)
+	require.NoError(t, err)
+
+	runTestOrderListener(t,
+		func(suite *orderListenerMockSuite) {
+			suite.applyTransferUpdateUseCaseMock.EXPECT().ApplyTransferUpdate(gomock.Any(), gomock.Any()).Return(nil)
+		},
+		func() fx.Option {
+			return fx.Options(fx.Supply(ns))
+		},
+		func() interface{} {
+			return func(lc fx.Lifecycle, r *OrderRouter) {
+				lc.Append(fx.Hook{
+					OnStart: func(ctx context.Context) error {
+						err := r.Setup(ctx)
+						require.NoError(t, err)
+
+						event := stream.TransferUpdate{
+							ID:            "1",
+							Status:        "Created",
+							SenderID:      "1",
+							ReceiverID:    "2",
+							ReservationId: "",
+							CreationTime:  time.Now().UnixMilli(),
+							UpdateTime:    time.Now().UnixMilli(),
+							Goods:         []stream.TransferUpdateGood{{GoodID: "1", Quantity: 1}},
+						}
+						payload, err := json.Marshal(event)
+						require.NoError(t, err)
+
+						resp, err := js.Publish(ctx, "transfer.update", payload)
+						require.NoError(t, err)
+						require.Equal(t, resp.Stream, "transfer_update")
+
+						time.Sleep(100 * time.Millisecond)
+
+						return nil
+					},
+				})
+			}
+		},
+	)
+}
