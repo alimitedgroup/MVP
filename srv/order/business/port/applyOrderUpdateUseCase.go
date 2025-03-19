@@ -3,7 +3,7 @@ package port
 import "context"
 
 type IApplyOrderUpdateUseCase interface {
-	ApplyOrderUpdate(context.Context, OrderUpdateCmd) error
+	ApplyOrderUpdate(context.Context, OrderUpdateCmd)
 }
 
 type OrderUpdateCmd struct {

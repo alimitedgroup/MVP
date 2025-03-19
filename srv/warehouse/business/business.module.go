@@ -5,7 +5,7 @@ import (
 	"go.uber.org/fx"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@latest  -destination=mock_business.go -package=business github.com/alimitedgroup/MVP/srv/warehouse/business/port IApplyReservationEventPort,IApplyCatalogUpdatePort,IApplyStockUpdatePort,IStoreReservationEventPort,ICreateStockUpdatePort,IGetReservationPort,IGetGoodPort,IGetStockPort,IIdempotentPort
+//go:generate go run go.uber.org/mock/mockgen@latest -destination=mock_business.go -package=business github.com/alimitedgroup/MVP/srv/warehouse/business/port IApplyReservationEventPort,IApplyCatalogUpdatePort,IApplyStockUpdatePort,IStoreReservationEventPort,ICreateStockUpdatePort,IGetReservationPort,IGetGoodPort,IGetStockPort,IIdempotentPort
 
 var Module = fx.Options(
 	fx.Provide(fx.Annotate(NewApplyStockUpdateService, fx.As(new(port.IApplyStockUpdateUseCase)))),

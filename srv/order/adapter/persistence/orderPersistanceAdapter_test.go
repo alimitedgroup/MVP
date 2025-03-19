@@ -38,8 +38,7 @@ func TestOrderPersistenceAdapterApplyOrderUpdate(t *testing.T) {
 			},
 		},
 	}
-	err := adapter.ApplyOrderUpdate(cmd)
-	require.NoError(t, err)
+	adapter.ApplyOrderUpdate(cmd)
 }
 
 func TestOrderPersistenceAdapterGetOrderExist(t *testing.T) {

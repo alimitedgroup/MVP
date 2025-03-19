@@ -5,7 +5,7 @@ import (
 )
 
 type IApplyTransferUpdatePort interface {
-	ApplyTransferUpdate(ApplyTransferUpdateCmd) error
+	ApplyTransferUpdate(ApplyTransferUpdateCmd)
 }
 
 type ApplyTransferUpdateCmd struct {

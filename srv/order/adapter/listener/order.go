@@ -28,9 +28,7 @@ func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg
 	}
 
 	cmd := orderUpdateEventToApplyOrderUpdateCmd(event)
-	if err := l.applyOrderUpdateUseCase.ApplyOrderUpdate(ctx, cmd); err != nil {
-		return err
-	}
+	l.applyOrderUpdateUseCase.ApplyOrderUpdate(ctx, cmd)
 
 	return nil
 }
@@ -42,9 +40,7 @@ func (l *OrderListener) ListenTransferUpdate(ctx context.Context, msg jetstream.
 	}
 
 	cmd := transferUpdateEventToApplyTransferUpdateCmd(event)
-	if err := l.applyTransferUpdateUseCase.ApplyTransferUpdate(ctx, cmd); err != nil {
-		return err
-	}
+	l.applyTransferUpdateUseCase.ApplyTransferUpdate(ctx, cmd)
 
 	return nil
 }

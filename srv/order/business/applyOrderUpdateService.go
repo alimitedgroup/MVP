@@ -16,22 +16,14 @@ func NewApplyOrderUpdateService(applyOrderUpdatePort port.IApplyOrderUpdatePort,
 	return &ApplyOrderUpdateService{applyOrderUpdatePort, applyTransferUpdatePort}
 }
 
-func (s *ApplyOrderUpdateService) ApplyOrderUpdate(ctx context.Context, cmd port.OrderUpdateCmd) error {
+func (s *ApplyOrderUpdateService) ApplyOrderUpdate(ctx context.Context, cmd port.OrderUpdateCmd) {
 	portCmd := orderUpdateCmdToApplyOrderUpdateCmd(cmd)
-	if err := s.applyOrderUpdatePort.ApplyOrderUpdate(portCmd); err != nil {
-		return err
-	}
-
-	return nil
+	s.applyOrderUpdatePort.ApplyOrderUpdate(portCmd)
 }
 
-func (s *ApplyOrderUpdateService) ApplyTransferUpdate(ctx context.Context, cmd port.TransferUpdateCmd) error {
+func (s *ApplyOrderUpdateService) ApplyTransferUpdate(ctx context.Context, cmd port.TransferUpdateCmd) {
 	portCmd := transferUpdateCmdToApplyTransferUpdateCmd(cmd)
-	if err := s.applyTransferUpdatePort.ApplyTransferUpdate(portCmd); err != nil {
-		return err
-	}
-
-	return nil
+	s.applyTransferUpdatePort.ApplyTransferUpdate(portCmd)
 }
 
 func orderUpdateCmdToApplyOrderUpdateCmd(cmd port.OrderUpdateCmd) port.ApplyOrderUpdateCmd {

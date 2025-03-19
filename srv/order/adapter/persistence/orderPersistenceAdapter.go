@@ -40,7 +40,7 @@ func (s *OrderPersistanceAdapter) SetComplete(orderId model.OrderID) error {
 	return nil
 }
 
-func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd) error {
+func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd) {
 	var warehouses []OrderWarehouseUsed
 	if old, err := s.orderRepo.GetOrder(string(cmd.Id)); err == nil {
 		warehouses = old.Warehouses
@@ -70,7 +70,6 @@ func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd)
 	}
 
 	s.orderRepo.SetOrder(cmd.Id, order)
-	return nil
 }
 
 func (s *OrderPersistanceAdapter) GetOrder(orderId model.OrderID) (model.Order, error) {

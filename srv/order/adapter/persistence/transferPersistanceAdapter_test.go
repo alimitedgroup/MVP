@@ -37,8 +37,7 @@ func TestTransferPersistenceAdapterApplyTransferUpdate(t *testing.T) {
 			},
 		},
 	}
-	err := adapter.ApplyTransferUpdate(cmd)
-	require.NoError(t, err)
+	adapter.ApplyTransferUpdate(cmd)
 }
 
 func TestTransferPersistenceAdapterGetTransferExist(t *testing.T) {

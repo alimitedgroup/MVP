@@ -3,7 +3,7 @@ package port
 import "context"
 
 type IApplyTransferUpdateUseCase interface {
-	ApplyTransferUpdate(context.Context, TransferUpdateCmd) error
+	ApplyTransferUpdate(context.Context, TransferUpdateCmd)
 }
 
 type TransferUpdateCmd struct {

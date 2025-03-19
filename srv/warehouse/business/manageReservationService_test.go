@@ -21,7 +21,7 @@ type manageReservationServiceMockSuite struct {
 	idempotentPortMock        *MockIIdempotentPort
 }
 
-func NewManageReservationServiceMockSuite(t *testing.T) *manageReservationServiceMockSuite {
+func newManageReservationServiceMockSuite(t *testing.T) *manageReservationServiceMockSuite {
 	ctrl := gomock.NewController(t)
 
 	return &manageReservationServiceMockSuite{
@@ -36,7 +36,7 @@ func NewManageReservationServiceMockSuite(t *testing.T) *manageReservationServic
 
 func runTestManageReservationService(t *testing.T, build func(*manageReservationServiceMockSuite), buildOptions func() fx.Option, runLifeCycle func() interface{}) {
 	ctx := t.Context()
-	suite := NewManageReservationServiceMockSuite(t)
+	suite := newManageReservationServiceMockSuite(t)
 
 	cfg := config.WarehouseConfig{ID: "1"}
 

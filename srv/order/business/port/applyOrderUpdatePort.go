@@ -5,7 +5,7 @@ import (
 )
 
 type IApplyOrderUpdatePort interface {
-	ApplyOrderUpdate(ApplyOrderUpdateCmd) error
+	ApplyOrderUpdate(ApplyOrderUpdateCmd)
 }
 
 type ApplyOrderUpdateCmd struct {
