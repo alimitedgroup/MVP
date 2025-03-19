@@ -188,10 +188,15 @@ func TestNatsStreamAdapterRequestReservation(t *testing.T) {
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 
-	ns.Subscribe("warehouse.1.reservation.create", func(msg *nats.Msg) {
+	sub, err := ns.Subscribe("warehouse.1.reservation.create", func(msg *nats.Msg) {
 		err := msg.Respond([]byte(`{"message": {"reservation_id":"1"}}`))
 		require.NoError(t, err)
 	})
+	require.NoError(t, err)
+	defer func() {
+		err := sub.Unsubscribe()
+		require.NoError(t, err)
+	}()
 
 	broker, err := broker.NewNatsMessageBroker(ns)
 	require.NoError(t, err)
