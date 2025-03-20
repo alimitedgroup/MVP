@@ -95,3 +95,152 @@ func TestManageOrderServiceGetAllTransfers(t *testing.T) {
 	)
 
 }
+
+func TestManageOrderServiceGetTransfer(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).Return(model.Transfer{
+
+				Id:                "1",
+				SenderId:          "1",
+				ReceiverId:        "2",
+				Status:            "Created",
+				UpdateTime:        0,
+				CreationTime:      0,
+				LinkedStockUpdate: 0,
+				ReservationID:     "",
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				transfer, err := service.GetTransfer(ctx, "1")
+				require.NoError(t, err)
+				require.Equal(t, transfer.Id, model.TransferID("1"))
+			}
+		},
+	)
+
+}
+
+func TestManageOrderServiceGetAllOrders(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.getOrderPort.EXPECT().GetAllOrder().Return([]model.Order{
+				{
+					Id:           "1",
+					Name:         "order 1",
+					FullName:     "test test",
+					Address:      "via roma 1",
+					Status:       "Created",
+					UpdateTime:   0,
+					CreationTime: 0,
+					Reservations: []string{},
+					Warehouses:   []model.OrderWarehouseUsed{},
+					Goods: []model.GoodStock{
+						{
+							ID:       "1",
+							Quantity: 1,
+						},
+					},
+				},
+			})
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				orders := service.GetAllOrders(ctx)
+				require.Len(t, orders, 1)
+			}
+		},
+	)
+
+}
+
+func TestManageOrderServiceGetOrder(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.getOrderPort.EXPECT().GetOrder(gomock.Any()).Return(model.Order{
+				Id:           "1",
+				Status:       "Created",
+				UpdateTime:   0,
+				CreationTime: 0,
+				Name:         "order 1",
+				FullName:     "test test",
+				Address:      "via roma 1",
+				Reservations: []string{},
+				Warehouses:   []model.OrderWarehouseUsed{},
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				order, err := service.GetOrder(ctx, "1")
+				require.NoError(t, err)
+				require.Equal(t, order.Id, model.OrderID("1"))
+			}
+		},
+	)
+
+}
+
+func TestManageOrderServiceCreateOrder(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.sendOrderUpdatePort.EXPECT().SendOrderUpdate(gomock.Any(), gomock.Any()).Return(model.Order{
+				Id:           "1",
+				Status:       "Created",
+				UpdateTime:   0,
+				CreationTime: 0,
+				Name:         "order 1",
+				FullName:     "test test",
+				Address:      "via roma 1",
+				Reservations: []string{},
+				Warehouses:   []model.OrderWarehouseUsed{},
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+			suite.sendContactWarehousePort.EXPECT().SendContactWarehouses(gomock.Any(), gomock.Any()).Return(nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				cmd := port.CreateOrderCmd{
+					Name:     "order 1",
+					FullName: "test test",
+					Address:  "via roma 1",
+					Goods: []port.CreateOrderGood{
+						{
+							GoodID:   "1",
+							Quantity: 1,
+						},
+					},
+				}
+				resp, err := service.CreateOrder(ctx, cmd)
+				require.NoError(t, err)
+				require.NotEmpty(t, resp.OrderID)
+			}
+		},
+	)
+
+}
