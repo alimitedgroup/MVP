@@ -315,9 +315,23 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 		func() interface{} {
 			return func(service *ManageOrderService) {
 				cmd := port.ContactWarehousesCmd{
-					Type:                  port.ContactWarehousesTypeTransfer,
-					Order:                 nil,
-					Transfer:              &port.ContactWarehousesTransfer{},
+					Type:  port.ContactWarehousesTypeTransfer,
+					Order: nil,
+					Transfer: &port.ContactWarehousesTransfer{
+						ID:         "1",
+						SenderID:   "1",
+						ReceiverID: "2",
+						Status:     "Created",
+						Goods: []port.ContactWarehousesGood{
+							{
+								GoodID:   "1",
+								Quantity: 1,
+							},
+						},
+						UpdateTime:    0,
+						CreationTime:  0,
+						ReservationId: "",
+					},
 					RetryUntil:            0,
 					RetryInTime:           0,
 					ExcludeWarehouses:     []string{},
