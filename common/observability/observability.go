@@ -6,8 +6,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/thessem/zap-prettyconsole"
 	"go.opentelemetry.io/contrib/bridges/otelzap"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/fx"
@@ -19,6 +23,7 @@ import (
 	"regexp"
 	"runtime/debug"
 	"strings"
+	"time"
 )
 
 func getBuildInfo() (string, string) {
@@ -80,7 +85,7 @@ func getLogLevel() zapcore.Level {
 }
 
 func setupZap(level zapcore.Level) *zap.Logger {
-	otel := otelzap.NewCore("core_name")
+	otelemetry := otelzap.NewCore("core_name")
 
 	stderr := zapcore.NewCore(
 		prettyconsole.NewEncoder(prettyconsole.NewEncoderConfig()),
@@ -88,7 +93,7 @@ func setupZap(level zapcore.Level) *zap.Logger {
 		level,
 	)
 
-	return zap.New(zapcore.NewTee(stderr, otel))
+	return zap.New(zapcore.NewTee(stderr, otelemetry))
 }
 
 func setupOtel(otlpUrl string, tempLogger *zap.Logger) func(context.Context) error {
@@ -120,16 +125,28 @@ func setupOtel(otlpUrl string, tempLogger *zap.Logger) func(context.Context) err
 		)
 	}
 
-	// Log exporter
-	exp, err := otlploggrpc.New(ctx, otlploggrpc.WithGRPCConn(conn))
+	// Logs
+	logExporter, err := otlploggrpc.New(ctx, otlploggrpc.WithGRPCConn(conn))
 	if err != nil {
 		tempLogger.Fatal("Failed to create log exporter", zap.Error(err))
 	}
-	processor := log.NewBatchProcessor(exp)
+	logProcessor := log.NewBatchProcessor(logExporter)
 	logProvider := log.NewLoggerProvider(
 		log.WithResource(res),
-		log.WithProcessor(processor),
+		log.WithProcessor(logProcessor),
 	)
+	global.SetLoggerProvider(logProvider)
+
+	// Metrics
+	metricsExporter, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithGRPCConn(conn))
+	if err != nil {
+		tempLogger.Fatal("Failed to create metric exporter", zap.Error(err))
+	}
+	meterProvider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(res),
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricsExporter, sdkmetric.WithInterval(15*time.Second))),
+	)
+	otel.SetMeterProvider(meterProvider)
 
 	return func(ctx context.Context) error {
 		return logProvider.Shutdown(ctx)
