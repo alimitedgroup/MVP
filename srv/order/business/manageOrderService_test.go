@@ -1,7 +1,9 @@
 package business
 
 import (
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
@@ -307,7 +309,6 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 					},
 				},
 			}, nil)
-			// suite.sendContactWarehousePort.EXPECT().SendContactWarehouses(gomock.Any(), gomock.Any()).Return(nil)
 			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{Id: "1"}, nil)
 		},
 		func() fx.Option { return fx.Options() },
@@ -319,6 +320,164 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 					Transfer:              &port.ContactWarehousesTransfer{},
 					RetryUntil:            0,
 					RetryInTime:           0,
+					ExcludeWarehouses:     []string{},
+					ConfirmedReservations: []port.ConfirmedReservation{},
+				}
+				resp, err := service.ContactWarehouses(ctx, cmd)
+				require.NoError(t, err)
+				require.False(t, resp.IsRetry)
+			}
+		},
+	)
+}
+
+func TestManageOrderServiceContactWarehouseTransferRetryLater(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{}, errors.New("connection error"))
+			suite.sendContactWarehousePort.EXPECT().SendContactWarehouses(gomock.Any(), gomock.Any()).Return(nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				cmd := port.ContactWarehousesCmd{
+					Type:  port.ContactWarehousesTypeTransfer,
+					Order: nil,
+					Transfer: &port.ContactWarehousesTransfer{
+						ID:         "1",
+						SenderID:   "1",
+						ReceiverID: "2",
+						Status:     "Created",
+						Goods: []port.ContactWarehousesGood{
+							{
+								GoodID:   "1",
+								Quantity: 1,
+							},
+						},
+						UpdateTime:   0,
+						CreationTime: 0,
+					},
+					RetryUntil:            time.Now().Add(time.Hour).UnixMilli(),
+					RetryInTime:           (time.Minute * 2).Milliseconds(),
+					ExcludeWarehouses:     []string{},
+					ConfirmedReservations: []port.ConfirmedReservation{},
+				}
+				resp, err := service.ContactWarehouses(ctx, cmd)
+				require.NoError(t, err)
+				require.False(t, resp.IsRetry)
+			}
+		},
+	)
+}
+
+func TestManageOrderServiceContactWarehouseOrder(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.calculateAvailabilityUseCase.EXPECT().GetAvailable(gomock.Any(), gomock.Any()).Return(
+				port.CalculateAvailabilityResponse{
+					Warehouses: []port.WarehouseAvailability{
+						{
+							WarehouseID: "1",
+							Goods:       map[string]int64{"1": 1},
+						},
+					},
+				}, nil)
+			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{Id: "1"}, nil)
+			suite.sendOrderUpdatePort.EXPECT().SendOrderUpdate(gomock.Any(), gomock.Any()).Return(model.Order{
+				Id:           "1",
+				Status:       "Filled",
+				Name:         "order 1",
+				FullName:     "test test",
+				Address:      "via roma 1",
+				Reservations: []string{"1"},
+				Warehouses:   []model.OrderWarehouseUsed{},
+				UpdateTime:   0,
+				CreationTime: 0,
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				cmd := port.ContactWarehousesCmd{
+					Type: port.ContactWarehousesTypeOrder,
+					Order: &port.ContactWarehousesOrder{
+						ID:           "1",
+						Status:       "Created",
+						Name:         "order 1",
+						FullName:     "test test",
+						Address:      "via roma 1",
+						Reservations: []string{},
+						Goods: []port.ContactWarehousesGood{
+							{
+								GoodID:   "1",
+								Quantity: 1,
+							},
+						},
+						UpdateTime:   0,
+						CreationTime: 0,
+					},
+					Transfer:              nil,
+					RetryUntil:            0,
+					RetryInTime:           0,
+					ExcludeWarehouses:     []string{},
+					ConfirmedReservations: []port.ConfirmedReservation{},
+				}
+				resp, err := service.ContactWarehouses(ctx, cmd)
+				require.NoError(t, err)
+				require.False(t, resp.IsRetry)
+			}
+		},
+	)
+}
+
+func TestManageOrderServiceContactWarehouseOrderRetryLater(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.calculateAvailabilityUseCase.EXPECT().GetAvailable(gomock.Any(), gomock.Any()).Return(
+				port.CalculateAvailabilityResponse{
+					Warehouses: []port.WarehouseAvailability{
+						{
+							WarehouseID: "1",
+							Goods:       map[string]int64{"1": 1},
+						},
+					},
+				}, nil)
+			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{}, errors.New("connectio error"))
+			suite.sendContactWarehousePort.EXPECT().SendContactWarehouses(gomock.Any(), gomock.Any()).Return(nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				cmd := port.ContactWarehousesCmd{
+					Type: port.ContactWarehousesTypeOrder,
+					Order: &port.ContactWarehousesOrder{
+						ID:           "1",
+						Status:       "Created",
+						Name:         "order 1",
+						FullName:     "test test",
+						Address:      "via roma 1",
+						Reservations: []string{},
+						Goods: []port.ContactWarehousesGood{
+							{
+								GoodID:   "1",
+								Quantity: 1,
+							},
+						},
+						UpdateTime:   0,
+						CreationTime: 0,
+					},
+					Transfer:              nil,
+					RetryUntil:            time.Now().Add(time.Hour).UnixMilli(),
+					RetryInTime:           (time.Minute * 2).Milliseconds(),
 					ExcludeWarehouses:     []string{},
 					ConfirmedReservations: []port.ConfirmedReservation{},
 				}
