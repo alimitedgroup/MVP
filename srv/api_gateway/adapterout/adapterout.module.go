@@ -2,4 +2,4 @@ package adapterout
 
 import "go.uber.org/fx"
 
-var Module = fx.Module("adapterout", fx.Provide(NewAuthenticationAdapter))
+var Module = fx.Module("adapterout", fx.Provide(NewAuthenticationAdapter), fx.Provide(NewCatalogAdapter))
