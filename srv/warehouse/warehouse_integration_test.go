@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap/zaptest"
 	"log"
 	"testing"
 	"time"
@@ -52,11 +53,12 @@ func IntegrationTest(t *testing.T, testFunc any) {
 	}
 
 	app := fx.New(
+		Module,
 		fx.Supply(&cfg),
 		fx.Supply(&p),
 		fx.Supply(ns),
-		Module,
 		fx.Invoke(testFunc),
+		fx.Supply(zaptest.NewLogger(t)),
 	)
 	err = app.Start(ctx)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
 
@@ -23,6 +24,7 @@ func TestHealthCheckController(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewHealthCheckController),
 		fx.Provide(NewHealthCheckRouter),

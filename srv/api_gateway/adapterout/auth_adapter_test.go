@@ -10,18 +10,20 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
 )
 
 func createAuthAdapter(t *testing.T, nc *nats.Conn) portout.AuthenticationPortOut {
-	brk, err := broker.NewNatsMessageBroker(nc)
+	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
 	require.NoError(t, err)
 	return NewAuthenticationAdapter(brk)
 }
 
 func startAuthMock(t *testing.T, nc *nats.Conn, issuer string) func() {
 	app := fx.New(
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Supply(issuer),
 		fx.Supply(nc),
 		fx.Supply(DefaultUsers),

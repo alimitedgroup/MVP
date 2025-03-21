@@ -11,6 +11,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	"go.uber.org/zap/zaptest"
 	"testing"
 )
 
@@ -23,6 +24,7 @@ func startCatalog(t *testing.T, nc *nats.Conn) {
 		service.Module,
 		fx.Supply(nc),
 		fx.Invoke(Run),
+		fx.Supply(zaptest.NewLogger(t)),
 	)
 
 	err := catalogSvc.Start(context.Background())
@@ -38,7 +40,7 @@ func TestListGoods(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 	startCatalog(t, nc)
 
-	brk, err := broker.NewNatsMessageBroker(nc)
+	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
 	require.NoError(t, err)
 	catalog := NewCatalogAdapter(brk)
 
@@ -50,7 +52,7 @@ func TestListStock(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 	startCatalog(t, nc)
 
-	brk, err := broker.NewNatsMessageBroker(nc)
+	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
 	require.NoError(t, err)
 	catalog := NewCatalogAdapter(brk)
 
@@ -62,7 +64,7 @@ func TestListWarehouses(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 	startCatalog(t, nc)
 
-	brk, err := broker.NewNatsMessageBroker(nc)
+	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
 	require.NoError(t, err)
 	catalog := NewCatalogAdapter(brk)
 

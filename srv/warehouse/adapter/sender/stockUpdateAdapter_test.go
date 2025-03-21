@@ -2,6 +2,7 @@ package sender
 
 import (
 	"context"
+	"go.uber.org/zap/zaptest"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -34,6 +35,7 @@ func TestStockUpdateAdapter(t *testing.T) {
 	app := fx.New(
 		fx.Supply(ns),
 		fx.Supply(cfg),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewPublishStockUpdateAdapter),
 		fx.Invoke(func(lc fx.Lifecycle, a *PublishStockUpdateAdapter) {

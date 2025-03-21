@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 	"net"
 	"testing"
 	"time"
@@ -37,6 +38,7 @@ func start(t *testing.T) startResult {
 
 	app := fx.New(
 		Module,
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Supply(
 			fx.Annotate(mock, fx.As(new(portin.Auth))),

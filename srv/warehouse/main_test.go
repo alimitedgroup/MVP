@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go.uber.org/zap/zaptest"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -18,6 +19,7 @@ func TestRunWithBadConfigParams(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(&cfg),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Supply(brokerRouter.BrokerRoutes{}),
 		fx.Provide(broker.NewNatsConn),
 		fx.Provide(broker.NewNatsMessageBroker),

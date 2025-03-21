@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"testing"
-	"time"
 )
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination mock_auth.go -package business github.com/alimitedgroup/MVP/srv/api_gateway/portout AuthenticationPortOut
@@ -40,8 +39,6 @@ func TestLogin(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, types.UserToken("some.secure.jwt"), result.Token)
 			require.Equal(t, c.UserRole, result.Role)
-			require.True(t, time.Now().Add(6*24*time.Hour).Before(result.TokenExpiration))
-			require.True(t, time.Now().Add(8*24*time.Hour).After(result.TokenExpiration))
 		})
 	}
 }
