@@ -1,12 +1,14 @@
 package adapterin
 
 import (
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Module(
 	"adapterin",
+	fx.Decorate(observability.WrapLogger("adapterin")),
 	fx.Provide(NewHTTPHandler),
 	fx.Provide(AsController(NewHealthCheckController)),
 	fx.Provide(AsController(NewLoginController)),
