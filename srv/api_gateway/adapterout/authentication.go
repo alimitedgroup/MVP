@@ -14,12 +14,17 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
-	"log/slog"
+	"go.uber.org/zap"
 	"time"
 )
 
+func NewAuthenticationAdapter(broker *broker.NatsMessageBroker, logger *zap.Logger) portout.AuthenticationPortOut {
+	return &AuthenticationAdapter{Broker: broker, Logger: logger}
+}
+
 type AuthenticationAdapter struct {
 	Broker *broker.NatsMessageBroker
+	*zap.Logger
 }
 
 func (aa *AuthenticationAdapter) GetToken(username string) (types.UserToken, error) {
@@ -84,6 +89,7 @@ func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.Parse
 	parsed, err := jwt.Parse(string(token), func(token *jwt.Token) (interface{}, error) {
 		iss, err := token.Claims.GetIssuer()
 		if err != nil {
+			aa.Error("Failed to get JWT issuer", zap.Error(err))
 			return nil, portout.ErrTokenInvalid
 		}
 		if iss == "" {
@@ -92,7 +98,7 @@ func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.Parse
 
 		key, err := getValidationKey(context.TODO(), aa, iss)
 		if err != nil {
-			slog.Error("Error getting JWT validation key", "error", err)
+			aa.Error("Error getting JWT validation key", zap.Error(err))
 			return nil, portout.ErrTokenInvalid
 		}
 
@@ -100,7 +106,7 @@ func (aa *AuthenticationAdapter) VerifyToken(token types.UserToken) (types.Parse
 	}, jwt.WithValidMethods([]string{"ES256"}))
 	if err != nil {
 		if !errors.Is(err, jwt.ErrTokenSignatureInvalid) {
-			slog.Error("Error parsing token", "error", err)
+			aa.Error("Error parsing token", zap.Error(err))
 		}
 
 		if errors.Is(err, jwt.ErrTokenExpired) {
@@ -143,8 +149,4 @@ func getValidationKey(ctx context.Context, aa *AuthenticationAdapter, issuer str
 	}
 
 	return &key, nil
-}
-
-func NewAuthenticationAdapter(broker *broker.NatsMessageBroker) portout.AuthenticationPortOut {
-	return &AuthenticationAdapter{Broker: broker}
 }

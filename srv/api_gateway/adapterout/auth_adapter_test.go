@@ -18,7 +18,7 @@ import (
 func createAuthAdapter(t *testing.T, nc *nats.Conn) portout.AuthenticationPortOut {
 	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
 	require.NoError(t, err)
-	return NewAuthenticationAdapter(brk)
+	return NewAuthenticationAdapter(brk, zaptest.NewLogger(t))
 }
 
 func startAuthMock(t *testing.T, nc *nats.Conn, issuer string) func() {
