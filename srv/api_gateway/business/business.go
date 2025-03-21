@@ -7,10 +7,9 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
-	"go.uber.org/fx"
-	"time"
-
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 var (
@@ -34,13 +33,14 @@ var Module = fx.Options(
 	fx.Decorate(observability.WrapLogger("business")),
 )
 
-func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut) *Business {
-	return &Business{auth: auth, catalog: catalog}
+func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, logger *zap.Logger) *Business {
+	return &Business{auth: auth, catalog: catalog, Logger: logger}
 }
 
 type Business struct {
 	auth    portout.AuthenticationPortOut
 	catalog portout.CatalogPortOut
+	*zap.Logger
 }
 
 func (b *Business) GetWarehouseByID(_ int64) (dto.Warehouse, error) {
@@ -93,6 +93,7 @@ func (b *Business) GetGoods() ([]dto.GoodAndAmount, error) {
 func (b *Business) Login(username string) (portin.LoginResult, error) {
 	token, err := b.auth.GetToken(username)
 	if err != nil {
+		b.Error("Failed to get JWT token for given username", zap.Error(err))
 		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 	}
 	if token == "" {
@@ -101,21 +102,19 @@ func (b *Business) Login(username string) (portin.LoginResult, error) {
 
 	parsed, err := b.auth.VerifyToken(token)
 	if err != nil {
+		b.Error("Failed to parse JWT returned by authentication microservice", zap.Error(err))
 		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 	}
 
 	role, err := b.auth.GetRole(parsed)
 	if err != nil {
+		b.Error("Failed to get role from JWT returned by authentication microservice", zap.Error(err))
 		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 	}
 
-	// TODO: bisognerebbe prendere la scadenza dall'output del servizio di Authentication
-	expiration := time.Now().Add(7 * 24 * time.Hour)
-
 	return portin.LoginResult{
-		Token:           token,
-		TokenExpiration: expiration,
-		Role:            role,
+		Token: token,
+		Role:  role,
 	}, nil
 }
 
@@ -127,6 +126,7 @@ func (b *Business) ValidateToken(token string) (portin.UserData, error) {
 		} else if errors.Is(err, portout.ErrTokenInvalid) {
 			return portin.UserData{}, ErrorTokenInvalid
 		} else {
+			b.Error("Failed to validate JWT token", zap.Error(err))
 			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 		}
 	}
@@ -138,6 +138,7 @@ func (b *Business) ValidateToken(token string) (portin.UserData, error) {
 		} else if errors.Is(err, portout.ErrTokenExpired) {
 			return portin.UserData{}, ErrorTokenExpired
 		} else {
+			b.Error("Failed to get username from valid JWT token", zap.Error(err))
 			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetUsername, err)
 		}
 	}
@@ -149,6 +150,7 @@ func (b *Business) ValidateToken(token string) (portin.UserData, error) {
 		} else if errors.Is(err, portout.ErrTokenExpired) {
 			return portin.UserData{}, ErrorTokenExpired
 		} else {
+			b.Error("Failed to get role from valid JWT token", zap.Error(err))
 			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 		}
 	}
