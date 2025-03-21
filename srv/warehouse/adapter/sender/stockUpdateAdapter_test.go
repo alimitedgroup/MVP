@@ -6,11 +6,12 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
 	"github.com/magiconair/properties/assert"
 	"github.com/nats-io/nats.go/jetstream"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 )
 
@@ -74,4 +75,30 @@ func TestStockUpdateAdapter(t *testing.T) {
 			t.Error(err)
 		}
 	}()
+}
+
+func TestStockUpdateAdapterNetworkErr(t *testing.T) {
+	ctx := t.Context()
+	cfg := &config.WarehouseConfig{
+		ID: "1",
+	}
+
+	ns, _ := broker.NewInProcessNATSServer(t)
+
+	broker, err := broker.NewNatsMessageBroker(ns)
+	require.NoError(t, err)
+
+	ns.Close()
+
+	a := NewPublishStockUpdateAdapter(broker, cfg)
+
+	cmd := port.CreateStockUpdateCmd{
+		Type: port.CreateStockUpdateCmdTypeAdd,
+		Goods: []port.CreateStockUpdateCmdGood{
+			{Good: model.GoodStock{ID: "1", Quantity: 10}, QuantityDiff: 10},
+		},
+	}
+
+	err = a.CreateStockUpdate(ctx, cmd)
+	require.Error(t, err)
 }

@@ -35,9 +35,6 @@ jobs:
       - name: Generate
         run: go generate ./...
 
-      - name: Build
-        run: go build -v ./...
-
       - name: Run go vet
         run: go vet ./...
 
@@ -62,6 +59,7 @@ jobs:
         run: |
           if [ $(gocyclo -over 15 . | wc -l) -gt 0 ]; then
             echo "Complexity too high in some functions"
+            gocyclo -over 15 . 
             exit 1
           fi
 
@@ -72,6 +70,9 @@ jobs:
         uses: coverallsapp/github-action@v2.3.6
         with:
           file: covprofile
+
+      - name: Build
+        run: go build -v ./...
 
   image:
     strategy:

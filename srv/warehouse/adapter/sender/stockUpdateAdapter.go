@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/google/uuid"
 )
@@ -33,23 +34,15 @@ func (a *PublishStockUpdateAdapter) CreateStockUpdate(ctx context.Context, cmd p
 		})
 	}
 
-	var stockUpdateType stream.StockUpdateType
-	switch cmd.Type {
-	case port.CreateStockUpdateCmdTypeAdd:
-		stockUpdateType = stream.StockUpdateTypeAdd
-	case port.CreateStockUpdateCmdTypeRemove:
-		stockUpdateType = stream.StockUpdateTypeRemove
-	default:
-		return fmt.Errorf("unknown stock update type %s", cmd.Type)
-	}
-
 	streamMsg := stream.StockUpdate{
-		ID:          stockUpdateId,
-		WarehouseID: a.warehouseCfg.ID,
-		Goods:       goodsMsg,
-		TransferID:  "",
-		OrderID:     "",
-		Type:        stockUpdateType,
+		ID:            stockUpdateId,
+		WarehouseID:   a.warehouseCfg.ID,
+		Goods:         goodsMsg,
+		TransferID:    cmd.TransferID,
+		OrderID:       cmd.OrderID,
+		ReservationID: cmd.ReservationID,
+		Type:          stream.StockUpdateType(cmd.Type),
+		Timestamp:     time.Now().UnixMilli(),
 	}
 
 	payload, err := json.Marshal(streamMsg)

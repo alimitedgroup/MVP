@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	"github.com/alimitedgroup/MVP/srv/warehouse/model"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 )
 
 type CatalogPersistanceAdapter struct {
@@ -12,20 +12,18 @@ func NewCatalogPersistanceAdapter(catalogRepo ICatalogRepository) *CatalogPersis
 	return &CatalogPersistanceAdapter{catalogRepo}
 }
 
-func (s *CatalogPersistanceAdapter) ApplyCatalogUpdate(good model.GoodInfo) error {
-	s.catalogRepo.SetGood(good.ID, good.Name, good.Description)
-
-	return nil
+func (s *CatalogPersistanceAdapter) ApplyCatalogUpdate(good model.GoodInfo) {
+	s.catalogRepo.SetGood(string(good.ID), good.Name, good.Description)
 }
 
-func (s *CatalogPersistanceAdapter) GetGood(goodId string) *model.GoodInfo {
-	good := s.catalogRepo.GetGood(goodId)
+func (s *CatalogPersistanceAdapter) GetGood(goodId model.GoodID) *model.GoodInfo {
+	good := s.catalogRepo.GetGood(string(goodId))
 	if good == nil {
 		return nil
 	}
 
 	return &model.GoodInfo{
-		ID:          good.Id,
+		ID:          good.ID,
 		Name:        good.Name,
 		Description: good.Description,
 	}

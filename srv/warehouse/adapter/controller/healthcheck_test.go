@@ -49,9 +49,6 @@ func TestHealthCheckController(t *testing.T) {
 
 					return nil
 				},
-				OnStop: func(ctx context.Context) error {
-					return nil
-				},
 			})
 		}),
 	)

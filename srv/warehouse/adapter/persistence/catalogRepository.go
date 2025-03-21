@@ -6,7 +6,7 @@ type ICatalogRepository interface {
 }
 
 type Good struct {
-	Id          string
+	ID          string
 	Name        string
 	Description string
 }

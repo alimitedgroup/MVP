@@ -30,7 +30,7 @@ func (s *CatalogRepositoryImpl) SetGood(goodId string, name string, description 
 	_, exist := s.goodMap[goodId]
 
 	s.goodMap[goodId] = Good{
-		Id:          goodId,
+		ID:          goodId,
 		Name:        name,
 		Description: description,
 	}

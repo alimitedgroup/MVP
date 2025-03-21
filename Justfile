@@ -50,6 +50,7 @@ gocyclo: generate
     #!/bin/bash
     if [ $(go run github.com/fzipp/gocyclo/cmd/gocyclo@latest -over 15 . | wc -l) -gt 0 ]; then
         echo "Complexity too high in some functions"
+        go run github.com/fzipp/gocyclo/cmd/gocyclo@latest -over 15 .
         exit 1
     fi
 
