@@ -3,7 +3,7 @@ package model
 type OrderID string
 
 type Order struct {
-	Id           OrderID
+	ID           string
 	Status       string
 	UpdateTime   int64
 	CreationTime int64
@@ -17,23 +17,23 @@ type Order struct {
 
 type OrderWarehouseUsed struct {
 	WarehouseID string
-	Goods       map[GoodID]int64
+	Goods       map[string]int64
 }
 
 func (o *Order) IsCompleted() bool {
 	m := make(map[string]int64)
 
 	for _, good := range o.Goods {
-		old, exist := m[string(good.ID)]
+		old, exist := m[string(good.GoodID)]
 		if !exist {
 			old = 0
 		}
-		m[string(good.ID)] = old + good.Quantity
+		m[string(good.GoodID)] = old + good.Quantity
 	}
 
 	for _, warehouse := range o.Warehouses {
 		for goodId, quantity := range warehouse.Goods {
-			m[string(goodId)] -= quantity
+			m[goodId] -= quantity
 		}
 	}
 

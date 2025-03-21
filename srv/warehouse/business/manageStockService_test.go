@@ -28,9 +28,9 @@ func newMockPortsImpl() *mockPortsImpl {
 
 func (m *mockPortsImpl) GetStock(id model.GoodID) model.GoodStock {
 	if v, ok := m.info[string(id)]; ok {
-		return model.GoodStock{ID: id, Quantity: v.qty}
+		return model.GoodStock{ID: string(id), Quantity: v.qty}
 	}
-	return model.GoodStock{ID: id, Quantity: 0}
+	return model.GoodStock{ID: string(id), Quantity: 0}
 }
 
 func (m *mockPortsImpl) GetFreeStock(id model.GoodID) model.GoodStock {
@@ -40,7 +40,7 @@ func (m *mockPortsImpl) GetFreeStock(id model.GoodID) model.GoodStock {
 func (m *mockPortsImpl) AddGood(id string, name string, description string) {
 	m.info[id] = mockGood{
 		info: model.GoodInfo{
-			ID:          model.GoodID(id),
+			ID:          id,
 			Name:        name,
 			Description: description,
 		},

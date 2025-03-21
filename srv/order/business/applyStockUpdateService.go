@@ -5,6 +5,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
+	"go.uber.org/fx"
 )
 
 type ApplyStockUpdateService struct {
@@ -17,13 +18,22 @@ type ApplyStockUpdateService struct {
 	setCompletedWarehousePort port.ISetCompletedWarehouseOrderPort
 }
 
+type ApplyStockUpdateServiceParams struct {
+	fx.In
+
+	ApplyStockUpdatePort      port.IApplyStockUpdatePort
+	ApplyOrderUpdatePort      port.IApplyOrderUpdatePort
+	GetOrderPort              port.IGetOrderPort
+	GetTransferPort           port.IGetTransferPort
+	ApplyTransferUpdatePort   port.IApplyTransferUpdatePort
+	SetCompleteTransferPort   port.ISetCompleteTransferPort
+	SetCompletedWarehousePort port.ISetCompletedWarehouseOrderPort
+}
+
 func NewApplyStockUpdateService(
-	applyStockUpdatePort port.IApplyStockUpdatePort, getOrderPort port.IGetOrderPort,
-	applyOrderUpdatePort port.IApplyOrderUpdatePort, setCompletedWarehousePort port.ISetCompletedWarehouseOrderPort,
-	getTransferPort port.IGetTransferPort, applyTransferUpdatePort port.IApplyTransferUpdatePort,
-	setCompleteTransferPort port.ISetCompleteTransferPort,
+	p ApplyStockUpdateServiceParams,
 ) *ApplyStockUpdateService {
-	return &ApplyStockUpdateService{applyStockUpdatePort, applyOrderUpdatePort, getOrderPort, getTransferPort, applyTransferUpdatePort, setCompleteTransferPort, setCompletedWarehousePort}
+	return &ApplyStockUpdateService{p.ApplyStockUpdatePort, p.ApplyOrderUpdatePort, p.GetOrderPort, p.GetTransferPort, p.ApplyTransferUpdatePort, p.SetCompleteTransferPort, p.SetCompletedWarehousePort}
 }
 
 func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port.StockUpdateCmd) error {
@@ -43,7 +53,7 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodID(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
@@ -64,17 +74,17 @@ func (s *ApplyStockUpdateService) applyStockUpdateFromTransfer(cmd port.StockUpd
 	}
 
 	if transfer.ReservationID == cmd.ReservationID {
-		if err := s.setCompleteTransferPort.IncrementLinkedStockUpdate(transfer.Id); err != nil {
+		if err := s.setCompleteTransferPort.IncrementLinkedStockUpdate(model.TransferID(transfer.ID)); err != nil {
 			return err
 		}
-		transfer, err = s.getTransferPort.GetTransfer(transfer.Id)
+		transfer, err = s.getTransferPort.GetTransfer(model.TransferID(transfer.ID))
 		if err != nil {
 			return err
 		}
 	}
 
 	if transfer.LinkedStockUpdate == 2 {
-		if err := s.setCompleteTransferPort.SetComplete(transfer.Id); err != nil {
+		if err := s.setCompleteTransferPort.SetComplete(model.TransferID(transfer.ID)); err != nil {
 			return err
 		}
 	}
@@ -100,14 +110,14 @@ func (s *ApplyStockUpdateService) applyStockUpdateFromOrder(cmd port.StockUpdate
 
 		for _, good := range cmd.Goods {
 			goods = append(goods, model.GoodStock{
-				ID:       model.GoodID(good.GoodID),
+				GoodID:   good.GoodID,
 				Quantity: good.Delta,
 			})
 		}
 
 		completedCmd := port.SetCompletedWarehouseCmd{
 			WarehouseId: cmd.WarehouseID,
-			OrderId:     model.OrderID(cmd.OrderID),
+			OrderId:     cmd.OrderID,
 			Goods:       goods,
 		}
 		order, err := s.setCompletedWarehousePort.SetCompletedWarehouse(completedCmd)

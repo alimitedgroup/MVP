@@ -13,7 +13,7 @@ func TestCatalogPersistanceAdapterSetAndGet(t *testing.T) {
 	mock := NewMockICatalogRepository(ctrl)
 
 	mock.EXPECT().GetGood(gomock.Any()).Return(&Good{
-		Id:          "1",
+		ID:          "1",
 		Name:        "blue_hat",
 		Description: "very beautiful hat",
 	})
@@ -29,7 +29,7 @@ func TestCatalogPersistanceAdapterSetAndGet(t *testing.T) {
 
 	goodInfo := a.GetGood("1")
 	require.NotNil(t, goodInfo)
-	require.Equal(t, goodInfo.ID, model.GoodID("1"))
+	require.Equal(t, goodInfo.ID, "1")
 }
 
 func TestCatalogPersistanceAdapterGetNotExist(t *testing.T) {

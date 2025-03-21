@@ -15,7 +15,7 @@ func NewApplyCatalogUpdateService(applyGoodUpdatePort port.IApplyCatalogUpdatePo
 
 func (s *ApplyCatalogUpdateService) ApplyCatalogUpdate(cmd port.CatalogUpdateCmd) {
 	good := model.GoodInfo{
-		ID:          model.GoodID(cmd.GoodID),
+		ID:          cmd.GoodID,
 		Name:        cmd.Name,
 		Description: cmd.Description,
 	}

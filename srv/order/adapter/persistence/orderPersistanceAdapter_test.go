@@ -29,11 +29,11 @@ func TestOrderPersistenceAdapterApplyOrderUpdate(t *testing.T) {
 		UpdateTime:   time.Now().UnixMilli(),
 		Goods: []model.GoodStock{
 			{
-				ID:       "1",
+				GoodID:   "1",
 				Quantity: 10,
 			},
 			{
-				ID:       "2",
+				GoodID:   "2",
 				Quantity: 10,
 			},
 		},
@@ -70,7 +70,7 @@ func TestOrderPersistenceAdapterGetOrderExist(t *testing.T) {
 
 	order, err := adapter.GetOrder("1")
 	require.NoError(t, err)
-	require.Equal(t, order.Id, model.OrderID("1"))
+	require.Equal(t, order.ID, "1")
 }
 
 func TestOrderPersistenceAdapterGetOrderNotExist(t *testing.T) {
@@ -115,7 +115,7 @@ func TestOrderPersistenceAdapterGetAllOrder(t *testing.T) {
 
 	orders := adapter.GetAllOrder()
 	require.Len(t, orders, 1)
-	require.Equal(t, orders[0].Id, model.OrderID("1"))
+	require.Equal(t, orders[0].ID, "1")
 }
 
 func TestOrderPersistenceAdapterSetComplete(t *testing.T) {
@@ -175,18 +175,18 @@ func TestOrderPersistenceAdapterAddCompletedWarehouse(t *testing.T) {
 		WarehouseId: "1",
 		Goods: []model.GoodStock{
 			{
-				ID:       "1",
+				GoodID:   "1",
 				Quantity: 10,
 			},
 			{
-				ID:       "2",
+				GoodID:   "2",
 				Quantity: 10,
 			},
 		},
 	}
 	order, err := adapter.SetCompletedWarehouse(cmd)
 	require.NoError(t, err)
-	require.Equal(t, order.Id, model.OrderID("1"))
+	require.Equal(t, order.ID, "1")
 
 }
 
@@ -203,16 +203,16 @@ func TestOrderPersistenceAdapterAddCompletedWarehouseErr(t *testing.T) {
 		WarehouseId: "1",
 		Goods: []model.GoodStock{
 			{
-				ID:       "1",
+				GoodID:   "1",
 				Quantity: 10,
 			},
 			{
-				ID:       "2",
+				GoodID:   "2",
 				Quantity: 10,
 			},
 		},
 	}
 	order, err := adapter.SetCompletedWarehouse(cmd)
 	require.Error(t, err, ErrGoodNotFound)
-	require.Equal(t, order.Id, model.OrderID(""))
+	require.Equal(t, order.ID, "")
 }

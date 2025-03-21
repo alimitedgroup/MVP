@@ -23,7 +23,7 @@ func (s *CatalogPersistanceAdapter) GetGood(goodId model.GoodID) *model.GoodInfo
 	}
 
 	return &model.GoodInfo{
-		ID:          model.GoodID(good.Id),
+		ID:          good.ID,
 		Name:        good.Name,
 		Description: good.Description,
 	}

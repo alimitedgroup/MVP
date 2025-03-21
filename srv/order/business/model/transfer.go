@@ -3,9 +3,9 @@ package model
 type TransferID string
 
 type Transfer struct {
-	Id                TransferID
-	SenderId          WarehouseID
-	ReceiverId        WarehouseID
+	ID                string
+	SenderId          string
+	ReceiverId        string
 	Status            string
 	UpdateTime        int64
 	CreationTime      int64

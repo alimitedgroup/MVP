@@ -6,6 +6,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
+	"go.uber.org/fx"
 )
 
 type ManageStockService struct {
@@ -14,8 +15,16 @@ type ManageStockService struct {
 	getGoodPort           port.IGetGoodPort
 }
 
-func NewManageStockService(createStockUpdatePort port.ICreateStockUpdatePort, getStockPort port.IGetStockPort, getGoodPort port.IGetGoodPort) *ManageStockService {
-	return &ManageStockService{createStockUpdatePort, getStockPort, getGoodPort}
+type ManageStockServiceParams struct {
+	fx.In
+
+	CreateStockUpdatePort port.ICreateStockUpdatePort
+	GetStockPort          port.IGetStockPort
+	GetGoodPort           port.IGetGoodPort
+}
+
+func NewManageStockService(p ManageStockServiceParams) *ManageStockService {
+	return &ManageStockService{p.CreateStockUpdatePort, p.GetStockPort, p.GetGoodPort}
 }
 
 func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd) error {
@@ -31,7 +40,7 @@ func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd)
 		Goods: []port.CreateStockUpdateCmdGood{
 			{
 				Good: model.GoodStock{
-					ID:       model.GoodID(cmd.GoodID),
+					ID:       cmd.GoodID,
 					Quantity: quantity,
 				},
 				QuantityDiff: cmd.Quantity,
@@ -65,7 +74,7 @@ func (s *ManageStockService) RemoveStock(ctx context.Context, cmd port.RemoveSto
 		Goods: []port.CreateStockUpdateCmdGood{
 			{
 				Good: model.GoodStock{
-					ID:       model.GoodID(cmd.GoodID),
+					ID:       cmd.GoodID,
 					Quantity: quantity,
 				},
 				QuantityDiff: cmd.Quantity,

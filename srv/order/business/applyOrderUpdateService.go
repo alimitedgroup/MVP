@@ -5,6 +5,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
+	"go.uber.org/fx"
 )
 
 type ApplyOrderUpdateService struct {
@@ -12,8 +13,15 @@ type ApplyOrderUpdateService struct {
 	applyTransferUpdatePort port.IApplyTransferUpdatePort
 }
 
-func NewApplyOrderUpdateService(applyOrderUpdatePort port.IApplyOrderUpdatePort, applyTransferUpdatePort port.IApplyTransferUpdatePort) *ApplyOrderUpdateService {
-	return &ApplyOrderUpdateService{applyOrderUpdatePort, applyTransferUpdatePort}
+type ApplyOrderUpdateServiceParams struct {
+	fx.In
+
+	ApplyOrderUpdatePort    port.IApplyOrderUpdatePort
+	ApplyTransferUpdatePort port.IApplyTransferUpdatePort
+}
+
+func NewApplyOrderUpdateService(p ApplyOrderUpdateServiceParams) *ApplyOrderUpdateService {
+	return &ApplyOrderUpdateService{p.ApplyOrderUpdatePort, p.ApplyTransferUpdatePort}
 }
 
 func (s *ApplyOrderUpdateService) ApplyOrderUpdate(ctx context.Context, cmd port.OrderUpdateCmd) {
@@ -30,7 +38,7 @@ func orderUpdateCmdToApplyOrderUpdateCmd(cmd port.OrderUpdateCmd) port.ApplyOrde
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodID(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
@@ -53,7 +61,7 @@ func transferUpdateCmdToApplyTransferUpdateCmd(cmd port.TransferUpdateCmd) port.
 	goods := make([]model.GoodStock, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodID(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}

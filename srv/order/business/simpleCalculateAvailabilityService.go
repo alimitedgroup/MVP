@@ -19,12 +19,12 @@ func NewSimpleCalculateAvailabilityService(getStockPort port.IGetStockPort) *Sim
 func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, cmd port.CalculateAvailabilityCmd) (port.CalculateAvailabilityResponse, error) {
 	// quick return if global stock counter isn't enough
 	total := int64(0)
-	reqGoods := make(map[model.GoodID]int64)
+	reqGoods := make(map[string]int64)
 	for _, good := range cmd.Goods {
 		if s.getStockPort.GetGlobalStock(model.GoodID(good.GoodID)).Quantity < good.Quantity {
 			return port.CalculateAvailabilityResponse{}, port.ErrNotEnoughStock
 		}
-		reqGoods[model.GoodID(good.GoodID)] = good.Quantity
+		reqGoods[good.GoodID] = good.Quantity
 		total += good.Quantity
 	}
 
@@ -55,15 +55,15 @@ func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, c
 		for goodID, quantity := range reqGoods {
 			stock, err := s.getStockPort.GetStock(port.GetStockCmd{
 				WarehouseID: warehouse.ID,
-				GoodID:      model.GoodID(goodID),
+				GoodID:      goodID,
 			})
 			if err != nil {
 				continue
 			}
 
 			toReserveQty := min(stock.Quantity, quantity)
-			toReserveGoods[string(goodID)] = toReserveQty
-			reqGoods[model.GoodID(goodID)] -= toReserveQty
+			toReserveGoods[goodID] = toReserveQty
+			reqGoods[goodID] -= toReserveQty
 			total -= toReserveQty
 			warehouseTotal += toReserveQty
 		}

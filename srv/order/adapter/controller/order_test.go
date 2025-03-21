@@ -89,7 +89,7 @@ func TestOrderControllerGetOrder(t *testing.T) {
 
 	getOrderUseCaseMock := NewMockIGetOrderUseCase(ctrl)
 	getOrderUseCaseMock.EXPECT().GetOrder(gomock.Any(), gomock.Any()).Return(model.Order{
-		Id:           "1",
+		ID:           "1",
 		Name:         "Order 1",
 		FullName:     "test test",
 		Address:      "via roma 11",
@@ -100,14 +100,14 @@ func TestOrderControllerGetOrder(t *testing.T) {
 		Warehouses:   []model.OrderWarehouseUsed{},
 		Goods: []model.GoodStock{
 			{
-				ID:       "1",
+				GoodID:   "1",
 				Quantity: 10,
 			},
 		},
 	}, nil)
 	getOrderUseCaseMock.EXPECT().GetAllOrders(gomock.Any()).Return([]model.Order{
 		{
-			Id:           "1",
+			ID:           "1",
 			Name:         "Order 1",
 			FullName:     "test test",
 			Address:      "via roma 11",
@@ -118,13 +118,13 @@ func TestOrderControllerGetOrder(t *testing.T) {
 			Warehouses:   []model.OrderWarehouseUsed{},
 			Goods: []model.GoodStock{
 				{
-					ID:       "1",
+					GoodID:   "1",
 					Quantity: 10,
 				},
 			},
 		},
 		{
-			Id:           "2",
+			ID:           "2",
 			Name:         "Order 2",
 			FullName:     "test test",
 			Address:      "via roma 11",
@@ -135,7 +135,7 @@ func TestOrderControllerGetOrder(t *testing.T) {
 			Warehouses:   []model.OrderWarehouseUsed{},
 			Goods: []model.GoodStock{
 				{
-					ID:       "2",
+					GoodID:   "2",
 					Quantity: 10,
 				},
 			},

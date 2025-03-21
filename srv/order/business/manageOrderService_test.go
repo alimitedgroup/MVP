@@ -70,7 +70,7 @@ func TestManageOrderServiceGetAllTransfers(t *testing.T) {
 		func(suite *managerOrderServiceMockSuite) {
 			suite.getTransferPort.EXPECT().GetAllTransfer().Return([]model.Transfer{
 				{
-					Id:                "1",
+					ID:                "1",
 					SenderId:          "1",
 					ReceiverId:        "2",
 					Status:            "Created",
@@ -80,7 +80,7 @@ func TestManageOrderServiceGetAllTransfers(t *testing.T) {
 					ReservationID:     "",
 					Goods: []model.GoodStock{
 						{
-							ID:       "1",
+							GoodID:   "1",
 							Quantity: 1,
 						},
 					},
@@ -104,7 +104,7 @@ func TestManageOrderServiceGetTransfer(t *testing.T) {
 		func(suite *managerOrderServiceMockSuite) {
 			suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).Return(model.Transfer{
 
-				Id:                "1",
+				ID:                "1",
 				SenderId:          "1",
 				ReceiverId:        "2",
 				Status:            "Created",
@@ -114,7 +114,7 @@ func TestManageOrderServiceGetTransfer(t *testing.T) {
 				ReservationID:     "",
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
@@ -125,7 +125,7 @@ func TestManageOrderServiceGetTransfer(t *testing.T) {
 			return func(service *ManageOrderService) {
 				transfer, err := service.GetTransfer(ctx, "1")
 				require.NoError(t, err)
-				require.Equal(t, transfer.Id, model.TransferID("1"))
+				require.Equal(t, transfer.ID, "1")
 			}
 		},
 	)
@@ -138,7 +138,7 @@ func TestManageOrderServiceGetAllOrders(t *testing.T) {
 		func(suite *managerOrderServiceMockSuite) {
 			suite.getOrderPort.EXPECT().GetAllOrder().Return([]model.Order{
 				{
-					Id:           "1",
+					ID:           "1",
 					Name:         "order 1",
 					FullName:     "test test",
 					Address:      "via roma 1",
@@ -149,7 +149,7 @@ func TestManageOrderServiceGetAllOrders(t *testing.T) {
 					Warehouses:   []model.OrderWarehouseUsed{},
 					Goods: []model.GoodStock{
 						{
-							ID:       "1",
+							GoodID:   "1",
 							Quantity: 1,
 						},
 					},
@@ -172,7 +172,7 @@ func TestManageOrderServiceGetOrder(t *testing.T) {
 	runTestManagerOrderService(t,
 		func(suite *managerOrderServiceMockSuite) {
 			suite.getOrderPort.EXPECT().GetOrder(gomock.Any()).Return(model.Order{
-				Id:           "1",
+				ID:           "1",
 				Status:       "Created",
 				UpdateTime:   0,
 				CreationTime: 0,
@@ -183,7 +183,7 @@ func TestManageOrderServiceGetOrder(t *testing.T) {
 				Warehouses:   []model.OrderWarehouseUsed{},
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
@@ -194,7 +194,7 @@ func TestManageOrderServiceGetOrder(t *testing.T) {
 			return func(service *ManageOrderService) {
 				order, err := service.GetOrder(ctx, "1")
 				require.NoError(t, err)
-				require.Equal(t, order.Id, model.OrderID("1"))
+				require.Equal(t, order.ID, "1")
 			}
 		},
 	)
@@ -206,7 +206,7 @@ func TestManageOrderServiceCreateOrder(t *testing.T) {
 	runTestManagerOrderService(t,
 		func(suite *managerOrderServiceMockSuite) {
 			suite.sendOrderUpdatePort.EXPECT().SendOrderUpdate(gomock.Any(), gomock.Any()).Return(model.Order{
-				Id:           "1",
+				ID:           "1",
 				Status:       "Created",
 				UpdateTime:   0,
 				CreationTime: 0,
@@ -217,7 +217,7 @@ func TestManageOrderServiceCreateOrder(t *testing.T) {
 				Warehouses:   []model.OrderWarehouseUsed{},
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
@@ -251,7 +251,7 @@ func TestManageOrderServiceCreateTrasfer(t *testing.T) {
 	runTestManagerOrderService(t,
 		func(suite *managerOrderServiceMockSuite) {
 			suite.sendTransferUpdatePort.EXPECT().SendTransferUpdate(gomock.Any(), gomock.Any()).Return(model.Transfer{
-				Id:                "1",
+				ID:                "1",
 				SenderId:          "1",
 				ReceiverId:        "2",
 				Status:            "Created",
@@ -261,7 +261,7 @@ func TestManageOrderServiceCreateTrasfer(t *testing.T) {
 				ReservationID:     "",
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
@@ -294,7 +294,7 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 	runTestManagerOrderService(t,
 		func(suite *managerOrderServiceMockSuite) {
 			suite.sendTransferUpdatePort.EXPECT().SendTransferUpdate(gomock.Any(), gomock.Any()).Return(model.Transfer{
-				Id:                "1",
+				ID:                "1",
 				SenderId:          "1",
 				ReceiverId:        "2",
 				Status:            "Filled",
@@ -304,7 +304,7 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 				ReservationID:     "1",
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
@@ -400,7 +400,7 @@ func TestManageOrderServiceContactWarehouseOrder(t *testing.T) {
 				}, nil)
 			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{Id: "1"}, nil)
 			suite.sendOrderUpdatePort.EXPECT().SendOrderUpdate(gomock.Any(), gomock.Any()).Return(model.Order{
-				Id:           "1",
+				ID:           "1",
 				Status:       "Filled",
 				Name:         "order 1",
 				FullName:     "test test",
@@ -411,7 +411,7 @@ func TestManageOrderServiceContactWarehouseOrder(t *testing.T) {
 				CreationTime: 0,
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},

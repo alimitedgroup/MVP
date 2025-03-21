@@ -48,9 +48,9 @@ func TestSimpleCalculateAvailabilityService(t *testing.T) {
 	ctx := t.Context()
 	runTestsimpleCalculateAvailabilityService(t,
 		func(suite *simpleCalculateAvailabilityServiceMockSuite) {
-			suite.getStockPort.EXPECT().GetGlobalStock(gomock.Any()).Return(model.GoodStock{ID: "1", Quantity: 1})
+			suite.getStockPort.EXPECT().GetGlobalStock(gomock.Any()).Return(model.GoodStock{GoodID: "1", Quantity: 1})
 			suite.getStockPort.EXPECT().GetWarehouses().Return([]model.Warehouse{{ID: "1"}})
-			suite.getStockPort.EXPECT().GetStock(gomock.Any()).Return(model.GoodStock{ID: "1", Quantity: 1}, nil)
+			suite.getStockPort.EXPECT().GetStock(gomock.Any()).Return(model.GoodStock{GoodID: "1", Quantity: 1}, nil)
 		},
 		func() fx.Option { return fx.Options() },
 		func() interface{} {

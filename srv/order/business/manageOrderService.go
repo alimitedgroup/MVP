@@ -46,8 +46,8 @@ func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.Create
 	transferCmd := port.SendTransferUpdateCmd{
 		ID:            transferId,
 		Status:        "Created",
-		SenderId:      cmd.SenderId,
-		ReceiverId:    cmd.ReceiverId,
+		SenderID:      cmd.SenderId,
+		ReceiverID:    cmd.ReceiverId,
 		ReservationId: "",
 		Goods:         goods,
 	}
@@ -178,19 +178,19 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 		goods := make([]model.GoodStock, 0, len(cmd.Transfer.Goods))
 		for _, good := range cmd.Transfer.Goods {
 			goods = append(goods, model.GoodStock{
-				ID:       model.GoodID(good.GoodID),
+				GoodID:   good.GoodID,
 				Quantity: good.Quantity,
 			})
 		}
 		sendContactCmd := port.SendContactWarehouseCmd{
 			Type: port.SendContactWarehouseTypeTransfer,
 			Transfer: &model.Transfer{
-				Id:            model.TransferID(cmd.Transfer.ID),
+				ID:            cmd.Transfer.ID,
 				Status:        cmd.Transfer.Status,
 				UpdateTime:    cmd.Transfer.UpdateTime,
 				CreationTime:  cmd.Transfer.CreationTime,
-				SenderId:      model.WarehouseID(cmd.Transfer.SenderID),
-				ReceiverId:    model.WarehouseID(cmd.Transfer.ReceiverID),
+				SenderId:      cmd.Transfer.SenderID,
+				ReceiverId:    cmd.Transfer.ReceiverID,
 				Goods:         goods,
 				ReservationID: "",
 			},
@@ -214,8 +214,8 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 		Status:        "Filled",
 		ID:            cmd.Transfer.ID,
 		CreationTime:  cmd.Transfer.CreationTime,
-		SenderId:      cmd.Transfer.SenderID,
-		ReceiverId:    cmd.Transfer.ReceiverID,
+		SenderID:      cmd.Transfer.SenderID,
+		ReceiverID:    cmd.Transfer.ReceiverID,
 		Goods:         goods,
 		ReservationId: reservResp.Id,
 	}
@@ -280,7 +280,7 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 		goods := make([]model.GoodStock, 0, len(cmd.Order.Goods))
 		for _, good := range cmd.Order.Goods {
 			goods = append(goods, model.GoodStock{
-				ID:       model.GoodID(good.GoodID),
+				GoodID:   good.GoodID,
 				Quantity: good.Quantity,
 			})
 		}
@@ -288,7 +288,7 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 		sendContactCmd := port.SendContactWarehouseCmd{
 			Type: port.SendContactWarehouseTypeOrder,
 			Order: &model.Order{
-				Id:           model.OrderID(cmd.Order.ID),
+				ID:           cmd.Order.ID,
 				Status:       cmd.Order.Status,
 				Name:         cmd.Order.Name,
 				FullName:     cmd.Order.FullName,
@@ -436,8 +436,8 @@ func contactCmdToSendTransferUpdateCmdForCancel(cmd port.ContactWarehousesCmd) p
 		Status:        "Cancelled",
 		ID:            cmd.Transfer.ID,
 		CreationTime:  cmd.Transfer.CreationTime,
-		SenderId:      cmd.Transfer.SenderID,
-		ReceiverId:    cmd.Transfer.ReceiverID,
+		SenderID:      cmd.Transfer.SenderID,
+		ReceiverID:    cmd.Transfer.ReceiverID,
 		Goods:         goods,
 		ReservationId: cmd.Transfer.ReservationId,
 	}

@@ -46,7 +46,7 @@ func TestNatsStreamAdapterSendOrderUpdate(t *testing.T) {
 
 	order, err := a.SendOrderUpdate(ctx, cmd)
 	require.NoError(t, err)
-	require.Equal(t, cmd.ID, string(order.Id))
+	require.Equal(t, cmd.ID, string(order.ID))
 
 	info, err := s.Info(ctx)
 	require.NoError(t, err)
@@ -77,15 +77,15 @@ func TestNatsStreamAdapterSendTransferUpdate(t *testing.T) {
 			},
 		},
 		Status:        "Created",
-		SenderId:      "1",
-		ReceiverId:    "2",
+		SenderID:      "1",
+		ReceiverID:    "2",
 		ReservationId: "",
 		CreationTime:  time.Now().UnixMilli(),
 	}
 
 	tranfer, err := a.SendTransferUpdate(ctx, cmd)
 	require.NoError(t, err)
-	require.Equal(t, cmd.ID, string(tranfer.Id))
+	require.Equal(t, cmd.ID, string(tranfer.ID))
 
 	info, err := s.Info(ctx)
 	require.NoError(t, err)
@@ -109,10 +109,10 @@ func TestNatsStreamAdapterSendContactOrder(t *testing.T) {
 
 	cmd := port.SendContactWarehouseCmd{
 		Order: &model.Order{
-			Id: "1",
+			ID: "1",
 			Goods: []model.GoodStock{
 				{
-					ID:       "1",
+					GoodID:   "1",
 					Quantity: 1,
 				},
 			},
@@ -154,10 +154,10 @@ func TestNatsStreamAdapterSendContactTransfer(t *testing.T) {
 
 	cmd := port.SendContactWarehouseCmd{
 		Transfer: &model.Transfer{
-			Id: "1",
+			ID: "1",
 			Goods: []model.GoodStock{
 				{
-					ID:       "1",
+					GoodID:   "1",
 					Quantity: 1,
 				},
 			},

@@ -14,8 +14,8 @@ type SendTransferUpdateCmd struct {
 	ID            string
 	Status        string
 	CreationTime  int64
-	SenderId      string
-	ReceiverId    string
+	SenderID      string
+	ReceiverID    string
 	Goods         []SendTransferUpdateGood
 	ReservationId string
 }

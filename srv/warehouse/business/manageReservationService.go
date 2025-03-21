@@ -7,6 +7,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/google/uuid"
+	"go.uber.org/fx"
 )
 
 type ManageReservationService struct {
@@ -19,18 +20,22 @@ type ManageReservationService struct {
 	cfg                        *config.WarehouseConfig
 }
 
-func NewManageReservationService(
-	createReservationEventPort port.IStoreReservationEventPort,
-	applyReservationEventPort port.IApplyReservationEventPort,
-	getReservationPort port.IGetReservationPort,
-	getStockPort port.IGetStockPort,
-	createStockUpdatePort port.ICreateStockUpdatePort,
-	idempotentPort port.IIdempotentPort,
-	cfg *config.WarehouseConfig,
-) *ManageReservationService {
+type ManageReservationServiceParams struct {
+	fx.In
+
+	CreateReservationEventPort port.IStoreReservationEventPort
+	ApplyReservationEventPort  port.IApplyReservationEventPort
+	GetReservationPort         port.IGetReservationPort
+	GetStockPort               port.IGetStockPort
+	CreateStockUpdatePort      port.ICreateStockUpdatePort
+	IdempotentPort             port.IIdempotentPort
+	Cfg                        *config.WarehouseConfig
+}
+
+func NewManageReservationService(p ManageReservationServiceParams) *ManageReservationService {
 	return &ManageReservationService{
-		createReservationEventPort, applyReservationEventPort, getReservationPort,
-		getStockPort, createStockUpdatePort, idempotentPort, cfg,
+		p.CreateReservationEventPort, p.ApplyReservationEventPort, p.GetReservationPort,
+		p.GetStockPort, p.CreateStockUpdatePort, p.IdempotentPort, p.Cfg,
 	}
 }
 
@@ -52,11 +57,11 @@ func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd po
 	goods := make([]model.ReservationGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.ReservationGood{
-			GoodID:   model.GoodID(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
-	reservation := model.Reservation{ID: model.ReservationId(reservationId), Goods: goods}
+	reservation := model.Reservation{ID: reservationId, Goods: goods}
 	err := s.createReservationEventPort.StoreReservationEvent(ctx, reservation)
 	if err != nil {
 		return port.CreateReservationResponse{}, err
@@ -73,13 +78,13 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 
 	for _, good := range cmd.Goods {
 		goods = append(goods, model.ReservationGood{
-			GoodID:   model.GoodID(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
 
 	reserv := model.Reservation{
-		ID:    model.ReservationId(cmd.Id),
+		ID:    cmd.Id,
 		Goods: goods,
 	}
 
@@ -112,7 +117,7 @@ func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.Co
 
 		goods := make([]port.CreateStockUpdateCmdGood, 0, len(reservation.Goods))
 		for _, reservGood := range reservation.Goods {
-			goodStock := s.getStockPort.GetStock(reservGood.GoodID)
+			goodStock := s.getStockPort.GetStock(model.GoodID(reservGood.GoodID))
 
 			goods = append(goods, port.CreateStockUpdateCmdGood{
 				Good: model.GoodStock{
@@ -157,7 +162,7 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 
 		goods := make([]port.CreateStockUpdateCmdGood, 0, len(reservation.Goods))
 		for _, reservGood := range reservation.Goods {
-			goodStock := s.getStockPort.GetStock(reservGood.GoodID)
+			goodStock := s.getStockPort.GetStock(model.GoodID(reservGood.GoodID))
 
 			goods = append(goods, port.CreateStockUpdateCmdGood{
 				Good: model.GoodStock{
@@ -191,7 +196,7 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 
 			goods = append(goods, port.CreateStockUpdateCmdGood{
 				Good: model.GoodStock{
-					ID:       model.GoodID(toAdd.GoodID),
+					ID:       toAdd.GoodID,
 					Quantity: goodStock.Quantity + toAdd.Quantity,
 				},
 				QuantityDiff: toAdd.Quantity,

@@ -96,7 +96,7 @@ func TestManageReservationServiceCreateReservation(t *testing.T) {
 	runTestManageReservationService(t,
 		func(suite *manageReservationServiceMockSuite) {
 			suite.getStockPortMock.EXPECT().GetFreeStock(gomock.Any()).Return(model.GoodStock{
-				ID:       model.GoodID("1"),
+				ID:       "1",
 				Quantity: 10,
 			})
 			suite.storeReservationEventPort.EXPECT().StoreReservationEvent(gomock.Any(), gomock.Any()).Return(nil)
@@ -127,14 +127,14 @@ func TestManageReservationServiceConfirmOrder(t *testing.T) {
 	runTestManageReservationService(t,
 		func(suite *manageReservationServiceMockSuite) {
 			suite.getStockPortMock.EXPECT().GetStock(gomock.Any()).Return(model.GoodStock{
-				ID:       model.GoodID("1"),
+				ID:       "1",
 				Quantity: 10,
 			})
 			suite.getReservationPort.EXPECT().GetReservation(gomock.Any()).Return(model.Reservation{
-				ID: model.ReservationId("1"),
+				ID: "1",
 				Goods: []model.ReservationGood{
 					{
-						GoodID:   model.GoodID("1"),
+						GoodID:   "1",
 						Quantity: 10,
 					},
 				},
@@ -170,14 +170,14 @@ func TestManageReservationServiceConfirmTransferSender(t *testing.T) {
 	runTestManageReservationService(t,
 		func(suite *manageReservationServiceMockSuite) {
 			suite.getStockPortMock.EXPECT().GetStock(gomock.Any()).Return(model.GoodStock{
-				ID:       model.GoodID("1"),
+				ID:       "1",
 				Quantity: 10,
 			})
 			suite.getReservationPort.EXPECT().GetReservation(gomock.Any()).Return(model.Reservation{
-				ID: model.ReservationId("1"),
+				ID: "1",
 				Goods: []model.ReservationGood{
 					{
-						GoodID:   model.GoodID("1"),
+						GoodID:   "1",
 						Quantity: 10,
 					},
 				},
@@ -219,7 +219,7 @@ func TestManageReservationServiceConfirmTransferReceiver(t *testing.T) {
 	runTestManageReservationService(t,
 		func(suite *manageReservationServiceMockSuite) {
 			suite.getStockPortMock.EXPECT().GetStock(gomock.Any()).Return(model.GoodStock{
-				ID:       model.GoodID("1"),
+				ID:       "1",
 				Quantity: 10,
 			})
 			suite.createStockUpdatePortMock.EXPECT().CreateStockUpdate(gomock.Any(), gomock.Any()).Return(nil)

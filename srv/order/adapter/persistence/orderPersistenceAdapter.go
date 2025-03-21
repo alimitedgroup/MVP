@@ -16,11 +16,11 @@ func NewOrderPersistanceAdapter(orderRepo IOrderRepository) *OrderPersistanceAda
 func (s *OrderPersistanceAdapter) SetCompletedWarehouse(cmd port.SetCompletedWarehouseCmd) (model.Order, error) {
 	goods := make(map[string]int64)
 	for _, good := range cmd.Goods {
-		prev, exist := goods[string(good.ID)]
+		prev, exist := goods[string(good.GoodID)]
 		if !exist {
 			prev = 0
 		}
-		goods[string(good.ID)] = prev + good.Quantity
+		goods[string(good.GoodID)] = prev + good.Quantity
 	}
 
 	order, err := s.orderRepo.AddCompletedWarehouse(string(cmd.OrderId), cmd.WarehouseId, goods)
@@ -51,7 +51,7 @@ func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd)
 	goods := make([]OrderUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, OrderUpdateGood{
-			GoodID:   string(good.ID),
+			GoodID:   string(good.GoodID),
 			Quantity: good.Quantity,
 		})
 	}
@@ -93,7 +93,7 @@ func repoOrderToModelOrder(order Order) model.Order {
 	goods := make([]model.GoodStock, 0, len(order.Goods))
 	for _, good := range order.Goods {
 		goods = append(goods, model.GoodStock{
-			ID:       model.GoodID(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
@@ -101,9 +101,9 @@ func repoOrderToModelOrder(order Order) model.Order {
 	warehouses := make([]model.OrderWarehouseUsed, 0, len(order.Warehouses))
 
 	for _, warehouse := range order.Warehouses {
-		goods := make(map[model.GoodID]int64)
+		goods := make(map[string]int64)
 		for goodId, quantity := range warehouse.Goods {
-			goods[model.GoodID(goodId)] = quantity
+			goods[goodId] = quantity
 		}
 		warehouses = append(warehouses, model.OrderWarehouseUsed{
 			WarehouseID: warehouse.WarehouseID,
@@ -112,7 +112,7 @@ func repoOrderToModelOrder(order Order) model.Order {
 	}
 
 	return model.Order{
-		Id:           model.OrderID(order.ID),
+		ID:           order.ID,
 		Name:         order.Name,
 		Status:       order.Status,
 		FullName:     order.FullName,

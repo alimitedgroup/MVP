@@ -88,7 +88,7 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 
 	getTransferUseCaseMock := NewMockIGetTransferUseCase(ctrl)
 	getTransferUseCaseMock.EXPECT().GetTransfer(gomock.Any(), gomock.Any()).Return(model.Transfer{
-		Id:                "1",
+		ID:                "1",
 		SenderId:          "1",
 		ReceiverId:        "2",
 		Status:            "Created",
@@ -98,14 +98,14 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 		LinkedStockUpdate: 0,
 		Goods: []model.GoodStock{
 			{
-				ID:       "1",
+				GoodID:   "1",
 				Quantity: 10,
 			},
 		},
 	}, nil)
 	getTransferUseCaseMock.EXPECT().GetAllTransfers(gomock.Any()).Return([]model.Transfer{
 		{
-			Id:                "1",
+			ID:                "1",
 			SenderId:          "1",
 			ReceiverId:        "2",
 			Status:            "Created",
@@ -115,13 +115,13 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 			LinkedStockUpdate: 0,
 			Goods: []model.GoodStock{
 				{
-					ID:       "1",
+					GoodID:   "1",
 					Quantity: 10,
 				},
 			},
 		},
 		{
-			Id:                "2",
+			ID:                "2",
 			SenderId:          "3",
 			ReceiverId:        "1",
 			Status:            "Created",
@@ -131,7 +131,7 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 			LinkedStockUpdate: 0,
 			Goods: []model.GoodStock{
 				{
-					ID:       "2",
+					GoodID:   "2",
 					Quantity: 10,
 				},
 			},

@@ -47,7 +47,7 @@ func TestStockPersistanceAdapterGetReserv(t *testing.T) {
 
 	reserv, err := a.GetReservation(model.ReservationId("1"))
 	require.NoError(t, err)
-	require.Equal(t, reserv.ID, model.ReservationId("1"))
+	require.Equal(t, reserv.ID, "1")
 	require.Equal(t, reserv.Goods, []model.ReservationGood{{GoodID: "1", Quantity: 10}})
 }
 

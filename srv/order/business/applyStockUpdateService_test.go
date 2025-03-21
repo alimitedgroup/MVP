@@ -70,7 +70,7 @@ func TestApplyStockUpdateServiceStock(t *testing.T) {
 			now := time.Now().UnixMilli()
 			suite.applyStockUpdatePort.EXPECT().ApplyStockUpdate(gomock.Any())
 			suite.getOrderPort.EXPECT().GetOrder(gomock.Any()).Return(model.Order{
-				Id:           "1",
+				ID:           "1",
 				Status:       "Filled",
 				UpdateTime:   now,
 				CreationTime: now,
@@ -79,7 +79,7 @@ func TestApplyStockUpdateServiceStock(t *testing.T) {
 				Address:      "via roma 1",
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
@@ -87,7 +87,7 @@ func TestApplyStockUpdateServiceStock(t *testing.T) {
 				Warehouses:   []model.OrderWarehouseUsed{},
 			}, nil)
 			suite.setCompletedWarehousePort.EXPECT().SetCompletedWarehouse(gomock.Any()).Return(model.Order{
-				Id:           "1",
+				ID:           "1",
 				Status:       "Filled",
 				UpdateTime:   now,
 				CreationTime: now,
@@ -96,12 +96,12 @@ func TestApplyStockUpdateServiceStock(t *testing.T) {
 				Address:      "via roma 1",
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
 				Reservations: []string{"1"},
-				Warehouses:   []model.OrderWarehouseUsed{{WarehouseID: "1", Goods: map[model.GoodID]int64{"1": 1}}},
+				Warehouses:   []model.OrderWarehouseUsed{{WarehouseID: "1", Goods: map[string]int64{"1": 1}}},
 			}, nil)
 			suite.setCompletedWarehousePort.EXPECT().SetComplete(gomock.Any()).Return(nil)
 		},
@@ -137,7 +137,7 @@ func TestApplyStockUpdateServiceTransfer(t *testing.T) {
 			now := time.Now().UnixMilli()
 			suite.applyStockUpdatePort.EXPECT().ApplyStockUpdate(gomock.Any())
 			firstCall := suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).Return(model.Transfer{
-				Id:                "1",
+				ID:                "1",
 				Status:            "Filled",
 				SenderId:          "1",
 				ReceiverId:        "2",
@@ -147,14 +147,14 @@ func TestApplyStockUpdateServiceTransfer(t *testing.T) {
 				LinkedStockUpdate: 1,
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},
 			}, nil)
 
 			suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).After(firstCall).Return(model.Transfer{
-				Id:                "1",
+				ID:                "1",
 				Status:            "Filled",
 				SenderId:          "1",
 				ReceiverId:        "2",
@@ -164,7 +164,7 @@ func TestApplyStockUpdateServiceTransfer(t *testing.T) {
 				LinkedStockUpdate: 2,
 				Goods: []model.GoodStock{
 					{
-						ID:       "1",
+						GoodID:   "1",
 						Quantity: 1,
 					},
 				},

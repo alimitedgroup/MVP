@@ -15,7 +15,7 @@ func NewStockPersistanceAdapter(stockRepo IStockRepository) *StockPersistanceAda
 
 func (s *StockPersistanceAdapter) ApplyStockUpdate(cmd port.ApplyStockUpdateCmd) {
 	for _, good := range cmd.Goods {
-		s.stockRepo.SetStock(cmd.WarehouseID, string(good.ID), good.Quantity)
+		s.stockRepo.SetStock(cmd.WarehouseID, string(good.GoodID), good.Quantity)
 	}
 }
 
@@ -28,12 +28,12 @@ func (s *StockPersistanceAdapter) GetStock(cmd port.GetStockCmd) (model.GoodStoc
 		return model.GoodStock{}, err
 	}
 
-	return model.GoodStock{ID: cmd.GoodID, Quantity: stock}, nil
+	return model.GoodStock{GoodID: cmd.GoodID, Quantity: stock}, nil
 }
 
 func (s *StockPersistanceAdapter) GetGlobalStock(GoodID model.GoodID) model.GoodStock {
 	stock := s.stockRepo.GetGlobalStock(string(GoodID))
-	return model.GoodStock{ID: GoodID, Quantity: stock}
+	return model.GoodStock{GoodID: string(GoodID), Quantity: stock}
 }
 
 func (s *StockPersistanceAdapter) GetWarehouses() []model.Warehouse {
@@ -41,7 +41,7 @@ func (s *StockPersistanceAdapter) GetWarehouses() []model.Warehouse {
 
 	warehouses := make([]model.Warehouse, 0, len(warehousesIds))
 	for _, warehouseId := range warehousesIds {
-		warehouses = append(warehouses, model.Warehouse{ID: model.WarehouseID(warehouseId)})
+		warehouses = append(warehouses, model.Warehouse{ID: warehouseId})
 	}
 
 	return warehouses

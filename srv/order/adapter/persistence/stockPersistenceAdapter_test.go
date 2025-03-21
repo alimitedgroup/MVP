@@ -21,11 +21,11 @@ func TestStockPersistenceAdapterApplyStockUpdate(t *testing.T) {
 		WarehouseID: "1",
 		Goods: []model.GoodStock{
 			{
-				ID:       "1",
+				GoodID:   "1",
 				Quantity: 10,
 			},
 			{
-				ID:       "2",
+				GoodID:   "2",
 				Quantity: 10,
 			},
 		},

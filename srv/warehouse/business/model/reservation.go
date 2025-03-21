@@ -1,13 +1,13 @@
 package model
 
 type Reservation struct {
-	ID    ReservationId
+	ID    string
 	Goods []ReservationGood
 }
 
 type ReservationId string
 
 type ReservationGood struct {
-	GoodID   GoodID
+	GoodID   string
 	Quantity int64
 }

@@ -28,11 +28,11 @@ func TestTransferPersistenceAdapterApplyTransferUpdate(t *testing.T) {
 		UpdateTime:    time.Now().UnixMilli(),
 		Goods: []model.GoodStock{
 			{
-				ID:       "1",
+				GoodID:   "1",
 				Quantity: 10,
 			},
 			{
-				ID:       "2",
+				GoodID:   "2",
 				Quantity: 10,
 			},
 		},
@@ -69,7 +69,7 @@ func TestTransferPersistenceAdapterGetTransferExist(t *testing.T) {
 
 	transfer, err := adapter.GetTransfer("1")
 	require.NoError(t, err)
-	require.Equal(t, transfer.Id, model.TransferID("1"))
+	require.Equal(t, transfer.ID, "1")
 }
 
 func TestTransferPersistenceAdapterGetTransferNotExist(t *testing.T) {
@@ -113,7 +113,7 @@ func TestTransferPersistenceAdapterGetAllTransfer(t *testing.T) {
 
 	transfers := adapter.GetAllTransfer()
 	require.Len(t, transfers, 1)
-	require.Equal(t, transfers[0].Id, model.TransferID("1"))
+	require.Equal(t, transfers[0].ID, "1")
 }
 
 func TestTransferPersistenceAdapterSetComplete(t *testing.T) {
