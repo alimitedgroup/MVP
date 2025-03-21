@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"go.uber.org/fx"
@@ -30,6 +31,7 @@ var Module = fx.Options(
 		fx.As(new(portin.Auth)),
 		fx.As(new(portin.Warehouses)),
 	)),
+	fx.Decorate(observability.WrapLogger("business")),
 )
 
 func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut) *Business {

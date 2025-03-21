@@ -7,8 +7,9 @@ import (
 	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterin"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterout"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
+	prettyconsole "github.com/thessem/zap-prettyconsole"
 	"go.uber.org/fx"
-	"log"
+	"go.uber.org/zap"
 	"net"
 )
 
@@ -20,9 +21,14 @@ type APIConfig struct {
 func main() {
 	config := loadConfig()
 
-	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", "0.0.0.0", 8080))
+	addrStr := fmt.Sprintf("%s:%d", "0.0.0.0", 8080)
+	addr, err := net.ResolveTCPAddr("tcp", addrStr)
 	if err != nil {
-		log.Fatal("Invalid TCP address: ", err)
+		prettyconsole.NewLogger(zap.DebugLevel).Fatal(
+			"Failed to bind to TCP address",
+			zap.Error(err),
+			zap.String("addr", addrStr),
+		)
 	}
 
 	app := fx.New(
