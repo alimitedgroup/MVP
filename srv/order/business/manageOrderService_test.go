@@ -242,5 +242,90 @@ func TestManageOrderServiceCreateOrder(t *testing.T) {
 			}
 		},
 	)
+}
 
+func TestManageOrderServiceCreateTrasfer(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.sendTransferUpdatePort.EXPECT().SendTransferUpdate(gomock.Any(), gomock.Any()).Return(model.Transfer{
+				Id:                "1",
+				SenderId:          "1",
+				ReceiverId:        "2",
+				Status:            "Created",
+				UpdateTime:        0,
+				CreationTime:      0,
+				LinkedStockUpdate: 0,
+				ReservationID:     "",
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+			suite.sendContactWarehousePort.EXPECT().SendContactWarehouses(gomock.Any(), gomock.Any()).Return(nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				cmd := port.CreateTransferCmd{
+					SenderId:   "1",
+					ReceiverId: "2",
+					Goods: []port.CreateTransferGood{
+						{
+							GoodID:   "1",
+							Quantity: 1,
+						},
+					},
+				}
+				resp, err := service.CreateTransfer(ctx, cmd)
+				require.NoError(t, err)
+				require.NotEmpty(t, resp.TransferID)
+			}
+		},
+	)
+}
+
+func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
+	ctx := t.Context()
+	runTestManagerOrderService(t,
+		func(suite *managerOrderServiceMockSuite) {
+			suite.sendTransferUpdatePort.EXPECT().SendTransferUpdate(gomock.Any(), gomock.Any()).Return(model.Transfer{
+				Id:                "1",
+				SenderId:          "1",
+				ReceiverId:        "2",
+				Status:            "Filled",
+				UpdateTime:        0,
+				CreationTime:      0,
+				LinkedStockUpdate: 1,
+				ReservationID:     "1",
+				Goods: []model.GoodStock{
+					{
+						ID:       "1",
+						Quantity: 1,
+					},
+				},
+			}, nil)
+			// suite.sendContactWarehousePort.EXPECT().SendContactWarehouses(gomock.Any(), gomock.Any()).Return(nil)
+			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{Id: "1"}, nil)
+		},
+		func() fx.Option { return fx.Options() },
+		func() interface{} {
+			return func(service *ManageOrderService) {
+				cmd := port.ContactWarehousesCmd{
+					Type:                  port.ContactWarehousesTypeTransfer,
+					Order:                 nil,
+					Transfer:              &port.ContactWarehousesTransfer{},
+					RetryUntil:            0,
+					RetryInTime:           0,
+					ExcludeWarehouses:     []string{},
+					ConfirmedReservations: []port.ConfirmedReservation{},
+				}
+				resp, err := service.ContactWarehouses(ctx, cmd)
+				require.NoError(t, err)
+				require.False(t, resp.IsRetry)
+			}
+		},
+	)
 }
