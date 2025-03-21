@@ -89,8 +89,8 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 	getTransferUseCaseMock := NewMockIGetTransferUseCase(ctrl)
 	getTransferUseCaseMock.EXPECT().GetTransfer(gomock.Any(), gomock.Any()).Return(model.Transfer{
 		ID:                "1",
-		SenderId:          "1",
-		ReceiverId:        "2",
+		SenderID:          "1",
+		ReceiverID:        "2",
 		Status:            "Created",
 		UpdateTime:        time.Now().UnixMilli(),
 		CreationTime:      time.Now().UnixMilli(),
@@ -106,8 +106,8 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 	getTransferUseCaseMock.EXPECT().GetAllTransfers(gomock.Any()).Return([]model.Transfer{
 		{
 			ID:                "1",
-			SenderId:          "1",
-			ReceiverId:        "2",
+			SenderID:          "1",
+			ReceiverID:        "2",
 			Status:            "Created",
 			UpdateTime:        time.Now().UnixMilli(),
 			CreationTime:      time.Now().UnixMilli(),
@@ -122,8 +122,8 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 		},
 		{
 			ID:                "2",
-			SenderId:          "3",
-			ReceiverId:        "1",
+			SenderID:          "3",
+			ReceiverID:        "1",
 			Status:            "Created",
 			UpdateTime:        time.Now().UnixMilli(),
 			CreationTime:      time.Now().UnixMilli(),

@@ -24,11 +24,11 @@ func (o *Order) IsCompleted() bool {
 	m := make(map[string]int64)
 
 	for _, good := range o.Goods {
-		old, exist := m[string(good.GoodID)]
+		old, exist := m[good.GoodID]
 		if !exist {
 			old = 0
 		}
-		m[string(good.GoodID)] = old + good.Quantity
+		m[good.GoodID] = old + good.Quantity
 	}
 
 	for _, warehouse := range o.Warehouses {

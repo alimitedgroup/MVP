@@ -34,7 +34,7 @@ func (s *TransferPersistanceAdapter) ApplyTransferUpdate(cmd port.ApplyTransferU
 	goods := make([]TransferUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, TransferUpdateGood{
-			GoodID:   string(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
@@ -82,8 +82,8 @@ func repoTransferToModelTransfer(transfer Transfer) model.Transfer {
 	return model.Transfer{
 		ID:                transfer.ID,
 		Status:            transfer.Status,
-		SenderId:          transfer.SenderID,
-		ReceiverId:        transfer.ReceiverID,
+		SenderID:          transfer.SenderID,
+		ReceiverID:        transfer.ReceiverID,
 		Goods:             goods,
 		LinkedStockUpdate: transfer.LinkedStockUpdate,
 		ReservationID:     transfer.ReservationId,

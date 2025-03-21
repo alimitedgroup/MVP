@@ -178,7 +178,7 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 			Goods:         goods,
 			OrderID:       "",
 			TransferID:    cmd.TransferID,
-			ReservationID: string(reservation.ID),
+			ReservationID: reservation.ID,
 		}
 		err = s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
 		if err != nil {

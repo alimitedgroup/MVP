@@ -138,8 +138,8 @@ func (a *NatsStreamAdapter) SendTransferUpdate(ctx context.Context, cmd port.Sen
 	return model.Transfer{
 		ID:           cmd.ID,
 		Status:       cmd.Status,
-		SenderId:     cmd.SenderID,
-		ReceiverId:   cmd.ReceiverID,
+		SenderID:     cmd.SenderID,
+		ReceiverID:   cmd.ReceiverID,
 		Goods:        modelGoods,
 		CreationTime: creationTime,
 		UpdateTime:   updateTime,
@@ -163,12 +163,12 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Order.Goods))
 		for _, good := range cmd.Order.Goods {
 			goods = append(goods, internalStream.ContactWarehousesGood{
-				GoodID:   string(good.GoodID),
+				GoodID:   good.GoodID,
 				Quantity: good.Quantity,
 			})
 		}
 		order = &internalStream.ContactWarehousesOrder{
-			ID:           string(cmd.Order.ID),
+			ID:           cmd.Order.ID,
 			Status:       cmd.Order.Status,
 			Name:         cmd.Order.Name,
 			FullName:     cmd.Order.FullName,
@@ -183,15 +183,15 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		goods := make([]internalStream.ContactWarehousesGood, 0, len(cmd.Transfer.Goods))
 		for _, good := range cmd.Transfer.Goods {
 			goods = append(goods, internalStream.ContactWarehousesGood{
-				GoodID:   string(good.GoodID),
+				GoodID:   good.GoodID,
 				Quantity: good.Quantity,
 			})
 		}
 		transfer = &internalStream.ContactWarehousesTransfer{
-			ID:            string(cmd.Transfer.ID),
+			ID:            cmd.Transfer.ID,
 			Status:        cmd.Transfer.Status,
-			SenderId:      string(cmd.Transfer.SenderId),
-			ReceiverId:    string(cmd.Transfer.ReceiverId),
+			SenderId:      cmd.Transfer.SenderID,
+			ReceiverId:    cmd.Transfer.ReceiverID,
 			UpdateTime:    cmd.Transfer.UpdateTime,
 			CreationTime:  cmd.Transfer.CreationTime,
 			Goods:         goods,

@@ -139,8 +139,8 @@ func TestApplyStockUpdateServiceTransfer(t *testing.T) {
 			firstCall := suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).Return(model.Transfer{
 				ID:                "1",
 				Status:            "Filled",
-				SenderId:          "1",
-				ReceiverId:        "2",
+				SenderID:          "1",
+				ReceiverID:        "2",
 				ReservationID:     "1",
 				CreationTime:      now,
 				UpdateTime:        now,
@@ -156,8 +156,8 @@ func TestApplyStockUpdateServiceTransfer(t *testing.T) {
 			suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).After(firstCall).Return(model.Transfer{
 				ID:                "1",
 				Status:            "Filled",
-				SenderId:          "1",
-				ReceiverId:        "2",
+				SenderID:          "1",
+				ReceiverID:        "2",
 				ReservationID:     "1",
 				CreationTime:      now,
 				UpdateTime:        now,

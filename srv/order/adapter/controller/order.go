@@ -162,14 +162,14 @@ func orderToGetGoodResponseDTO(order model.Order) response.GetOrderResponseDTO {
 	goods := make([]response.OrderInfoGood, 0, len(order.Goods))
 	for _, good := range order.Goods {
 		goods = append(goods, response.OrderInfoGood{
-			GoodID:   string(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
 
 	return response.GetOrderResponseDTO{
 		Message: response.OrderInfo{
-			OrderID:  string(order.ID),
+			OrderID:  order.ID,
 			Status:   order.Status,
 			Name:     order.Name,
 			FullName: order.FullName,
@@ -186,13 +186,13 @@ func ordersToGetAllGoodResponseDTO(model []model.Order) response.GetAllOrderResp
 		goods := make([]response.OrderInfoGood, 0, len(order.Goods))
 		for _, good := range order.Goods {
 			goods = append(goods, response.OrderInfoGood{
-				GoodID:   string(good.GoodID),
+				GoodID:   good.GoodID,
 				Quantity: good.Quantity,
 			})
 		}
 
 		orders = append(orders, response.OrderInfo{
-			OrderID:      string(order.ID),
+			OrderID:      order.ID,
 			Status:       order.Status,
 			Name:         order.Name,
 			FullName:     order.FullName,

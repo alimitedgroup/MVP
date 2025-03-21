@@ -58,13 +58,13 @@ func (m *mockPortsImpl) GetGood(id model.GoodID) *model.GoodInfo {
 
 func (m *mockPortsImpl) CreateStockUpdate(ctx context.Context, cmd port.CreateStockUpdateCmd) error {
 	for _, v := range cmd.Goods {
-		old, ok := m.info[string(v.Good.ID)]
+		old, ok := m.info[v.Good.ID]
 		if !ok {
 			return fmt.Errorf("good %s not found", v.Good.ID)
 		}
 		old.lastUpdateQty = v.Good.Quantity
 		old.qty = v.Good.Quantity
-		m.info[string(v.Good.ID)] = old
+		m.info[v.Good.ID] = old
 	}
 
 	return nil

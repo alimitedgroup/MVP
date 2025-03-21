@@ -46,7 +46,7 @@ func TestNatsStreamAdapterSendOrderUpdate(t *testing.T) {
 
 	order, err := a.SendOrderUpdate(ctx, cmd)
 	require.NoError(t, err)
-	require.Equal(t, cmd.ID, string(order.ID))
+	require.Equal(t, cmd.ID, order.ID)
 
 	info, err := s.Info(ctx)
 	require.NoError(t, err)
@@ -85,7 +85,7 @@ func TestNatsStreamAdapterSendTransferUpdate(t *testing.T) {
 
 	tranfer, err := a.SendTransferUpdate(ctx, cmd)
 	require.NoError(t, err)
-	require.Equal(t, cmd.ID, string(tranfer.ID))
+	require.Equal(t, cmd.ID, tranfer.ID)
 
 	info, err := s.Info(ctx)
 	require.NoError(t, err)
@@ -162,8 +162,8 @@ func TestNatsStreamAdapterSendContactTransfer(t *testing.T) {
 				},
 			},
 			Status:            "Created",
-			SenderId:          "1",
-			ReceiverId:        "2",
+			SenderID:          "1",
+			ReceiverID:        "2",
 			ReservationID:     "",
 			LinkedStockUpdate: 0,
 			CreationTime:      time.Now().UnixMilli(),

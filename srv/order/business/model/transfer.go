@@ -4,8 +4,8 @@ type TransferID string
 
 type Transfer struct {
 	ID                string
-	SenderId          string
-	ReceiverId        string
+	SenderID          string
+	ReceiverID        string
 	Status            string
 	UpdateTime        int64
 	CreationTime      int64

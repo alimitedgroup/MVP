@@ -71,8 +71,8 @@ func TestManageOrderServiceGetAllTransfers(t *testing.T) {
 			suite.getTransferPort.EXPECT().GetAllTransfer().Return([]model.Transfer{
 				{
 					ID:                "1",
-					SenderId:          "1",
-					ReceiverId:        "2",
+					SenderID:          "1",
+					ReceiverID:        "2",
 					Status:            "Created",
 					UpdateTime:        0,
 					CreationTime:      0,
@@ -105,8 +105,8 @@ func TestManageOrderServiceGetTransfer(t *testing.T) {
 			suite.getTransferPort.EXPECT().GetTransfer(gomock.Any()).Return(model.Transfer{
 
 				ID:                "1",
-				SenderId:          "1",
-				ReceiverId:        "2",
+				SenderID:          "1",
+				ReceiverID:        "2",
 				Status:            "Created",
 				UpdateTime:        0,
 				CreationTime:      0,
@@ -252,8 +252,8 @@ func TestManageOrderServiceCreateTrasfer(t *testing.T) {
 		func(suite *managerOrderServiceMockSuite) {
 			suite.sendTransferUpdatePort.EXPECT().SendTransferUpdate(gomock.Any(), gomock.Any()).Return(model.Transfer{
 				ID:                "1",
-				SenderId:          "1",
-				ReceiverId:        "2",
+				SenderID:          "1",
+				ReceiverID:        "2",
 				Status:            "Created",
 				UpdateTime:        0,
 				CreationTime:      0,
@@ -295,8 +295,8 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 		func(suite *managerOrderServiceMockSuite) {
 			suite.sendTransferUpdatePort.EXPECT().SendTransferUpdate(gomock.Any(), gomock.Any()).Return(model.Transfer{
 				ID:                "1",
-				SenderId:          "1",
-				ReceiverId:        "2",
+				SenderID:          "1",
+				ReceiverID:        "2",
 				Status:            "Filled",
 				UpdateTime:        0,
 				CreationTime:      0,

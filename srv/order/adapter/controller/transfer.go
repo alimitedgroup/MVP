@@ -108,15 +108,15 @@ func modelTransferToTransferInfoDTO(transfer model.Transfer) response.TransferIn
 	goods := make([]response.TransferInfoGood, 0, len(transfer.Goods))
 	for _, good := range transfer.Goods {
 		goods = append(goods, response.TransferInfoGood{
-			GoodID:   string(good.GoodID),
+			GoodID:   good.GoodID,
 			Quantity: good.Quantity,
 		})
 	}
 	return response.TransferInfo{
 		Status:     transfer.Status,
-		TransferID: string(transfer.ID),
-		SenderID:   string(transfer.SenderId),
-		ReceiverID: string(transfer.ReceiverId),
+		TransferID: transfer.ID,
+		SenderID:   transfer.SenderID,
+		ReceiverID: transfer.ReceiverID,
 		Goods:      goods,
 	}
 }

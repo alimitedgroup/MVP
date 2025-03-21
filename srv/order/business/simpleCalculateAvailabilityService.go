@@ -70,7 +70,7 @@ func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, c
 
 		if warehouseTotal > 0 {
 			availabilities = append(availabilities, port.WarehouseAvailability{
-				WarehouseID: string(warehouse.ID),
+				WarehouseID: warehouse.ID,
 				Goods:       toReserveGoods,
 			})
 		}

@@ -15,12 +15,12 @@ func NewStockPersistanceAdapter(stockRepo IStockRepository) *StockPersistanceAda
 
 func (s *StockPersistanceAdapter) ApplyStockUpdate(cmd port.ApplyStockUpdateCmd) {
 	for _, good := range cmd.Goods {
-		s.stockRepo.SetStock(cmd.WarehouseID, string(good.GoodID), good.Quantity)
+		s.stockRepo.SetStock(cmd.WarehouseID, good.GoodID, good.Quantity)
 	}
 }
 
 func (s *StockPersistanceAdapter) GetStock(cmd port.GetStockCmd) (model.GoodStock, error) {
-	stock, err := s.stockRepo.GetStock(string(cmd.WarehouseID), string(cmd.GoodID))
+	stock, err := s.stockRepo.GetStock(cmd.WarehouseID, cmd.GoodID)
 	if err != nil {
 		if err == ErrWarehouseNotFound {
 			return model.GoodStock{}, port.ErrStockNotFound

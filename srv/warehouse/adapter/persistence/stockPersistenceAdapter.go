@@ -14,13 +14,13 @@ func NewStockPersistanceAdapter(stockRepo IStockRepository) *StockPersistanceAda
 
 func (s *StockPersistanceAdapter) ApplyStockUpdate(goods []model.GoodStock) {
 	for _, good := range goods {
-		s.stockRepo.SetStock(string(good.ID), good.Quantity)
+		s.stockRepo.SetStock(good.ID, good.Quantity)
 	}
 }
 
 func (s *StockPersistanceAdapter) ApplyReservationEvent(reservation model.Reservation) error {
 	for _, good := range reservation.Goods {
-		if err := s.stockRepo.ReserveStock(string(reservation.ID), string(good.GoodID), good.Quantity); err != nil {
+		if err := s.stockRepo.ReserveStock(reservation.ID, good.GoodID, good.Quantity); err != nil {
 			return err
 		}
 	}
@@ -30,7 +30,7 @@ func (s *StockPersistanceAdapter) ApplyReservationEvent(reservation model.Reserv
 
 func (s *StockPersistanceAdapter) ApplyOrderFilled(reservation model.Reservation) error {
 	for _, good := range reservation.Goods {
-		if err := s.stockRepo.UnReserveStock(string(good.GoodID), good.Quantity); err != nil {
+		if err := s.stockRepo.UnReserveStock(good.GoodID, good.Quantity); err != nil {
 			return err
 		}
 	}
