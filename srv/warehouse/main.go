@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib"
@@ -65,6 +66,7 @@ func main() {
 	opts := fx.Options(
 		config,
 		Modules,
+		fx.Provide(observability.New),
 		fx.Provide(broker.NewNatsConn),
 	)
 
