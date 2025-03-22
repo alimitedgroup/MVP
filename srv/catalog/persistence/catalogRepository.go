@@ -1,8 +1,9 @@
 package persistence
 
 import (
-	"github.com/alimitedgroup/MVP/common/dto"
 	"sync"
+
+	"github.com/alimitedgroup/MVP/common/dto"
 
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 )
