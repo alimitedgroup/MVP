@@ -35,7 +35,10 @@ func (ap *AuthPublisher) PublishKey(puk crypto.PublicKey, issuer string) error {
 		return err
 	}
 	ctx := context.Background()
-	_, _ = ap.mb.Js.CreateStream(ctx, stream.KeyStream)
+	_, err = ap.mb.Js.CreateStream(ctx, stream.KeyStream)
+	if err != nil {
+		return err
+	}
 	_, err = ap.mb.Js.Publish(ctx, fmt.Sprintf("keys.%s", issuer), msg)
 	if err != nil {
 		return err
