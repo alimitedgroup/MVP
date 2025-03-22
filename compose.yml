@@ -114,6 +114,7 @@ services:
     build: { args: { SERVICE: notification } }
     environment:
       - INFLUXDB_TOKEN=my-token
+      - INFLUXDB_ORG=my-org
       - ENV_BROKER_URL=nats://nats:4222
     networks:
       - warehouse
