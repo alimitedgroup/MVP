@@ -11,8 +11,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@latest -source=../service/portIn/getTokenPort.go -destination=GetTokenUseCase_mock.go -package controller
-
 func Test_Router(t *testing.T) {
 	ctx := t.Context()
 	ctrl := gomock.NewController(t)
@@ -23,9 +21,12 @@ func Test_Router(t *testing.T) {
 		Module,
 		fx.Supply(ns),
 		fx.Supply(ctrl),
+		fx.Provide(
+			fx.Annotate(NewFakeService,
+				fx.As(new(serviceportin.IGetTokenUseCase)),
+			)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Provide(fx.Annotate(NewMockIGetTokenUseCase, fx.As(new(serviceportin.IGetTokenUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
