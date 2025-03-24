@@ -72,7 +72,7 @@ func (c *TransferController) TransferGetHandler(ctx context.Context, msg *nats.M
 		return err
 	}
 
-	transfer, err := c.getTransferUseCase.GetTransfer(ctx, dto.TransferID)
+	transfer, err := c.getTransferUseCase.GetTransfer(ctx, port.GetTransferCmd(dto.TransferID))
 	if err != nil {
 		return err
 	}

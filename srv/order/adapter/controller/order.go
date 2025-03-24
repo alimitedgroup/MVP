@@ -105,7 +105,7 @@ func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) er
 		return nil
 	}
 
-	order, err := c.getOrderUseCase.GetOrder(ctx, dto.OrderID)
+	order, err := c.getOrderUseCase.GetOrder(ctx, port.GetOrderCmd(dto.OrderID))
 	if err != nil {
 		resp := response.ErrorResponseDTO{
 			Error: err.Error(),

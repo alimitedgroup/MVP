@@ -8,8 +8,10 @@ import (
 )
 
 type IGetOrderUseCase interface {
-	GetOrder(context.Context, string) (model.Order, error)
+	GetOrder(context.Context, GetOrderCmd) (model.Order, error)
 	GetAllOrders(context.Context) []model.Order
 }
+
+type GetOrderCmd string
 
 var ErrOrderNotFound = errors.New("order not found")
