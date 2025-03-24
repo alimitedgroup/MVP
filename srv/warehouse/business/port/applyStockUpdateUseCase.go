@@ -6,24 +6,24 @@ type IApplyStockUpdateUseCase interface {
 
 type StockUpdateCmd struct {
 	ID            string
-	Type          StockUpdateCmdType
-	Goods         []StockUpdateCmdGood
+	Type          StockUpdateType
+	Goods         []StockUpdateGood
 	OrderID       string
 	TransferID    string
 	ReservationID string
 	Timestamp     int64
 }
 
-type StockUpdateCmdType string
+type StockUpdateType string
 
 const (
-	StockUpdateCmdTypeAdd      StockUpdateCmdType = "add"
-	StockUpdateCmdTypeRemove   StockUpdateCmdType = "remove"
-	StockUpdateCmdTypeOrder    StockUpdateCmdType = "order"
-	StockUpdateCmdTypeTransfer StockUpdateCmdType = "transfer"
+	StockUpdateCmdTypeAdd      StockUpdateType = "add"
+	StockUpdateCmdTypeRemove   StockUpdateType = "remove"
+	StockUpdateCmdTypeOrder    StockUpdateType = "order"
+	StockUpdateCmdTypeTransfer StockUpdateType = "transfer"
 )
 
-type StockUpdateCmdGood struct {
+type StockUpdateGood struct {
 	GoodID   string
 	Quantity int64
 	Delta    int64

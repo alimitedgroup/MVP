@@ -32,7 +32,7 @@ func TestApplyStockUpdateService(t *testing.T) {
 				ReservationID: "1",
 				Timestamp:     time.Now().UnixMilli(),
 				ID:            "1",
-				Goods: []port.StockUpdateCmdGood{
+				Goods: []port.StockUpdateGood{
 					{
 						GoodID:   "1",
 						Quantity: 10,
