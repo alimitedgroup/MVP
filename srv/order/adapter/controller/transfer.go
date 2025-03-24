@@ -14,7 +14,6 @@ import (
 )
 
 type TransferController struct {
-	broker                *broker.NatsMessageBroker
 	createTransferUseCase port.ICreateTransferUseCase
 	getTransferUseCase    port.IGetTransferUseCase
 }
@@ -24,11 +23,10 @@ type TransferControllerParams struct {
 
 	CreateTransferUseCase port.ICreateTransferUseCase
 	GetTransferUseCase    port.IGetTransferUseCase
-	Broker                *broker.NatsMessageBroker
 }
 
 func NewTransferController(p TransferControllerParams) *TransferController {
-	return &TransferController{p.Broker, p.CreateTransferUseCase, p.GetTransferUseCase}
+	return &TransferController{p.CreateTransferUseCase, p.GetTransferUseCase}
 }
 
 func (c *TransferController) TransferCreateHandler(ctx context.Context, msg *nats.Msg) error {

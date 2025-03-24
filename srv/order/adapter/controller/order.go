@@ -15,7 +15,6 @@ import (
 )
 
 type OrderController struct {
-	broker             *broker.NatsMessageBroker
 	createOrderUseCase port.ICreateOrderUseCase
 	getOrderUseCase    port.IGetOrderUseCase
 }
@@ -23,13 +22,12 @@ type OrderController struct {
 type OrderControllerParams struct {
 	fx.In
 
-	Broker             *broker.NatsMessageBroker
 	CreateOrderUseCase port.ICreateOrderUseCase
 	GetOrderUseCase    port.IGetOrderUseCase
 }
 
 func NewOrderController(p OrderControllerParams) *OrderController {
-	return &OrderController{p.Broker, p.CreateOrderUseCase, p.GetOrderUseCase}
+	return &OrderController{p.CreateOrderUseCase, p.GetOrderUseCase}
 }
 
 func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg) error {
