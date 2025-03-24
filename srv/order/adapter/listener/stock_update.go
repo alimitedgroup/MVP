@@ -25,7 +25,7 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 		return err
 	}
 
-	cmd := StockUpdateEventToApplyStockUpdateCmd(event)
+	cmd := stockUpdateEventToApplyStockUpdateCmd(event)
 	err = l.applyStockUpdateUseCase.ApplyStockUpdate(ctx, cmd)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 	return nil
 }
 
-func StockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
+func stockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockUpdateCmd {
 	goods := make([]port.StockUpdateGood, 0, len(event.Goods))
 
 	for _, good := range event.Goods {

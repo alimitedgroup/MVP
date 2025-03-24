@@ -9,6 +9,7 @@ import (
 	internalStream "github.com/alimitedgroup/MVP/srv/order/adapter/stream"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.uber.org/fx"
 )
 
 type OrderListener struct {
@@ -17,8 +18,16 @@ type OrderListener struct {
 	contactWarehouseUseCase    port.IContactWarehousesUseCase
 }
 
-func NewOrderListener(applyOrderUpdateUseCase port.IApplyOrderUpdateUseCase, contactWarehouseUseCase port.IContactWarehousesUseCase, applyTransferUpdateUseCase port.IApplyTransferUpdateUseCase) *OrderListener {
-	return &OrderListener{applyOrderUpdateUseCase, applyTransferUpdateUseCase, contactWarehouseUseCase}
+type OrderListenerParams struct {
+	fx.In
+
+	ApplyOrderUpdateUseCase    port.IApplyOrderUpdateUseCase
+	ApplyTransferUpdateUseCase port.IApplyTransferUpdateUseCase
+	ContactWarehouseUseCase    port.IContactWarehousesUseCase
+}
+
+func NewOrderListener(p OrderListenerParams) *OrderListener {
+	return &OrderListener{p.ApplyOrderUpdateUseCase, p.ApplyTransferUpdateUseCase, p.ContactWarehouseUseCase}
 }
 
 func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg) error {
