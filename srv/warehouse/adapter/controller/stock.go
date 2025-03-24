@@ -12,13 +12,12 @@ import (
 )
 
 type StockController struct {
-	broker             *broker.NatsMessageBroker
 	addStockUseCase    port.IAddStockUseCase
 	removeStockUseCase port.IRemoveStockUseCase
 }
 
-func NewStockController(n *broker.NatsMessageBroker, addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase) *StockController {
-	return &StockController{n, addStockUseCase, removeStockUseCase}
+func NewStockController(addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase) *StockController {
+	return &StockController{addStockUseCase, removeStockUseCase}
 }
 
 func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) error {
