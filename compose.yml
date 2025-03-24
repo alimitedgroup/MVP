@@ -82,3 +82,14 @@ services:
       - warehouse
     depends_on:
       - nats
+
+  authenticator:
+    build: { args: { SERVICE: authenticator } }
+    environment:
+      - ENV_BROKER_URL=nats://nats:4222
+    volumes:
+      - ./config.yml:/data/config.yml
+    networks:
+      - warehouse
+    depends_on:
+      - nats
