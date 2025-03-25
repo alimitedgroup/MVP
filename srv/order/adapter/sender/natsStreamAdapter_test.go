@@ -79,7 +79,7 @@ func TestNatsStreamAdapterSendTransferUpdate(t *testing.T) {
 		Status:        "Created",
 		SenderID:      "1",
 		ReceiverID:    "2",
-		ReservationId: "",
+		ReservationID: "",
 		CreationTime:  time.Now().UnixMilli(),
 	}
 
@@ -203,7 +203,7 @@ func TestNatsStreamAdapterRequestReservation(t *testing.T) {
 	a := NewNatsStreamAdapter(broker)
 
 	cmd := port.RequestReservationCmd{
-		WarehouseId: "1",
+		WarehouseID: "1",
 		Goods: []port.ReservationGood{
 			{
 				GoodID:   "1",
@@ -214,5 +214,5 @@ func TestNatsStreamAdapterRequestReservation(t *testing.T) {
 
 	resp, err := a.RequestReservation(ctx, cmd)
 	require.NoError(t, err)
-	require.Equal(t, resp.Id, "1")
+	require.Equal(t, resp.ID, "1")
 }

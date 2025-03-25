@@ -9,7 +9,7 @@ type IApplyOrderUpdatePort interface {
 }
 
 type ApplyOrderUpdateCmd struct {
-	Id           string
+	ID           string
 	Status       string
 	Name         string
 	FullName     string

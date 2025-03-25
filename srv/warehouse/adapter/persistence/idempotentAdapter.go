@@ -11,9 +11,9 @@ func NewIDempotentAdapter(repo IIdempotentRepository) *IDempotentAdapter {
 }
 
 func (i *IDempotentAdapter) SaveEventID(cmd port.IdempotentCmd) {
-	i.repo.SaveEventID(cmd.Event, cmd.Id)
+	i.repo.SaveEventID(cmd.Event, cmd.ID)
 }
 
 func (i *IDempotentAdapter) IsAlreadyProcessed(cmd port.IdempotentCmd) bool {
-	return i.repo.IsAlreadyProcessed(cmd.Event, cmd.Id)
+	return i.repo.IsAlreadyProcessed(cmd.Event, cmd.ID)
 }

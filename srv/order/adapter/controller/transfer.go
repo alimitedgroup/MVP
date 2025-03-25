@@ -43,8 +43,8 @@ func (c *TransferController) TransferCreateHandler(ctx context.Context, msg *nat
 		})
 	}
 	cmd := port.CreateTransferCmd{
-		SenderId:   dto.SenderId,
-		ReceiverId: dto.ReceiverId,
+		SenderID:   dto.SenderID,
+		ReceiverID: dto.ReceiverID,
 		Goods:      goods,
 	}
 	resp, err := c.createTransferUseCase.CreateTransfer(ctx, cmd)

@@ -44,7 +44,7 @@ func orderUpdateCmdToApplyOrderUpdateCmd(cmd port.OrderUpdateCmd) port.ApplyOrde
 	}
 
 	applyOrderUpdateCmd := port.ApplyOrderUpdateCmd{
-		Id:           cmd.ID,
+		ID:           cmd.ID,
 		Status:       cmd.Status,
 		Name:         cmd.Name,
 		FullName:     cmd.FullName,
@@ -67,13 +67,13 @@ func transferUpdateCmdToApplyTransferUpdateCmd(cmd port.TransferUpdateCmd) port.
 	}
 
 	applyOrderUpdateCmd := port.ApplyTransferUpdateCmd{
-		Id:            cmd.ID,
+		ID:            cmd.ID,
 		Status:        cmd.Status,
-		SenderId:      cmd.SenderId,
-		ReceiverId:    cmd.ReceiverId,
+		SenderID:      cmd.SenderID,
+		ReceiverID:    cmd.ReceiverID,
 		UpdateTime:    cmd.UpdateTime,
 		CreationTime:  cmd.CreationTime,
-		ReservationId: cmd.ReservationId,
+		ReservationID: cmd.ReservationID,
 		Goods:         goods,
 	}
 

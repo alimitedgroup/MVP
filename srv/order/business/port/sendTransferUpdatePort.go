@@ -17,7 +17,7 @@ type SendTransferUpdateCmd struct {
 	SenderID      string
 	ReceiverID    string
 	Goods         []SendTransferUpdateGood
-	ReservationId string
+	ReservationID string
 }
 
 type SendTransferUpdateGood struct {

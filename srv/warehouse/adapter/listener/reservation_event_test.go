@@ -44,7 +44,7 @@ func TestReservationEventListener(t *testing.T) {
 					require.NoError(t, err)
 
 					event := stream.ReservationEvent{
-						Id: "1",
+						ID: "1",
 						Goods: []stream.ReservationGood{
 							{
 								GoodID:   "1",

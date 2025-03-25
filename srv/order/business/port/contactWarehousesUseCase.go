@@ -46,7 +46,7 @@ type ContactWarehousesTransfer struct {
 	UpdateTime    int64
 	CreationTime  int64
 	Goods         []ContactWarehousesGood
-	ReservationId string
+	ReservationID string
 }
 
 type ContactWarehousesGood struct {
@@ -55,7 +55,7 @@ type ContactWarehousesGood struct {
 }
 
 type ConfirmedReservation struct {
-	WarehouseId   string
+	WarehouseID   string
 	ReservationID string
 	Goods         map[string]int64
 }

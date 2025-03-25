@@ -20,7 +20,7 @@ func TestOrderPersistenceAdapterApplyOrderUpdate(t *testing.T) {
 	adapter := NewOrderPersistanceAdapter(mock)
 
 	cmd := port.ApplyOrderUpdateCmd{
-		Id:           "1",
+		ID:           "1",
 		Status:       "Created",
 		Name:         "Order 1",
 		FullName:     "test test",
@@ -171,8 +171,8 @@ func TestOrderPersistenceAdapterAddCompletedWarehouse(t *testing.T) {
 	adapter := NewOrderPersistanceAdapter(mock)
 
 	cmd := port.SetCompletedWarehouseCmd{
-		OrderId:     "1",
-		WarehouseId: "1",
+		OrderID:     "1",
+		WarehouseID: "1",
 		Goods: []model.GoodStock{
 			{
 				GoodID:   "1",
@@ -199,8 +199,8 @@ func TestOrderPersistenceAdapterAddCompletedWarehouseErr(t *testing.T) {
 	adapter := NewOrderPersistanceAdapter(mock)
 
 	cmd := port.SetCompletedWarehouseCmd{
-		OrderId:     "1",
-		WarehouseId: "1",
+		OrderID:     "1",
+		WarehouseID: "1",
 		Goods: []model.GoodStock{
 			{
 				GoodID:   "1",

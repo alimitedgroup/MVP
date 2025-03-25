@@ -43,8 +43,8 @@ func TestTransferControllerCreateTransfer(t *testing.T) {
 					require.NoError(t, err)
 
 					dto := request.CreateTransferRequestDTO{
-						SenderId:   "1",
-						ReceiverId: "2",
+						SenderID:   "1",
+						ReceiverID: "2",
 						Goods: []request.TransferGood{
 							{
 								GoodID:   "1",

@@ -59,7 +59,7 @@ func (l *OrderUpdateListener) ListenTransferUpdate(ctx context.Context, msg jets
 		Status:        event.Status,
 		SenderID:      event.SenderID,
 		ReceiverID:    event.ReceiverID,
-		ReservationId: event.ReservationId,
+		ReservationID: event.ReservationID,
 		Goods:         goods,
 	}
 	err = l.confirmTransferUseCase.ConfirmTransfer(ctx, cmd)

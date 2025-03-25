@@ -29,7 +29,7 @@ func (l *ReservationEventListener) ListenReservationEvent(ctx context.Context, m
 		goods = append(goods, port.ReservationGood(good))
 	}
 	cmd := port.ApplyReservationEventCmd{
-		Id:    event.Id,
+		ID:    event.ID,
 		Goods: goods,
 	}
 	err = l.applyReservationEventUseCase.ApplyReservationEvent(cmd)

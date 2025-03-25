@@ -63,7 +63,7 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 	confirmed := make([]port.ConfirmedReservation, 0, len(event.ConfirmedReservations))
 	for _, reservation := range event.ConfirmedReservations {
 		confirmed = append(confirmed, port.ConfirmedReservation{
-			WarehouseId:   reservation.WarehouseId,
+			WarehouseID:   reservation.WarehouseID,
 			ReservationID: reservation.ReservationID,
 			Goods:         reservation.Goods,
 		})
@@ -104,12 +104,12 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 		transfer = &port.ContactWarehousesTransfer{
 			ID:            event.Transfer.ID,
 			Goods:         goods,
-			SenderID:      event.Transfer.SenderId,
-			ReceiverID:    event.Transfer.ReceiverId,
+			SenderID:      event.Transfer.SenderID,
+			ReceiverID:    event.Transfer.ReceiverID,
 			Status:        event.Transfer.Status,
 			UpdateTime:    event.Transfer.UpdateTime,
 			CreationTime:  event.Transfer.CreationTime,
-			ReservationId: event.Transfer.ReservationId,
+			ReservationID: event.Transfer.ReservationID,
 		}
 	}
 
@@ -174,10 +174,10 @@ func transferUpdateEventToApplyTransferUpdateCmd(event stream.TransferUpdate) po
 	cmd := port.TransferUpdateCmd{
 		ID:            event.ID,
 		Goods:         goods,
-		SenderId:      event.SenderID,
-		ReceiverId:    event.ReceiverID,
+		SenderID:      event.SenderID,
+		ReceiverID:    event.ReceiverID,
 		Status:        event.Status,
-		ReservationId: event.ReservationId,
+		ReservationID: event.ReservationID,
 		UpdateTime:    event.UpdateTime,
 		CreationTime:  event.CreationTime,
 	}

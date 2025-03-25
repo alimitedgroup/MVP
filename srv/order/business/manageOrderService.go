@@ -46,9 +46,9 @@ func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.Create
 	transferCmd := port.SendTransferUpdateCmd{
 		ID:            transferId,
 		Status:        "Created",
-		SenderID:      cmd.SenderId,
-		ReceiverID:    cmd.ReceiverId,
-		ReservationId: "",
+		SenderID:      cmd.SenderID,
+		ReceiverID:    cmd.ReceiverID,
+		ReservationID: "",
 		Goods:         goods,
 	}
 	transfer, err := s.sendTransferUpdatePort.SendTransferUpdate(ctx, transferCmd)
@@ -159,7 +159,7 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 		items = append(items, port.ReservationGood(good))
 	}
 	reservCmd := port.RequestReservationCmd{
-		WarehouseId: cmd.Transfer.SenderID,
+		WarehouseID: cmd.Transfer.SenderID,
 		Goods:       items,
 	}
 	reservResp, err := s.requestReservationPort.RequestReservation(ctx, reservCmd)
@@ -217,7 +217,7 @@ func (s *ManageOrderService) contactWarehouseForTransfer(ctx context.Context, cm
 		SenderID:      cmd.Transfer.SenderID,
 		ReceiverID:    cmd.Transfer.ReceiverID,
 		Goods:         goods,
-		ReservationId: reservResp.Id,
+		ReservationID: reservResp.ID,
 	}
 	_, err = s.sendTransferUpdatePort.SendTransferUpdate(ctx, sendTransferCmd)
 	if err != nil {
@@ -256,8 +256,8 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 		}
 
 		confirmed = append(confirmed, port.ConfirmedReservation{
-			WarehouseId:   warehouse.WarehouseID,
-			ReservationID: reservResp.Id,
+			WarehouseID:   warehouse.WarehouseID,
+			ReservationID: reservResp.ID,
 			Goods:         warehouse.Goods,
 		})
 
@@ -380,7 +380,7 @@ func warehouseAvailabilityToReservationCmd(warehouse port.WarehouseAvailability)
 		})
 	}
 	reservCmd := port.RequestReservationCmd{
-		WarehouseId: warehouse.WarehouseID,
+		WarehouseID: warehouse.WarehouseID,
 		Goods:       items,
 	}
 	return reservCmd
@@ -441,7 +441,7 @@ func contactCmdToSendTransferUpdateCmdForCancel(cmd port.ContactWarehousesCmd) p
 		SenderID:      cmd.Transfer.SenderID,
 		ReceiverID:    cmd.Transfer.ReceiverID,
 		Goods:         goods,
-		ReservationId: cmd.Transfer.ReservationId,
+		ReservationID: cmd.Transfer.ReservationID,
 	}
 	return sendTransferCmd
 }

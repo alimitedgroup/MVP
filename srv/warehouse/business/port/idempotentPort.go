@@ -7,5 +7,5 @@ type IIdempotentPort interface {
 
 type IdempotentCmd struct {
 	Event string
-	Id    string
+	ID    string
 }

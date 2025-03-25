@@ -12,7 +12,7 @@ type ConfirmTransferCmd struct {
 	ReceiverID    string
 	Status        string
 	Goods         []TransferUpdateGood
-	ReservationId string
+	ReservationID string
 }
 
 type TransferUpdateGood struct {

@@ -40,18 +40,18 @@ func (s *TransferPersistanceAdapter) ApplyTransferUpdate(cmd port.ApplyTransferU
 	}
 
 	transfer := Transfer{
-		ID:                cmd.Id,
+		ID:                cmd.ID,
 		Status:            cmd.Status,
-		SenderID:          cmd.SenderId,
-		ReceiverID:        cmd.ReceiverId,
+		SenderID:          cmd.SenderID,
+		ReceiverID:        cmd.ReceiverID,
 		LinkedStockUpdate: 0,
 		Goods:             goods,
-		ReservationId:     cmd.ReservationId,
+		ReservationID:     cmd.ReservationID,
 		UpdateTime:        cmd.UpdateTime,
 		CreationTime:      cmd.CreationTime,
 	}
 
-	s.transferRepo.SetTransfer(cmd.Id, transfer)
+	s.transferRepo.SetTransfer(cmd.ID, transfer)
 }
 
 func (s *TransferPersistanceAdapter) GetTransfer(transferId model.TransferID) (model.Transfer, error) {
@@ -86,7 +86,7 @@ func repoTransferToModelTransfer(transfer Transfer) model.Transfer {
 		ReceiverID:        transfer.ReceiverID,
 		Goods:             goods,
 		LinkedStockUpdate: transfer.LinkedStockUpdate,
-		ReservationID:     transfer.ReservationId,
+		ReservationID:     transfer.ReservationID,
 		UpdateTime:        transfer.UpdateTime,
 		CreationTime:      transfer.CreationTime,
 	}

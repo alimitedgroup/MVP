@@ -13,8 +13,8 @@ type CreateOrderGood struct {
 }
 
 type CreateTransferRequestDTO struct {
-	SenderId   string         `json:"sender_id"`
-	ReceiverId string         `json:"receiver_id"`
+	SenderID   string         `json:"sender_id"`
+	ReceiverID string         `json:"receiver_id"`
 	Goods      []TransferGood `json:"goods"`
 }
 

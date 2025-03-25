@@ -23,7 +23,7 @@ func (s *OrderPersistanceAdapter) SetCompletedWarehouse(cmd port.SetCompletedWar
 		goods[good.GoodID] = prev + good.Quantity
 	}
 
-	order, err := s.orderRepo.AddCompletedWarehouse(cmd.OrderId, cmd.WarehouseId, goods)
+	order, err := s.orderRepo.AddCompletedWarehouse(cmd.OrderID, cmd.WarehouseID, goods)
 	if err != nil {
 		return model.Order{}, err
 	}
@@ -42,7 +42,7 @@ func (s *OrderPersistanceAdapter) SetComplete(orderId model.OrderID) error {
 
 func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd) {
 	var warehouses []OrderWarehouseUsed
-	if old, err := s.orderRepo.GetOrder(cmd.Id); err == nil {
+	if old, err := s.orderRepo.GetOrder(cmd.ID); err == nil {
 		warehouses = old.Warehouses
 	} else {
 		warehouses = []OrderWarehouseUsed{}
@@ -57,7 +57,7 @@ func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd)
 	}
 
 	order := Order{
-		ID:           cmd.Id,
+		ID:           cmd.ID,
 		Status:       cmd.Status,
 		Name:         cmd.Name,
 		FullName:     cmd.FullName,
@@ -69,7 +69,7 @@ func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd)
 		CreationTime: cmd.CreationTime,
 	}
 
-	s.orderRepo.SetOrder(cmd.Id, order)
+	s.orderRepo.SetOrder(cmd.ID, order)
 }
 
 func (s *OrderPersistanceAdapter) GetOrder(orderId model.OrderID) (model.Order, error) {

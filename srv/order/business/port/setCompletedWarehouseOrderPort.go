@@ -8,7 +8,7 @@ type ISetCompletedWarehouseOrderPort interface {
 }
 
 type SetCompletedWarehouseCmd struct {
-	OrderId     string
-	WarehouseId string
+	OrderID     string
+	WarehouseID string
 	Goods       []model.GoodStock
 }

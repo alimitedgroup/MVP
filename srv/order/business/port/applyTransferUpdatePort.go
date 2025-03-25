@@ -9,12 +9,12 @@ type IApplyTransferUpdatePort interface {
 }
 
 type ApplyTransferUpdateCmd struct {
-	Id            string
+	ID            string
 	Status        string
-	SenderId      string
-	ReceiverId    string
+	SenderID      string
+	ReceiverID    string
 	Goods         []model.GoodStock
-	ReservationId string
+	ReservationID string
 	UpdateTime    int64
 	CreationTime  int64
 }

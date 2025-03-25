@@ -19,7 +19,7 @@ type Transfer struct {
 	ReceiverID        string
 	Goods             []TransferUpdateGood
 	LinkedStockUpdate int
-	ReservationId     string
+	ReservationID     string
 	CreationTime      int64
 	UpdateTime        int64
 }

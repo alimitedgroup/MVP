@@ -16,7 +16,7 @@ type TransferUpdate struct {
 	SenderID      string               `json:"sender_id"`
 	ReceiverID    string               `json:"receiver_id"`
 	Goods         []TransferUpdateGood `json:"goods"`
-	ReservationId string               `json:"reservation_id"`
+	ReservationID string               `json:"reservation_id"`
 	CreationTime  int64                `json:"creation_time"`
 	UpdateTime    int64                `json:"update_time"`
 }

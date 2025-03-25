@@ -30,7 +30,7 @@ func (a *PublishReservationEventAdapter) StoreReservationEvent(ctx context.Conte
 	}
 
 	streamMsg := stream.ReservationEvent{
-		Id:          reservation.ID,
+		ID:          reservation.ID,
 		Goods:       goods,
 		WarehouseID: a.warehouseCfg.ID,
 	}

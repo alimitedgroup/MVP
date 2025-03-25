@@ -9,7 +9,7 @@ type IRequestReservationPort interface {
 }
 
 type RequestReservationCmd struct {
-	WarehouseId string
+	WarehouseID string
 	Goods       []ReservationGood
 }
 
@@ -19,5 +19,5 @@ type ReservationGood struct {
 }
 
 type RequestReservationResponse struct {
-	Id string
+	ID string
 }

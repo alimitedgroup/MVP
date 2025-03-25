@@ -84,13 +84,13 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 	}
 
 	reserv := model.Reservation{
-		ID:    cmd.Id,
+		ID:    cmd.ID,
 		Goods: goods,
 	}
 
 	idempotentCmd := port.IdempotentCmd{
 		Event: "reservation",
-		Id:    cmd.Id,
+		ID:    cmd.ID,
 	}
 	if s.idempotentPort.IsAlreadyProcessed(idempotentCmd) {
 		return nil
@@ -154,7 +154,7 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 	}
 
 	if cmd.SenderID == s.cfg.ID {
-		reservation, err := s.getReservationPort.GetReservation(model.ReservationID(cmd.ReservationId))
+		reservation, err := s.getReservationPort.GetReservation(model.ReservationID(cmd.ReservationID))
 		if err != nil {
 			// TODO: handle other errors
 			return nil
@@ -208,7 +208,7 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 			Goods:         goods,
 			OrderID:       "",
 			TransferID:    cmd.TransferID,
-			ReservationID: cmd.ReservationId,
+			ReservationID: cmd.ReservationID,
 		}
 		err := s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
 		if err != nil {

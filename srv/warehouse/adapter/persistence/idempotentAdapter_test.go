@@ -17,7 +17,7 @@ func TestIdempotentAdapterGet(t *testing.T) {
 	adapter := NewIDempotentAdapter(mock)
 	ret := adapter.IsAlreadyProcessed(port.IdempotentCmd{
 		Event: "event",
-		Id:    "id",
+		ID:    "id",
 	})
 	require.False(t, ret)
 }
@@ -31,6 +31,6 @@ func TestIdempotentAdapterSet(t *testing.T) {
 	adapter := NewIDempotentAdapter(mock)
 	adapter.SaveEventID(port.IdempotentCmd{
 		Event: "event",
-		Id:    "id",
+		ID:    "id",
 	})
 }

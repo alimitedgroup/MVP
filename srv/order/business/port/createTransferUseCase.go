@@ -9,8 +9,8 @@ type ICreateTransferUseCase interface {
 }
 
 type CreateTransferCmd struct {
-	SenderId   string
-	ReceiverId string
+	SenderID   string
+	ReceiverID string
 	Goods      []CreateTransferGood
 }
 

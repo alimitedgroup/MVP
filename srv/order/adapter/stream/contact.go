@@ -42,12 +42,12 @@ type ContactWarehousesOrder struct {
 type ContactWarehousesTransfer struct {
 	ID            string                  `json:"id"`
 	Status        string                  `json:"status"`
-	SenderId      string                  `json:"sender_id"`
-	ReceiverId    string                  `json:"receiver_id"`
+	SenderID      string                  `json:"sender_id"`
+	ReceiverID    string                  `json:"receiver_id"`
 	UpdateTime    int64                   `json:"update_time"`
 	CreationTime  int64                   `json:"creation_time"`
 	Goods         []ContactWarehousesGood `json:"goods"`
-	ReservationId string                  `json:"reservation_id"`
+	ReservationID string                  `json:"reservation_id"`
 }
 
 type ContactWarehousesGood struct {
@@ -56,7 +56,7 @@ type ContactWarehousesGood struct {
 }
 
 type ConfirmedReservation struct {
-	WarehouseId   string           `json:"warehouse_id"`
+	WarehouseID   string           `json:"warehouse_id"`
 	ReservationID string           `json:"reservation_id"`
 	Goods         map[string]int64 `json:"goods"`
 }

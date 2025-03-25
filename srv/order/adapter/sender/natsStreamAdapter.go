@@ -109,7 +109,7 @@ func (a *NatsStreamAdapter) SendTransferUpdate(ctx context.Context, cmd port.Sen
 		Status:        cmd.Status,
 		SenderID:      cmd.SenderID,
 		ReceiverID:    cmd.ReceiverID,
-		ReservationId: cmd.ReservationId,
+		ReservationID: cmd.ReservationID,
 		Goods:         goods,
 		CreationTime:  creationTime,
 		UpdateTime:    updateTime,
@@ -151,7 +151,7 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 
 	for _, reservation := range cmd.ConfirmedReservations {
 		confirmed = append(confirmed, internalStream.ConfirmedReservation{
-			WarehouseId:   reservation.WarehouseId,
+			WarehouseID:   reservation.WarehouseID,
 			ReservationID: reservation.ReservationID,
 			Goods:         reservation.Goods,
 		})
@@ -190,12 +190,12 @@ func (a *NatsStreamAdapter) SendContactWarehouses(ctx context.Context, cmd port.
 		transfer = &internalStream.ContactWarehousesTransfer{
 			ID:            cmd.Transfer.ID,
 			Status:        cmd.Transfer.Status,
-			SenderId:      cmd.Transfer.SenderID,
-			ReceiverId:    cmd.Transfer.ReceiverID,
+			SenderID:      cmd.Transfer.SenderID,
+			ReceiverID:    cmd.Transfer.ReceiverID,
 			UpdateTime:    cmd.Transfer.UpdateTime,
 			CreationTime:  cmd.Transfer.CreationTime,
 			Goods:         goods,
-			ReservationId: cmd.Transfer.ReservationID,
+			ReservationID: cmd.Transfer.ReservationID,
 		}
 	}
 
@@ -242,7 +242,7 @@ func (a *NatsStreamAdapter) RequestReservation(ctx context.Context, cmd port.Req
 		return port.RequestReservationResponse{}, err
 	}
 
-	resp, err := a.broker.Nats.Request(fmt.Sprintf("warehouse.%s.reservation.create", cmd.WarehouseId), payload, 5*time.Second)
+	resp, err := a.broker.Nats.Request(fmt.Sprintf("warehouse.%s.reservation.create", cmd.WarehouseID), payload, 5*time.Second)
 	if err != nil {
 		return port.RequestReservationResponse{}, err
 	}
@@ -256,5 +256,5 @@ func (a *NatsStreamAdapter) RequestReservation(ctx context.Context, cmd port.Req
 		return port.RequestReservationResponse{}, port.ErrNotEnoughStock
 	}
 
-	return port.RequestReservationResponse{Id: respDto.Message.ReservationID}, nil
+	return port.RequestReservationResponse{ID: respDto.Message.ReservationID}, nil
 }

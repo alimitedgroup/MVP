@@ -125,7 +125,7 @@ func TestOrderUpdateListenerForTransfer(t *testing.T) {
 					event := stream.TransferUpdate{
 						ID:            "1",
 						Status:        "Created",
-						ReservationId: "",
+						ReservationID: "",
 						SenderID:      "1",
 						ReceiverID:    "2",
 						UpdateTime:    time.Now().UnixMilli(),

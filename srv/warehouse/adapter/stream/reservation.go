@@ -8,7 +8,7 @@ var ReservationEventStreamConfig = jetstream.StreamConfig{
 }
 
 type ReservationEvent struct {
-	Id          string            `json:"id"`
+	ID          string            `json:"id"`
 	WarehouseID string            `json:"warehouse_id"`
 	Goods       []ReservationGood `json:"goods"`
 }

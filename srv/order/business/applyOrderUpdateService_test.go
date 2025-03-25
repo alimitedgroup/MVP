@@ -90,11 +90,11 @@ func TestApplyOrderUpdateServiceTransfer(t *testing.T) {
 				cmd := port.TransferUpdateCmd{
 					ID:            "1",
 					Status:        "Created",
-					ReceiverId:    "1",
-					SenderId:      "2",
+					ReceiverID:    "1",
+					SenderID:      "2",
 					CreationTime:  time.Now().UnixMilli(),
 					UpdateTime:    time.Now().UnixMilli(),
-					ReservationId: "",
+					ReservationID: "",
 					Goods: []port.TransferUpdateGood{
 						{
 							GoodID:   "1",

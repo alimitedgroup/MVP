@@ -75,7 +75,7 @@ func TestManageReservationServiceApplyReservationEvent(t *testing.T) {
 			return func(lc fx.Lifecycle, service *ManageReservationService) {
 				lc.Append(fx.Hook{OnStart: func(ctx context.Context) error {
 					applyCmd := port.ApplyReservationEventCmd{
-						Id: "1",
+						ID: "1",
 						Goods: []port.ReservationGood{
 							{
 								GoodID:   "1",
@@ -198,7 +198,7 @@ func TestManageReservationServiceConfirmTransferSender(t *testing.T) {
 						Status:        "Filled",
 						SenderID:      "1",
 						ReceiverID:    "2",
-						ReservationId: "1",
+						ReservationID: "1",
 						Goods: []port.TransferUpdateGood{
 							{
 								GoodID:   "1",
@@ -237,7 +237,7 @@ func TestManageReservationServiceConfirmTransferReceiver(t *testing.T) {
 						Status:        "Filled",
 						SenderID:      "1",
 						ReceiverID:    "2",
-						ReservationId: "1",
+						ReservationID: "1",
 						Goods: []port.TransferUpdateGood{
 							{
 								GoodID:   "1",

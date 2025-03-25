@@ -5,6 +5,6 @@ type IApplyReservationUseCase interface {
 }
 
 type ApplyReservationEventCmd struct {
-	Id    string
+	ID    string
 	Goods []ReservationGood
 }

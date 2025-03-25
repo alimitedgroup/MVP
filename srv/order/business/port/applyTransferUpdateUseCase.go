@@ -8,10 +8,10 @@ type IApplyTransferUpdateUseCase interface {
 
 type TransferUpdateCmd struct {
 	ID            string
-	SenderId      string
-	ReceiverId    string
+	SenderID      string
+	ReceiverID    string
 	Goods         []TransferUpdateGood
-	ReservationId string
+	ReservationID string
 	Status        string
 	CreationTime  int64
 	UpdateTime    int64

@@ -28,7 +28,7 @@ func (s *ApplyStockUpdateService) ApplyStockUpdate(cmd port.StockUpdateCmd) {
 	if cmd.Type == port.StockUpdateCmdTypeOrder || cmd.Type == port.StockUpdateCmdTypeTransfer {
 		idempotentCmd := port.IdempotentCmd{
 			Event: "reservation",
-			Id:    cmd.ReservationID,
+			ID:    cmd.ReservationID,
 		}
 		s.idempotentPort.SaveEventID(idempotentCmd)
 	}

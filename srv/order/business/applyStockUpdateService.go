@@ -116,8 +116,8 @@ func (s *ApplyStockUpdateService) applyStockUpdateFromOrder(cmd port.StockUpdate
 		}
 
 		completedCmd := port.SetCompletedWarehouseCmd{
-			WarehouseId: cmd.WarehouseID,
-			OrderId:     cmd.OrderID,
+			WarehouseID: cmd.WarehouseID,
+			OrderID:     cmd.OrderID,
 			Goods:       goods,
 		}
 		order, err := s.setCompletedWarehousePort.SetCompletedWarehouse(completedCmd)

@@ -272,8 +272,8 @@ func TestManageOrderServiceCreateTrasfer(t *testing.T) {
 		func() interface{} {
 			return func(service *ManageOrderService) {
 				cmd := port.CreateTransferCmd{
-					SenderId:   "1",
-					ReceiverId: "2",
+					SenderID:   "1",
+					ReceiverID: "2",
 					Goods: []port.CreateTransferGood{
 						{
 							GoodID:   "1",
@@ -309,7 +309,7 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 					},
 				},
 			}, nil)
-			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{Id: "1"}, nil)
+			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{ID: "1"}, nil)
 		},
 		func() fx.Option { return fx.Options() },
 		func() interface{} {
@@ -330,7 +330,7 @@ func TestManageOrderServiceContactWarehouseTransfer(t *testing.T) {
 						},
 						UpdateTime:    0,
 						CreationTime:  0,
-						ReservationId: "",
+						ReservationID: "",
 					},
 					RetryUntil:            0,
 					RetryInTime:           0,
@@ -398,7 +398,7 @@ func TestManageOrderServiceContactWarehouseOrder(t *testing.T) {
 						},
 					},
 				}, nil)
-			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{Id: "1"}, nil)
+			suite.requestReservationPort.EXPECT().RequestReservation(gomock.Any(), gomock.Any()).Return(port.RequestReservationResponse{ID: "1"}, nil)
 			suite.sendOrderUpdatePort.EXPECT().SendOrderUpdate(gomock.Any(), gomock.Any()).Return(model.Order{
 				ID:           "1",
 				Status:       "Filled",

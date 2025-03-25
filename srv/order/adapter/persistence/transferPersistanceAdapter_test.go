@@ -19,11 +19,11 @@ func TestTransferPersistenceAdapterApplyTransferUpdate(t *testing.T) {
 	adapter := NewTransferPersistanceAdapter(mock)
 
 	cmd := port.ApplyTransferUpdateCmd{
-		Id:            "1",
+		ID:            "1",
 		Status:        "Created",
-		SenderId:      "1",
-		ReceiverId:    "2",
-		ReservationId: "",
+		SenderID:      "1",
+		ReceiverID:    "2",
+		ReservationID: "",
 		CreationTime:  time.Now().UnixMilli(),
 		UpdateTime:    time.Now().UnixMilli(),
 		Goods: []model.GoodStock{
@@ -60,7 +60,7 @@ func TestTransferPersistenceAdapterGetTransferExist(t *testing.T) {
 				Quantity: 10,
 			},
 		},
-		ReservationId: "",
+		ReservationID: "",
 		UpdateTime:    time.Now().UnixMilli(),
 		CreationTime:  time.Now().UnixMilli(),
 	}, nil)
@@ -104,7 +104,7 @@ func TestTransferPersistenceAdapterGetAllTransfer(t *testing.T) {
 				Quantity: 10,
 			},
 		},
-		ReservationId: "",
+		ReservationID: "",
 		UpdateTime:    time.Now().UnixMilli(),
 		CreationTime:  time.Now().UnixMilli(),
 	}})
