@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/zap/zaptest"
 	"sync"
 	"testing"
 	"time"
@@ -80,6 +83,8 @@ func TestGetTokenEmptyUsername(t *testing.T) {
 	app := fx.New(
 		fx.Supply(ns),
 		config.Modules,
+		fx.Supply(zaptest.NewLogger(t)),
+		fx.Provide(func() metric.Meter { return otel.Meter("test") }),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.AuthRouter, broker *broker.NatsMessageBroker, rsc *broker.RestoreStreamControl) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -132,6 +137,8 @@ func TestGetTokenWrongUsername(t *testing.T) {
 	app := fx.New(
 		fx.Supply(ns),
 		config.Modules,
+		fx.Supply(zaptest.NewLogger(t)),
+		fx.Provide(func() metric.Meter { return otel.Meter("test") }),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.AuthRouter, broker *broker.NatsMessageBroker, rsc *broker.RestoreStreamControl) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -184,6 +191,8 @@ func TestGetToken(t *testing.T) {
 	app := fx.New(
 		fx.Supply(ns),
 		config.Modules,
+		fx.Supply(zaptest.NewLogger(t)),
+		fx.Provide(func() metric.Meter { return otel.Meter("test") }),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.AuthRouter, broker *broker.NatsMessageBroker, rsc *broker.RestoreStreamControl) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -236,6 +245,8 @@ func TestGetTwoToken(t *testing.T) {
 	app := fx.New(
 		fx.Supply(ns),
 		config.Modules,
+		fx.Supply(zaptest.NewLogger(t)),
+		fx.Provide(func() metric.Meter { return otel.Meter("test") }),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.AuthRouter, broker *broker.NatsMessageBroker, rsc *broker.RestoreStreamControl) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

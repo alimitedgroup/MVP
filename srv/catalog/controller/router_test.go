@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"go.uber.org/zap/zaptest"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -21,6 +22,7 @@ func Test_Router(t *testing.T) {
 		Module,
 		fx.Supply(ns),
 		fx.Supply(ctrl),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(

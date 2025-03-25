@@ -18,12 +18,14 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"os"
 	"regexp"
 	"runtime/debug"
 	"strings"
+	"testing"
 	"time"
 )
 
@@ -192,3 +194,11 @@ var Module = fx.Options(
 	// }),
 	fx.Provide(New),
 )
+
+func TestLogger(t *testing.T) *zap.Logger {
+	return zaptest.NewLogger(t)
+}
+
+func TestMeter() metric.Meter {
+	return otel.Meter("test")
+}

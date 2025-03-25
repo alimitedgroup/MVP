@@ -128,7 +128,9 @@ func NewHTTPHandler(p HttpParams) *HTTPHandler {
 func Authentication(b portin.Auth, logger *zap.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		verdict := "success"
-		defer Authentications.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		defer func() {
+			Authentications.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		}()
 
 		auth, found := strings.CutPrefix(ctx.GetHeader("Authorization"), "Bearer ")
 		if !found {
