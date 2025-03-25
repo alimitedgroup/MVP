@@ -54,7 +54,7 @@ func (s *StockPersistanceAdapter) GetFreeStock(goodId model.GoodID) model.GoodSt
 	}
 }
 
-func (s *StockPersistanceAdapter) GetReservation(reservationId model.ReservationId) (model.Reservation, error) {
+func (s *StockPersistanceAdapter) GetReservation(reservationId model.ReservationID) (model.Reservation, error) {
 	reserv, err := s.stockRepo.GetReservation(string(reservationId))
 	if err != nil {
 		return model.Reservation{}, err

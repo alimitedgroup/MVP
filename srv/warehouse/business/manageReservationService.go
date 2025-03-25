@@ -110,7 +110,7 @@ func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.Co
 	}
 
 	for _, reserv := range cmd.Reservations {
-		reservation, err := s.getReservationPort.GetReservation(model.ReservationId(reserv))
+		reservation, err := s.getReservationPort.GetReservation(model.ReservationID(reserv))
 		if err != nil {
 			continue
 		}
@@ -154,7 +154,7 @@ func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port
 	}
 
 	if cmd.SenderID == s.cfg.ID {
-		reservation, err := s.getReservationPort.GetReservation(model.ReservationId(cmd.ReservationId))
+		reservation, err := s.getReservationPort.GetReservation(model.ReservationID(cmd.ReservationId))
 		if err != nil {
 			// TODO: handle other errors
 			return nil

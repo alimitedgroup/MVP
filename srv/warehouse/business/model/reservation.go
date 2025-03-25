@@ -5,7 +5,7 @@ type Reservation struct {
 	Goods []ReservationGood
 }
 
-type ReservationId string
+type ReservationID string
 
 type ReservationGood struct {
 	GoodID   string

@@ -45,7 +45,7 @@ func TestStockPersistanceAdapterGetReserv(t *testing.T) {
 
 	a := NewStockPersistanceAdapter(mock)
 
-	reserv, err := a.GetReservation(model.ReservationId("1"))
+	reserv, err := a.GetReservation(model.ReservationID("1"))
 	require.NoError(t, err)
 	require.Equal(t, reserv.ID, "1")
 	require.Equal(t, reserv.Goods, []model.ReservationGood{{GoodID: "1", Quantity: 10}})
@@ -59,7 +59,7 @@ func TestStockPersistanceAdapterGetReservNotFound(t *testing.T) {
 
 	a := NewStockPersistanceAdapter(mock)
 
-	reserv, err := a.GetReservation(model.ReservationId("1"))
+	reserv, err := a.GetReservation(model.ReservationID("1"))
 	require.Error(t, err)
 	require.Equal(t, reserv, model.Reservation{})
 }
