@@ -7,7 +7,7 @@ networks:
 
 services:
   nats:
-    image: nats:alpine
+    image: nats:2.10-alpine3.21
     ports:
       - "4222:4222"
     command:
@@ -37,10 +37,23 @@ services:
     depends_on:
       - nats
 
-  warehouse:
+  warehouse-1:
     build: { args: { SERVICE: warehouse } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - ENV_WAREHOUSE_ID=1
+    volumes:
+      - ./config.yml:/data/config.yml
+    networks:
+      - warehouse
+    depends_on:
+      - nats
+
+  warehouse-2:
+    build: { args: { SERVICE: warehouse } }
+    environment:
+      - ENV_BROKER_URL=nats://nats:4222
+      - ENV_WAREHOUSE_ID=2
     volumes:
       - ./config.yml:/data/config.yml
     networks:
@@ -50,6 +63,17 @@ services:
 
   catalog:
     build: { args: { SERVICE: catalog } }
+    environment:
+      - ENV_BROKER_URL=nats://nats:4222
+    volumes:
+      - ./config.yml:/data/config.yml
+    networks:
+      - warehouse
+    depends_on:
+      - nats
+
+  order:
+    build: { args: { SERVICE: order } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
     volumes:

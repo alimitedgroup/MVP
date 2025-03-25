@@ -2,9 +2,9 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/alimitedgroup/MVP/common/dto/response"
+	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/nats-io/nats.go"
 )
 
@@ -17,14 +17,7 @@ func NewHealthCheckController() *HealthCheckController {
 
 func (c *HealthCheckController) PingHandler(ctx context.Context, msg *nats.Msg) error {
 	resp := response.HealthCheckResponseDTO{Message: "pong"}
-
-	payload, err := json.Marshal(resp)
-	if err != nil {
-		return err
-	}
-
-	err = msg.RespondMsg(&nats.Msg{Data: payload})
-	if err != nil {
+	if err := broker.RespondToMsg(msg, resp); err != nil {
 		return err
 	}
 

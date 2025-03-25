@@ -10,7 +10,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/assert"
@@ -32,17 +32,16 @@ func newApplyCatalogUpdateMock() *applyCatalogUpdateMock {
 	return &applyCatalogUpdateMock{catalogMap: make(map[string]goodMock)}
 }
 
-func (m *applyCatalogUpdateMock) ApplyCatalogUpdate(ctx context.Context, cmd port.CatalogUpdateCmd) error {
+func (m *applyCatalogUpdateMock) ApplyCatalogUpdate(cmd port.CatalogUpdateCmd) {
 	m.Lock()
 	defer m.Unlock()
 
-	m.catalogMap[cmd.GoodId] = goodMock{
-		id:          cmd.GoodId,
+	m.catalogMap[cmd.GoodID] = goodMock{
+		id:          cmd.GoodID,
 		name:        cmd.Name,
 		description: cmd.Description,
 	}
 
-	return nil
 }
 
 func (m *applyCatalogUpdateMock) GetGood(id string) goodMock {

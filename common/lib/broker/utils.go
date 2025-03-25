@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
@@ -21,10 +22,7 @@ func (s Subject) String() string {
 
 type RequestHandler func(context.Context, *nats.Msg) error
 
-const ApiGatewayQueue Queue = "api_gateway"
 const NoQueue Queue = ""
-
-var StockUpdateSubject Subject = "stock.update"
 
 type JsHandler func(context.Context, jetstream.Msg) error
 
@@ -57,4 +55,18 @@ func WithSubjectsFilter(subjects []string) JsHandlerOpt {
 	return func(config *jetstream.ConsumerConfig) {
 		config.FilterSubjects = append(config.FilterSubjects, subjects...)
 	}
+}
+
+func RespondToMsg(msg *nats.Msg, resp any) error {
+	payload, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+
+	err = msg.Respond(payload)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

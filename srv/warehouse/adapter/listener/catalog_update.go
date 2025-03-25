@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/nats-io/nats.go/jetstream"
 )
 
@@ -25,15 +25,12 @@ func (l *CatalogListener) ListenGoodUpdate(ctx context.Context, msg jetstream.Ms
 	}
 
 	cmd := port.CatalogUpdateCmd{
-		GoodId:      event.GoodID,
+		GoodID:      event.GoodID,
 		Name:        event.GoodNewName,
 		Description: event.GoodNewDescription,
 	}
 
-	err = l.applyCatalogUpdateUseCase.ApplyCatalogUpdate(ctx, cmd)
-	if err != nil {
-		return err
-	}
+	l.applyCatalogUpdateUseCase.ApplyCatalogUpdate(cmd)
 
 	return nil
 }

@@ -7,18 +7,17 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application/port"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/nats-io/nats.go"
 )
 
 type StockController struct {
-	broker             *broker.NatsMessageBroker
 	addStockUseCase    port.IAddStockUseCase
 	removeStockUseCase port.IRemoveStockUseCase
 }
 
-func NewStockController(n *broker.NatsMessageBroker, addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase) *StockController {
-	return &StockController{n, addStockUseCase, removeStockUseCase}
+func NewStockController(addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase) *StockController {
+	return &StockController{addStockUseCase, removeStockUseCase}
 }
 
 func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) error {
@@ -28,11 +27,7 @@ func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) er
 		return err
 	}
 
-	cmd := port.AddStockCmd{
-		ID:       dto.GoodID,
-		Quantity: dto.Quantity,
-	}
-
+	cmd := port.AddStockCmd(dto)
 	err = c.addStockUseCase.AddStock(ctx, cmd)
 	if err != nil {
 		resp := response.ResponseDTO[any]{
@@ -66,11 +61,7 @@ func (c *StockController) RemoveStockHandler(ctx context.Context, msg *nats.Msg)
 		return err
 	}
 
-	cmd := port.RemoveStockCmd{
-		ID:       dto.GoodID,
-		Quantity: dto.Quantity,
-	}
-
+	cmd := port.RemoveStockCmd(dto)
 	err = c.removeStockUseCase.RemoveStock(ctx, cmd)
 	if err != nil {
 		resp := response.ResponseDTO[any]{

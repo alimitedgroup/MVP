@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"fmt"
+
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"go.uber.org/zap"
@@ -147,3 +148,41 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore IRest
 
 	return nil
 }
+
+func (n *NatsMessageBroker) RegisterJsWithConsumerGroup(ctx context.Context, streamCfg jetstream.StreamConfig, consumerCfg jetstream.ConsumerConfig, handler JsHandler) error {
+	s, err := n.Js.CreateStream(ctx, streamCfg)
+	if err != nil {
+		return fmt.Errorf("failed to create stream: %w", err)
+	}
+
+	consumer, err := s.CreateOrUpdateConsumer(ctx, consumerCfg)
+	if err != nil {
+		return fmt.Errorf("failed to create consumer: %w", err)
+	}
+
+	var cc jetstream.ConsumeContext
+
+	cc, err = consumer.Consume(func(m jetstream.Msg) {
+		msgErr := handler(ctx, m)
+		if msgErr != nil {
+			if msgErr == ErrMsgNotAcked {
+				return
+			}
+			cc.Stop()
+			n.Fatal("failed to handle message: %v\n", zap.Error(msgErr))
+		} else {
+			if errAck := m.Ack(); errAck != nil {
+				cc.Stop()
+				n.Fatal("failed to ack message: %v\nafter error: %v\n", zap.Error(errAck), zap.Error(err))
+			}
+		}
+	})
+	if err != nil {
+		return fmt.Errorf("failed to consume messages: %w", err)
+	}
+
+	return nil
+
+}
+
+var ErrMsgNotAcked = fmt.Errorf("message not acked")

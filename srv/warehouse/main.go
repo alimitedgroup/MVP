@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
+	"log"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/lib/observability"
-	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"go.uber.org/fx"
 )
@@ -18,8 +19,8 @@ import (
 type RunParams struct {
 	fx.In
 
-	BrokerRoutes   controller.BrokerRoutes
-	ListenerRoutes listener.ListenerRoutes
+	BrokerRoutes   *controller.BrokerRoutes
+	ListenerRoutes *listener.ListenerRoutes
 }
 
 func Run(ctx context.Context, p RunParams) error {
@@ -46,16 +47,13 @@ func RunLifeCycle(lc fx.Lifecycle, p RunParams) {
 			err := Run(ctx, p)
 			return err
 		},
-		OnStop: func(ctx context.Context) error {
-			return nil
-		},
 	})
 }
 
 var Modules = fx.Options(
 	lib.Module,
 	adapter.Module,
-	application.Module,
+	business.Module,
 )
 
 func main() {

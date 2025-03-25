@@ -17,7 +17,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
-	"github.com/alimitedgroup/MVP/srv/warehouse/application"
+	"github.com/alimitedgroup/MVP/srv/warehouse/business"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/magiconair/properties/assert"
 	"github.com/nats-io/nats.go"
@@ -28,7 +28,7 @@ import (
 var Module = fx.Options(
 	lib.Module,
 	adapter.Module,
-	application.Module,
+	business.Module,
 )
 
 type TestParams struct {
