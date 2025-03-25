@@ -3,10 +3,9 @@ package broker
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.uber.org/zap"
 )
 
 type MessageBroker interface {
@@ -20,10 +19,11 @@ type NatsMessageBroker struct {
 	Nats   *nats.Conn
 	NatsJs nats.JetStream
 	Js     jetstream.JetStream
+	*zap.Logger
 }
 
-func NewNatsConn(cfg *BrokerConfig) (*nats.Conn, error) {
-	log.Printf("Connecting to NATS at %s\n", cfg.Url)
+func NewNatsConn(cfg *BrokerConfig, logger *zap.Logger) (*nats.Conn, error) {
+	logger.Debug("Connecting to NATS", zap.String("url", cfg.Url))
 
 	nc, err := nats.Connect(cfg.Url)
 	if err != nil {
@@ -33,7 +33,7 @@ func NewNatsConn(cfg *BrokerConfig) (*nats.Conn, error) {
 	return nc, nil
 }
 
-func NewNatsMessageBroker(nc *nats.Conn) (*NatsMessageBroker, error) {
+func NewNatsMessageBroker(nc *nats.Conn, logger *zap.Logger) (*NatsMessageBroker, error) {
 	ncJs, err := nc.JetStream()
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func NewNatsMessageBroker(nc *nats.Conn) (*NatsMessageBroker, error) {
 		return nil, err
 	}
 
-	return &NatsMessageBroker{nc, ncJs, js}, nil
+	return &NatsMessageBroker{Nats: nc, NatsJs: ncJs, Js: js, Logger: logger}, nil
 }
 
 func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject, queue Queue, handler RequestHandler) error {
@@ -54,9 +54,19 @@ func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject
 		err := handler(ctx, msg)
 		if err != nil {
 			if errUnsub := sub.Unsubscribe(); errUnsub != nil {
-				log.Fatalf("Error unsubscribing: %v\nafter error %v\n", errUnsub, err)
+				n.Fatal(
+					"Error unsubscribing after another error",
+					zap.Error(errUnsub),
+					zap.NamedError("original_error", errUnsub),
+					zap.String("subject", subject.String()),
+				)
 			}
-			log.Fatalf("Error handling request: %v\n", err)
+			n.Fatal(
+				"Error handling request",
+				zap.Error(err),
+				zap.String("subject", subject.String()),
+				zap.String("queue", queue.String()),
+			)
 		}
 	})
 	if err != nil {
@@ -105,11 +115,16 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore IRest
 		msgErr := handler(ctx, m)
 		if msgErr != nil {
 			cc.Stop()
-			log.Fatalf("failed to handle message: %v\n", msgErr)
+			n.Fatal(
+				"Failed to handle message",
+				zap.Error(msgErr),
+				zap.String("subject", m.Subject()),
+				zap.String("stream", streamCfg.Name),
+			)
 		} else {
 			if errAck := m.Ack(); errAck != nil {
 				cc.Stop()
-				log.Fatalf("failed to ack message: %v\nafter error: %v\n", errAck, err)
+				n.Fatal("Failed to ack message", zap.Error(errAck))
 			}
 		}
 
@@ -117,7 +132,7 @@ func (n *NatsMessageBroker) RegisterJsHandler(ctx context.Context, restore IRest
 		meta, msgErr = m.Metadata()
 		if msgErr != nil {
 			cc.Stop()
-			log.Fatalf("failed to read message metadata: %v\n", msgErr)
+			n.Fatal("Failed to read message metadata", zap.Error(msgErr))
 		}
 
 		if meta.NumPending == 0 && !isWgUnlocked {

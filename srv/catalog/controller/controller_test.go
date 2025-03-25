@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/alimitedgroup/MVP/common/dto"
+	"go.uber.org/zap/zaptest"
 	"sync"
 	"testing"
 	"time"
@@ -105,6 +106,7 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
 				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
@@ -182,6 +184,7 @@ func TestSetGoodDataRequest(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
 				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
@@ -258,6 +261,7 @@ func TestGetGoodsRequest(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
 				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
@@ -337,6 +341,7 @@ func TestGetWarehousesRequest(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
 				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
@@ -415,6 +420,7 @@ func TestGetGoodsGlobalQuantityRequest(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Supply(ns),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,

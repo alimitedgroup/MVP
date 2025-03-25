@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
@@ -63,6 +64,7 @@ func main() {
 	opts := fx.Options(
 		config,
 		Modules,
+		fx.Provide(observability.New),
 		fx.Provide(broker.NewNatsConn),
 	)
 

@@ -7,6 +7,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"log"
 	"sync"
 	"testing"
@@ -71,6 +72,8 @@ func TestPublishing(t *testing.T) {
 	ctx := context.Background()
 	app := fx.New(
 		fx.Supply(ns),
+		fx.Supply(observability.TestMeter()),
+		fx.Supply(observability.TestLogger(t)),
 		fx.Provide(NewPublisher),
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewNatsMessageBroker),
@@ -118,6 +121,8 @@ func TestPublishingWrongKey(t *testing.T) {
 	app := fx.New(
 		fx.Supply(ns),
 		fx.Provide(NewPublisher),
+		fx.Supply(observability.TestMeter()),
+		fx.Supply(observability.TestLogger(t)),
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Invoke(func(lc fx.Lifecycle, rsc *broker.RestoreStreamControl, pb *AuthPublisher) {

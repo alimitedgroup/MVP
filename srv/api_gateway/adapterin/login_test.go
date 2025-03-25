@@ -12,16 +12,14 @@ import (
 	"net/url"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestLoginOk(t *testing.T) {
 	s := start(t)
 
 	s.auth.EXPECT().Login("user").Return(portin.LoginResult{
-		Token:           "some.secure.token",
-		TokenExpiration: time.Now().Add(7 * 24 * time.Hour),
-		Role:            types.RoleClient,
+		Token: "some.secure.token",
+		Role:  types.RoleClient,
 	}, nil)
 
 	req, err := http.NewRequest(
@@ -90,9 +88,8 @@ func TestLoginAuthFailed(t *testing.T) {
 	s := start(t)
 
 	s.auth.EXPECT().Login("user").Return(portin.LoginResult{
-		Token:           "",
-		TokenExpiration: time.Now().Add(7 * 24 * time.Hour),
-		Role:            types.RoleNone,
+		Token: "",
+		Role:  types.RoleNone,
 	}, nil)
 
 	req, err := http.NewRequest(
