@@ -22,7 +22,6 @@ var (
 	ErrorInvalidCredentials = errors.New("invalid credentials")
 	ErrorTokenInvalid       = errors.New("this token is invalid")
 	ErrorTokenExpired       = errors.New("this token is expired")
-	ErrorGoodWithoutStock   = errors.New("invalid state: found a good without stock")
 )
 
 var Module = fx.Options(
@@ -75,7 +74,7 @@ func (b *Business) GetGoods() ([]dto.GoodAndAmount, error) {
 	for _, good := range goods {
 		amount, ok := amounts[good.ID]
 		if !ok {
-			return nil, ErrorGoodWithoutStock
+			amount = 0
 		}
 
 		result = append(result, dto.GoodAndAmount{
