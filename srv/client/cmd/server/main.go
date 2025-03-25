@@ -1,52 +1,74 @@
+/*
 package main
 
 import (
+
 	"fmt"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/client/client"
 	"github.com/alimitedgroup/MVP/srv/client/server"
 	"go.uber.org/fx"
+
 )
 
 func main() {
 
-	// PER PROVE CON SERVER
-	server.StartServer()
+		// PER PROVE CON SERVER
+		server.StartServer()
 
-	// Breve pausa per dare tempo al server di avviarsi
-	time.Sleep(time.Second)
+		// Breve pausa per dare tempo al server di avviarsi
+		time.Sleep(time.Second)
 
-	app := fx.New(
-		fx.Provide(
-			// Fornisci ClientConfig
-			func() client.ClientConfig {
-				return client.ClientConfig{
-					BaseURL: "http://localhost:8080",
-					Timeout: time.Second * 30,
+		app := fx.New(
+			fx.Provide(
+				// Fornisci ClientConfig
+				func() client.ClientConfig {
+					return client.ClientConfig{
+						BaseURL: "http://localhost:8080",
+						Timeout: time.Second * 30,
+					}
+				},
+				// Fornisci il client
+				client.NewClient,
+			),
+			fx.Invoke(func(apiClient *client.Client) {
+				// Test Ping
+				pingMessage, err := apiClient.Ping()
+				if err != nil {
+					fmt.Printf("Error pinging API: %v\n", err)
+					return
 				}
-			},
-			// Fornisci il client
-			client.NewClient,
-		),
-		fx.Invoke(func(apiClient *client.Client) {
-			// Test Ping
-			pingMessage, err := apiClient.Ping()
-			if err != nil {
-				fmt.Printf("Error pinging API: %v\n", err)
-				return
-			}
-			fmt.Printf("API response: %s\n", pingMessage)
+				fmt.Printf("API response: %s\n", pingMessage)
 
-			// Test Login
-			token, err := apiClient.Login("testuser")
-			if err != nil {
-				fmt.Printf("Error logging in: %v\n", err)
-				return
-			}
-			fmt.Printf("Logged in with token: %s\n", token)
-		}),
-	)
+				// Test Login
+				token, err := apiClient.Login("testuser")
+				if err != nil {
+					fmt.Printf("Error logging in: %v\n", err)
+					return
+				}
+				fmt.Printf("Logged in with token: %s\n", token)
+			}),
+		)
 
-	app.Run()
+		app.Run()
+	}
+*/
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+)
+
+func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // default port if not specified
+	}
+
+	// Your existing server setup code
+	fmt.Printf("Server listening on :%s\n", port)
+	http.ListenAndServe(":"+port, nil)
 }

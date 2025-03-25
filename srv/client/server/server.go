@@ -1,4 +1,4 @@
-package server
+/*package server
 
 import (
 	"encoding/json"
@@ -52,3 +52,4 @@ func StartServer() {
 	fmt.Println("Server in ascolto su http://localhost:8080")
 	go http.ListenAndServe(":8080", nil)
 }
+*/
