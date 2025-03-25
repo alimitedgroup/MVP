@@ -220,7 +220,7 @@ func main() {
 						fmt.Printf("%-10s %-30s %-10d %s\n",
 							good.ID,
 							truncateString(good.Name, 30),
-							good.Amount,
+							good.Quantity,
 							truncateString(good.Description, 30))
 					}
 				}),

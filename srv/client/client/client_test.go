@@ -93,5 +93,5 @@ func TestGetGoods(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, goods.Goods, 1)
 	assert.Equal(t, "Widget", goods.Goods[0].Name)
-	assert.Equal(t, int64(100), goods.Goods[0].Amount)
+	assert.Equal(t, int64(100), goods.Goods[0].Quantity)
 }
