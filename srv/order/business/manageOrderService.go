@@ -400,6 +400,7 @@ func contactCmdAndConfirmedToSendOrderUpdateCmd(cmd port.ContactWarehousesCmd, c
 	orderUpdatecmd := port.SendOrderUpdateCmd{
 		ID:           cmd.Order.ID,
 		Status:       "Filled",
+		Address:      cmd.Order.Address,
 		Name:         cmd.Order.Name,
 		FullName:     cmd.Order.FullName,
 		CreationTime: cmd.Order.CreationTime,
@@ -418,6 +419,7 @@ func contactCmdToSendOrderUpdateCmdForCancel(cmd port.ContactWarehousesCmd) port
 	orderUpdatecmd := port.SendOrderUpdateCmd{
 		ID:           cmd.Order.ID,
 		Status:       "Cancelled",
+		Address:      cmd.Order.Address,
 		Name:         cmd.Order.Name,
 		FullName:     cmd.Order.FullName,
 		CreationTime: cmd.Order.CreationTime,
