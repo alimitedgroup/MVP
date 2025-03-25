@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/alimitedgroup/MVP/common/dto"
+	"go.uber.org/zap/zaptest"
 	"log"
 	"testing"
 	"time"
@@ -35,6 +36,7 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -147,6 +149,7 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -256,6 +259,7 @@ func TestInsertGetGoods(t *testing.T) {
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

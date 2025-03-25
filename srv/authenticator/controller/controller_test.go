@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
 
@@ -53,6 +54,7 @@ func TestGetToken(t *testing.T) {
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(NewAuthController),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
@@ -98,6 +100,7 @@ func TestGetTokenWithWrongUser(t *testing.T) {
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(NewAuthController),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
@@ -143,6 +146,7 @@ func TestGetTokenEmptyUsername(t *testing.T) {
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(NewAuthController),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
@@ -188,6 +192,7 @@ func TestGetTokenWrongRequest(t *testing.T) {
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Supply(ns),
 		p,
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(NewAuthController),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
