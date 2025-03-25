@@ -11,23 +11,23 @@ type ICreateStockUpdatePort interface {
 }
 
 type CreateStockUpdateCmd struct {
-	Type          CreateStockUpdateCmdType
-	Goods         []CreateStockUpdateCmdGood
+	Type          CreateStockUpdateType
+	Goods         []CreateStockUpdateGood
 	OrderID       string
 	TransferID    string
 	ReservationID string
 }
 
-type CreateStockUpdateCmdType string
+type CreateStockUpdateType string
 
 const (
-	CreateStockUpdateCmdTypeAdd      CreateStockUpdateCmdType = "add"
-	CreateStockUpdateCmdTypeRemove   CreateStockUpdateCmdType = "remove"
-	CreateStockUpdateCmdTypeOrder    CreateStockUpdateCmdType = "order"
-	CreateStockUpdateCmdTypeTransfer CreateStockUpdateCmdType = "transfer"
+	CreateStockUpdateCmdTypeAdd      CreateStockUpdateType = "add"
+	CreateStockUpdateCmdTypeRemove   CreateStockUpdateType = "remove"
+	CreateStockUpdateCmdTypeOrder    CreateStockUpdateType = "order"
+	CreateStockUpdateCmdTypeTransfer CreateStockUpdateType = "transfer"
 )
 
-type CreateStockUpdateCmdGood struct {
+type CreateStockUpdateGood struct {
 	Good         model.GoodStock
 	QuantityDiff int64
 }

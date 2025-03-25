@@ -37,7 +37,7 @@ func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd)
 
 	createCmd := port.CreateStockUpdateCmd{
 		Type: port.CreateStockUpdateCmdTypeAdd,
-		Goods: []port.CreateStockUpdateCmdGood{
+		Goods: []port.CreateStockUpdateGood{
 			{
 				Good: model.GoodStock{
 					ID:       cmd.GoodID,
@@ -71,7 +71,7 @@ func (s *ManageStockService) RemoveStock(ctx context.Context, cmd port.RemoveSto
 
 	createCmd := port.CreateStockUpdateCmd{
 		Type: port.CreateStockUpdateCmdTypeRemove,
-		Goods: []port.CreateStockUpdateCmdGood{
+		Goods: []port.CreateStockUpdateGood{
 			{
 				Good: model.GoodStock{
 					ID:       cmd.GoodID,

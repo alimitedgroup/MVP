@@ -48,7 +48,7 @@ func stockUpdateEventToApplyStockUpdateCmd(event stream.StockUpdate) port.StockU
 	return port.StockUpdateCmd{
 		ID:            event.ID,
 		WarehouseID:   event.WarehouseID,
-		Type:          port.StockUpdateCmdType(event.Type),
+		Type:          port.StockUpdateType(event.Type),
 		OrderID:       event.OrderID,
 		TransferID:    event.TransferID,
 		ReservationID: event.ReservationID,

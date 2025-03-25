@@ -42,7 +42,7 @@ func TestStockUpdateAdapter(t *testing.T) {
 				OnStart: func(ctx context.Context) error {
 					cmd := port.CreateStockUpdateCmd{
 						Type: port.CreateStockUpdateCmdTypeAdd,
-						Goods: []port.CreateStockUpdateCmdGood{
+						Goods: []port.CreateStockUpdateGood{
 							{Good: model.GoodStock{ID: "1", Quantity: 10}, QuantityDiff: 10},
 						},
 					}
@@ -94,7 +94,7 @@ func TestStockUpdateAdapterNetworkErr(t *testing.T) {
 
 	cmd := port.CreateStockUpdateCmd{
 		Type: port.CreateStockUpdateCmdTypeAdd,
-		Goods: []port.CreateStockUpdateCmdGood{
+		Goods: []port.CreateStockUpdateGood{
 			{Good: model.GoodStock{ID: "1", Quantity: 10}, QuantityDiff: 10},
 		},
 	}
