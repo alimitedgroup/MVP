@@ -2,8 +2,9 @@ package sender
 
 import (
 	"context"
-	"go.uber.org/zap/zaptest"
 	"testing"
+
+	"go.uber.org/zap/zaptest"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
@@ -81,13 +82,14 @@ func TestStockUpdateAdapter(t *testing.T) {
 
 func TestStockUpdateAdapterNetworkErr(t *testing.T) {
 	ctx := t.Context()
+	logger := zaptest.NewLogger(t)
 	cfg := &config.WarehouseConfig{
 		ID: "1",
 	}
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 
-	broker, err := broker.NewNatsMessageBroker(ns)
+	broker, err := broker.NewNatsMessageBroker(ns, logger)
 	require.NoError(t, err)
 
 	ns.Close()

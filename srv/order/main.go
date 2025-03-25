@@ -6,6 +6,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/adapter"
 	"github.com/alimitedgroup/MVP/srv/order/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/order/adapter/listener"
@@ -62,6 +63,7 @@ func main() {
 
 	app := fx.New(
 		opts,
+		fx.Provide(observability.New),
 		fx.Provide(broker.NewNatsConn),
 		fx.Invoke(RunLifeCycle),
 	)

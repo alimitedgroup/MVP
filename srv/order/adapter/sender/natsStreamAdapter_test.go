@@ -12,10 +12,12 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestNatsStreamAdapterSendOrderUpdate(t *testing.T) {
 	ctx := t.Context()
+	logger := zaptest.NewLogger(t)
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	js, err := jetstream.New(ns)
@@ -24,7 +26,7 @@ func TestNatsStreamAdapterSendOrderUpdate(t *testing.T) {
 	s, err := js.CreateStream(ctx, stream.OrderUpdateStreamConfig)
 	require.NoError(t, err)
 
-	broker, err := broker.NewNatsMessageBroker(ns)
+	broker, err := broker.NewNatsMessageBroker(ns, logger)
 	require.NoError(t, err)
 	a := NewNatsStreamAdapter(broker)
 
@@ -56,6 +58,7 @@ func TestNatsStreamAdapterSendOrderUpdate(t *testing.T) {
 
 func TestNatsStreamAdapterSendTransferUpdate(t *testing.T) {
 	ctx := t.Context()
+	logger := zaptest.NewLogger(t)
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	js, err := jetstream.New(ns)
@@ -64,7 +67,7 @@ func TestNatsStreamAdapterSendTransferUpdate(t *testing.T) {
 	s, err := js.CreateStream(ctx, stream.TransferUpdateStreamConfig)
 	require.NoError(t, err)
 
-	broker, err := broker.NewNatsMessageBroker(ns)
+	broker, err := broker.NewNatsMessageBroker(ns, logger)
 	require.NoError(t, err)
 	a := NewNatsStreamAdapter(broker)
 
@@ -95,6 +98,7 @@ func TestNatsStreamAdapterSendTransferUpdate(t *testing.T) {
 
 func TestNatsStreamAdapterSendContactOrder(t *testing.T) {
 	ctx := t.Context()
+	logger := zaptest.NewLogger(t)
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	js, err := jetstream.New(ns)
@@ -103,7 +107,7 @@ func TestNatsStreamAdapterSendContactOrder(t *testing.T) {
 	s, err := js.CreateStream(ctx, internalStream.ContactWarehousesStreamConfig)
 	require.NoError(t, err)
 
-	broker, err := broker.NewNatsMessageBroker(ns)
+	broker, err := broker.NewNatsMessageBroker(ns, logger)
 	require.NoError(t, err)
 	a := NewNatsStreamAdapter(broker)
 
@@ -140,6 +144,7 @@ func TestNatsStreamAdapterSendContactOrder(t *testing.T) {
 
 func TestNatsStreamAdapterSendContactTransfer(t *testing.T) {
 	ctx := t.Context()
+	logger := zaptest.NewLogger(t)
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	js, err := jetstream.New(ns)
@@ -148,7 +153,7 @@ func TestNatsStreamAdapterSendContactTransfer(t *testing.T) {
 	s, err := js.CreateStream(ctx, internalStream.ContactWarehousesStreamConfig)
 	require.NoError(t, err)
 
-	broker, err := broker.NewNatsMessageBroker(ns)
+	broker, err := broker.NewNatsMessageBroker(ns, logger)
 	require.NoError(t, err)
 	a := NewNatsStreamAdapter(broker)
 
@@ -185,6 +190,7 @@ func TestNatsStreamAdapterSendContactTransfer(t *testing.T) {
 
 func TestNatsStreamAdapterRequestReservation(t *testing.T) {
 	ctx := t.Context()
+	logger := zaptest.NewLogger(t)
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 
@@ -198,7 +204,7 @@ func TestNatsStreamAdapterRequestReservation(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	broker, err := broker.NewNatsMessageBroker(ns)
+	broker, err := broker.NewNatsMessageBroker(ns, logger)
 	require.NoError(t, err)
 	a := NewNatsStreamAdapter(broker)
 

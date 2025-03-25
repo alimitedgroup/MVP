@@ -10,6 +10,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestHealthCheckController(t *testing.T) {
@@ -19,6 +20,7 @@ func TestHealthCheckController(t *testing.T) {
 
 	app := fx.New(
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewHealthCheckController),
 		fx.Provide(NewHealthCheckRouter),

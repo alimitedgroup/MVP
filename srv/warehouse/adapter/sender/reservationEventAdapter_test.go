@@ -12,10 +12,12 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestReservationEventAdapter(t *testing.T) {
 	ctx := t.Context()
+
 	cfg := &config.WarehouseConfig{
 		ID: "1",
 	}
@@ -34,6 +36,7 @@ func TestReservationEventAdapter(t *testing.T) {
 	app := fx.New(
 		fx.Supply(ns),
 		fx.Supply(cfg),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewPublishReservationEventAdapter),
 		fx.Invoke(func(lc fx.Lifecycle, a *PublishReservationEventAdapter) {
@@ -87,7 +90,9 @@ func TestReservationEventAdapterNetworkErr(t *testing.T) {
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 
-	broker, err := broker.NewNatsMessageBroker(ns)
+	logger := zaptest.NewLogger(t)
+
+	broker, err := broker.NewNatsMessageBroker(ns, logger)
 	require.NoError(t, err)
 
 	ns.Close()

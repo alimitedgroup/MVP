@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestOrderUpdateListenerForOrder(t *testing.T) {
@@ -34,6 +35,7 @@ func TestOrderUpdateListenerForOrder(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 		fx.Supply(fx.Annotate(confirmOrderMock, fx.As(new(port.IConfirmOrderUseCase)))),
@@ -110,6 +112,7 @@ func TestOrderUpdateListenerForTransfer(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 		fx.Supply(fx.Annotate(confirmOrderMock, fx.As(new(port.IConfirmOrderUseCase)))),

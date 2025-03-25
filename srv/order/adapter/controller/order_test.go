@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 	"golang.org/x/exp/slices"
 )
 
@@ -33,6 +34,7 @@ func TestOrderControllerCreateOrder(t *testing.T) {
 		fx.Supply(ns),
 		fx.Supply(fx.Annotate(createOrderUseCaseMock, fx.As(new(port.ICreateOrderUseCase)))),
 		fx.Supply(fx.Annotate(getOrderUseCaseMock, fx.As(new(port.IGetOrderUseCase)))),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewOrderController),
 		fx.Provide(NewOrderRouter),
@@ -148,6 +150,7 @@ func TestOrderControllerGetOrder(t *testing.T) {
 		fx.Supply(ns),
 		fx.Supply(fx.Annotate(createOrderUseCaseMock, fx.As(new(port.ICreateOrderUseCase)))),
 		fx.Supply(fx.Annotate(getOrderUseCaseMock, fx.As(new(port.IGetOrderUseCase)))),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewOrderController),
 		fx.Provide(NewOrderRouter),

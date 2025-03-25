@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 	"golang.org/x/exp/slices"
 )
 
@@ -33,6 +34,7 @@ func TestTransferControllerCreateTransfer(t *testing.T) {
 		fx.Supply(ns),
 		fx.Supply(fx.Annotate(createTransferUseCaseMock, fx.As(new(port.ICreateTransferUseCase)))),
 		fx.Supply(fx.Annotate(getTransferUseCaseMock, fx.As(new(port.IGetTransferUseCase)))),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),
@@ -144,6 +146,7 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 		fx.Supply(ns),
 		fx.Supply(fx.Annotate(createTransferUseCaseMock, fx.As(new(port.ICreateTransferUseCase)))),
 		fx.Supply(fx.Annotate(getTransferUseCaseMock, fx.As(new(port.IGetTransferUseCase)))),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),

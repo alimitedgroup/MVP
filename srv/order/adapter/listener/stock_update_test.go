@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestStockUpdateListener(t *testing.T) {
@@ -30,6 +31,7 @@ func TestStockUpdateListener(t *testing.T) {
 		fx.Supply(ns),
 		fx.Supply(fx.Annotate(applyStockUpdateUseCaseMock, fx.As(new(port.IApplyStockUpdateUseCase)))),
 		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewStockUpdateListener),
 		fx.Provide(NewStockUpdateRouter),

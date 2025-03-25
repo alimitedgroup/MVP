@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"fmt"
+
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"go.uber.org/zap"
@@ -168,11 +169,11 @@ func (n *NatsMessageBroker) RegisterJsWithConsumerGroup(ctx context.Context, str
 				return
 			}
 			cc.Stop()
-			log.Fatalf("failed to handle message: %v\n", msgErr)
+			n.Fatal("failed to handle message: %v\n", zap.Error(msgErr))
 		} else {
 			if errAck := m.Ack(); errAck != nil {
 				cc.Stop()
-				log.Fatalf("failed to ack message: %v\nafter error: %v\n", errAck, err)
+				n.Fatal("failed to ack message: %v\nafter error: %v\n", zap.Error(errAck), zap.Error(err))
 			}
 		}
 	})

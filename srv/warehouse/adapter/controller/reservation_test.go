@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestReservationController(t *testing.T) {
@@ -31,6 +32,7 @@ func TestReservationController(t *testing.T) {
 		fx.Supply(&cfg),
 		fx.Supply(ns),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.ICreateReservationUseCase)))),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewReservationController),
 		fx.Provide(NewReservationRouter),

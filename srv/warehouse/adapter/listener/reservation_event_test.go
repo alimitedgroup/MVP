@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestReservationEventListener(t *testing.T) {
@@ -32,6 +33,7 @@ func TestReservationEventListener(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyReservationUseCase)))),

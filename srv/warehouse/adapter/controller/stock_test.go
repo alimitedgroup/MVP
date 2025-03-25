@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
+
+	"go.uber.org/zap/zaptest"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
@@ -112,6 +113,7 @@ func TestStockControllerAddStockErr(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),
@@ -175,6 +177,7 @@ func TestStockControllerRemStockErr(t *testing.T) {
 	app := fx.New(
 		fx.Supply(&cfg),
 		fx.Supply(ns),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),

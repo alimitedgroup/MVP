@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 )
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination mock_controller.go -package controller github.com/alimitedgroup/MVP/srv/order/business/port ICreateTransferUseCase,IGetTransferUseCase,ICreateOrderUseCase,IGetOrderUseCase
@@ -28,6 +29,7 @@ func TestRouter(t *testing.T) {
 		fx.Provide(fx.Annotate(NewMockICreateOrderUseCase, fx.As(new(port.ICreateOrderUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIGetOrderUseCase, fx.As(new(port.IGetOrderUseCase)))),
 		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRoutes) {
 			lc.Append(fx.Hook{
