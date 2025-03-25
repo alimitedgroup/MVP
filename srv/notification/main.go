@@ -134,6 +134,7 @@ func main() {
     if err != nil {
         log.Fatalf("Errore subscribe (notification.query.add): %v", err)
     }
+		log.Printf("DEBUG: Ora corrente dal container: %s", time.Now().Format(time.RFC3339))
 
    
     ticker := time.NewTicker(time.Duration(checkIntervalSeconds) * time.Second)
@@ -166,14 +167,15 @@ func checkAllRules(influxURL, influxToken, influxOrg string) {
 }
 
 func checkRule(queryAPI api.QueryAPI, rule *QueryRule) {
-    fluxQuery := fmt.Sprintf(`
-      from(bucket: "stockdb")
-        |> range(start: -48h)
-        |> filter(fn: (r) => r._measurement == "stock_measurement")
-        |> filter(fn: (r) => r.good_id == "%s")
-        |> filter(fn: (r) => r._field == "quantity")
-        |> last()
-    `, rule.GoodID)
+		fluxQuery := fmt.Sprintf(`
+				from(bucket: "stockdb")
+					|> range(start: -7d)
+					|> filter(fn: (r) => r["_measurement"] == "stock_measurement")
+					|> filter(fn: (r) => r["good_id"] == "%s")
+					|> filter(fn: (r) => r["_field"] == "quantity")
+					|> yield(name: "mean")
+		`, rule.GoodID)
+
 
     result, err := queryAPI.Query(context.Background(), fluxQuery)
     if err != nil {
@@ -181,7 +183,10 @@ func checkRule(queryAPI api.QueryAPI, rule *QueryRule) {
         return
     }
 
+		found := false
+
     for result.Next() {
+			  found = true
         val, ok := result.Record().Value().(float64)
         if !ok {
             continue
@@ -203,6 +208,8 @@ func checkRule(queryAPI api.QueryAPI, rule *QueryRule) {
             continue
         }
 
+				
+
         if condTrue {
             // se vera
             log.Printf("[ALERT] good_id=%s quantity=%d %s %d",
@@ -214,6 +221,10 @@ func checkRule(queryAPI api.QueryAPI, rule *QueryRule) {
                 rule.GoodID, currentQuantity, rule.Threshold, rule.Operator)
         }
     }
+
+		if !found {
+				log.Printf("Nessun record trovato in Influx per good_id=%s", rule.GoodID)
+		}
 
     if result.Err() != nil {
         log.Printf("[checkRule] Errore result: %v\n", result.Err())
