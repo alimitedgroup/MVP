@@ -24,7 +24,8 @@ var (
 	ErrorTokenExpired       = errors.New("this token is expired")
 )
 
-var Module = fx.Options(
+var Module = fx.Module(
+	"business",
 	fx.Provide(fx.Annotate(
 		NewBusiness,
 		fx.As(new(portin.Auth)),

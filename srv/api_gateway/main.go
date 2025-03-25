@@ -38,8 +38,8 @@ func main() {
 		business.Module,
 		adapterout.Module,
 		adapterin.Module,
+		observability.Module,
 		fx.Supply(addr),
-		fx.Provide(observability.New),
 		fx.Provide(broker.NewNatsConn),
 		fx.Provide(adapterin.NewListener),
 	)

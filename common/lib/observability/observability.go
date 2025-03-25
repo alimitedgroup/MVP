@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/log/global"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -163,22 +164,31 @@ func WrapLogger(name string) func(*zap.Logger) *zap.Logger {
 	}
 }
 
-func New(lc fx.Lifecycle) *zap.Logger {
+func New(lc fx.Lifecycle) (*zap.Logger, metric.Meter) {
 	level := getLogLevel()
 	tempLogger := prettyconsole.NewLogger(level)
 
-	otlpUrl := "localhost:4317"
-	otelcancel := setupOtel(otlpUrl, tempLogger)
+	otlpUrl, ok := os.LookupEnv("OTLP_URL")
+	if ok {
+		otelcancel := setupOtel(otlpUrl, tempLogger)
+		lc.Append(fx.Hook{OnStop: otelcancel})
+	} else {
+		tempLogger.Warn("OTLP_URL not set, OpenTelemetry will be disabled")
+	}
+
 	logger := setupZap(level)
+	lc.Append(fx.Hook{OnStop: func(ctx context.Context) error { return logger.Sync() }})
 
-	lc.Append(fx.Hook{
-		OnStop: otelcancel,
-	})
-	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			return logger.Sync()
-		},
-	})
-
-	return logger
+	name, _ := getBuildInfo()
+	return logger, otel.Meter(name)
 }
+
+var Module = fx.Options(
+	fx.NopLogger,
+	// fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
+	//     logger := &fxevent.ZapLogger{Logger: log.Named("fx")}
+	//     logger.UseLogLevel(zap.DebugLevel)
+	//     return logger
+	// }),
+	fx.Provide(New),
+)
