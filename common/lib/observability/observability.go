@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -151,8 +152,18 @@ func setupOtel(otlpUrl string, tempLogger *zap.Logger) func(context.Context) err
 	)
 	otel.SetMeterProvider(meterProvider)
 
-	return func(ctx context.Context) error {
-		return logProvider.Shutdown(ctx)
+	return func(ctx context.Context) (err error) {
+		wg := sync.WaitGroup{}
+		wg.Add(2)
+		go func() {
+			err = logProvider.Shutdown(ctx)
+			wg.Done()
+		}()
+		go func() {
+			err = meterProvider.Shutdown(ctx)
+			wg.Done()
+		}()
+		return
 	}
 }
 
