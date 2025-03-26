@@ -133,3 +133,57 @@ func TestGetGoodsMissingStock(t *testing.T) {
 	})
 	require.NoError(t, err)
 }
+
+func TestCreateGood(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	auth := NewMockAuthenticationPortOut(ctrl)
+	catalog := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
+
+	catalog.EXPECT().CreateGood(gomock.Any(), gomock.Any(), gomock.Any()).Return("1", nil)
+
+	business := NewBusiness(auth, catalog, orderMock, zaptest.NewLogger(t))
+	goodId, err := business.CreateGood(t.Context(), "test name", "test description")
+	require.NoError(t, err)
+	require.Equal(t, "1", goodId)
+}
+
+func TestUpdateGood(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	auth := NewMockAuthenticationPortOut(ctrl)
+	catalog := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
+
+	catalog.EXPECT().UpdateGood(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	business := NewBusiness(auth, catalog, orderMock, zaptest.NewLogger(t))
+	err := business.UpdateGood(t.Context(), "1", "test name", "test description")
+	require.NoError(t, err)
+}
+
+func TestCreateGoodError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	auth := NewMockAuthenticationPortOut(ctrl)
+	catalog := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
+
+	catalog.EXPECT().CreateGood(gomock.Any(), gomock.Any(), gomock.Any()).Return("", fmt.Errorf("some error"))
+
+	business := NewBusiness(auth, catalog, orderMock, zaptest.NewLogger(t))
+	goodId, err := business.CreateGood(t.Context(), "test name", "test description")
+	require.Empty(t, goodId)
+	require.ErrorIs(t, err, ErrorCreateGood)
+}
+
+func TestUpdateGoodError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	auth := NewMockAuthenticationPortOut(ctrl)
+	catalog := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
+
+	catalog.EXPECT().UpdateGood(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
+
+	business := NewBusiness(auth, catalog, orderMock, zaptest.NewLogger(t))
+	err := business.UpdateGood(t.Context(), "1", "test name", "test description")
+	require.ErrorIs(t, err, ErrorUpdateGood)
+}
