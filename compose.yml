@@ -1,9 +1,6 @@
 volumes:
   nats_data:
-
-networks:
-  warehouse:
-    driver: bridge
+  grafana_data:
 
 services:
   nats:
@@ -15,8 +12,6 @@ services:
       - "--store_dir=/data/jetstream"
     volumes:
       - nats_data:/data/jetstream
-    networks:
-      - warehouse
     healthcheck:
       test: ["CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -"]
       interval: 1s
@@ -30,10 +25,9 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_API_PORT=8080
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml:ro
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -44,8 +38,6 @@ services:
       - ENV_WAREHOUSE_ID=1
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -56,8 +48,6 @@ services:
       - ENV_WAREHOUSE_ID=2
     volumes:
       - ./config.yml:/data/config.yml:ro
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -67,8 +57,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
     volumes:
       - ./config.yml:/data/config.yml:ro
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -78,8 +66,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -89,8 +75,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -142,3 +126,6 @@ services:
     image: grafana/grafana
     ports:
       - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./containers:/etc/grafana/provisioning
