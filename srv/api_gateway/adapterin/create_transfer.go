@@ -18,9 +18,16 @@ type CreateTransferController struct {
 
 func (c *CreateTransferController) Handler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		transferId, err := c.order.CreateTransfer("")
+		var req dto.CreateTransferRequest
+		if err := ctx.ShouldBindJSON(&req); err != nil {
+			slog.Error("invalid request body", "error", err)
+			ctx.JSON(400, dto.InternalError())
+			return
+		}
+
+		transferId, err := c.order.CreateTransfer(req.SenderID, req.ReceiverID, req.Goods)
 		if err != nil {
-			slog.Error("error while handling request to /api/v1/transfer", "error", err)
+			slog.Error("error while handling request to /api/v1/transfers", "error", err)
 			ctx.JSON(500, dto.InternalError())
 			return
 		}
@@ -31,7 +38,7 @@ func (c *CreateTransferController) Handler() gin.HandlerFunc {
 }
 
 func (c *CreateTransferController) Pattern() string {
-	return "/transfer"
+	return "/transfers"
 }
 
 func (c *CreateTransferController) Method() string {

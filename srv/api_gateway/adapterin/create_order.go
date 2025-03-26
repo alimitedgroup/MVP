@@ -18,9 +18,16 @@ type CreateOrderController struct {
 
 func (c *CreateOrderController) Handler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		orderId, err := c.order.CreateOrder("")
+		var req dto.CreateOrderRequest
+		if err := ctx.ShouldBindJSON(&req); err != nil {
+			slog.Error("invalid request body", "error", err)
+			ctx.JSON(400, dto.InternalError())
+			return
+		}
+
+		orderId, err := c.order.CreateOrder(req.Name, req.FullName, req.Address, req.Goods)
 		if err != nil {
-			slog.Error("error while handling request to /api/v1/order", "error", err)
+			slog.Error("error while handling request to /api/v1/orders", "error", err)
 			ctx.JSON(500, dto.InternalError())
 			return
 		}
@@ -31,7 +38,7 @@ func (c *CreateOrderController) Handler() gin.HandlerFunc {
 }
 
 func (c *CreateOrderController) Pattern() string {
-	return "/order"
+	return "/orders"
 }
 
 func (c *CreateOrderController) Method() string {

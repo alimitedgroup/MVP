@@ -1,10 +1,12 @@
 package business
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
@@ -22,6 +24,11 @@ var (
 	ErrorGetStock           = errors.New("error getting global stock")
 	ErrorGetTransfers       = errors.New("error getting transfers")
 	ErrorGetOrders          = errors.New("error getting orders")
+	ErrorAddStock           = errors.New("error adding stock")
+	ErrorCreateOrder        = errors.New("error creating order")
+	ErrorCreateTransfer     = errors.New("error creating transfer")
+	ErrorCreateGood         = errors.New("error creating good")
+	ErrorUpdateGood         = errors.New("error updating good")
 	ErrorInvalidCredentials = errors.New("invalid credentials")
 	ErrorTokenInvalid       = errors.New("this token is invalid")
 	ErrorTokenExpired       = errors.New("this token is expired")
@@ -54,8 +61,34 @@ func (b *Business) GetWarehouseByID(_ int64) (dto.Warehouse, error) {
 	panic("implement me")
 }
 
-func (b *Business) CreateOrder(any) (string, error) {
-	panic("implement me")
+func (b *Business) AddStock(warehouseId string, goodId string, quantity int64) error {
+	err := b.catalog.AddStock(warehouseId, goodId, quantity)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrorAddStock, err)
+	}
+	return nil
+}
+
+func (b *Business) CreateOrder(name string, fullname string, address string, goods map[string]int64) (string, error) {
+	goodList := make([]request.CreateOrderGood, 0, len(goods))
+	for goodID, quantity := range goods {
+		goodList = append(goodList, request.CreateOrderGood{
+			GoodID:   goodID,
+			Quantity: quantity,
+		})
+	}
+	createDto := request.CreateOrderRequestDTO{
+		Name:     name,
+		FullName: fullname,
+		Address:  address,
+		Goods:    goodList,
+	}
+	orderId, err := b.order.CreateOrder(createDto)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrorCreateOrder, err)
+	}
+	return orderId.OrderID, nil
+
 }
 
 func (b *Business) GetOrders() ([]dto.Order, error) {
@@ -85,8 +118,25 @@ func (b *Business) GetOrders() ([]dto.Order, error) {
 	return resp, nil
 }
 
-func (b *Business) CreateTransfer(any) (string, error) {
-	panic("implement me")
+func (b *Business) CreateTransfer(senderID string, receiverID string, goods map[string]int64) (string, error) {
+	goodList := make([]request.TransferGood, 0, len(goods))
+	for goodID, quantity := range goods {
+		goodList = append(goodList, request.TransferGood{
+			GoodID:   goodID,
+			Quantity: quantity,
+		})
+	}
+	createDto := request.CreateTransferRequestDTO{
+		SenderID:   senderID,
+		ReceiverID: receiverID,
+		Goods:      goodList,
+	}
+
+	transferId, err := b.order.CreateTransfer(createDto)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrorCreateTransfer, err)
+	}
+	return transferId.TransferID, nil
 }
 
 func (b *Business) GetTransfers() ([]dto.Transfer, error) {
@@ -112,6 +162,22 @@ func (b *Business) GetTransfers() ([]dto.Transfer, error) {
 	}
 
 	return resp, nil
+}
+
+func (b *Business) CreateGood(ctx context.Context, name string, description string) (string, error) {
+	goodId, err := b.catalog.CreateGood(ctx, name, description)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrorCreateGood, err)
+	}
+	return goodId, nil
+}
+
+func (b *Business) UpdateGood(ctx context.Context, goodId string, name string, description string) error {
+	err := b.catalog.UpdateGood(ctx, goodId, name, description)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrorUpdateGood, err)
+	}
+	return nil
 }
 
 func (b *Business) GetWarehouses() ([]portin.WarehouseOverview, error) {

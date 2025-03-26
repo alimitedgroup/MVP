@@ -20,7 +20,7 @@ func (c *GetOrdersController) Handler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		orders, err := c.order.GetOrders()
 		if err != nil {
-			slog.Error("error while handling request to /api/v1/order", "error", err)
+			slog.Error("error while handling request to /api/v1/orders", "error", err)
 			ctx.JSON(500, dto.InternalError())
 			return
 		}
@@ -31,7 +31,7 @@ func (c *GetOrdersController) Handler() gin.HandlerFunc {
 }
 
 func (c *GetOrdersController) Pattern() string {
-	return "/order"
+	return "/orders"
 }
 
 func (c *GetOrdersController) Method() string {
