@@ -20,6 +20,7 @@ type startResult struct {
 	base       string
 	auth       *MockAuth
 	warehouses *MockWarehouses
+	order      *MockOrder
 }
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination business_auth_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Auth
@@ -69,6 +70,7 @@ func start(t *testing.T) startResult {
 	return startResult{
 		auth:       mock,
 		warehouses: wMock,
+		order:      orderMock,
 		base:       "http://" + ln.Addr().String(),
 	}
 }
