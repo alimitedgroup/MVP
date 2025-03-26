@@ -187,3 +187,16 @@ func TestUpdateGoodError(t *testing.T) {
 	err := business.UpdateGood(t.Context(), "1", "test name", "test description")
 	require.ErrorIs(t, err, ErrorUpdateGood)
 }
+
+func TestAddStock(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	auth := NewMockAuthenticationPortOut(ctrl)
+	catalog := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
+
+	catalog.EXPECT().AddStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	business := NewBusiness(auth, catalog, orderMock, zaptest.NewLogger(t))
+	err := business.AddStock("1", "hat-1", 10)
+	require.NoError(t, err)
+}
