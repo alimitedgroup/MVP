@@ -3,6 +3,7 @@ package adapterout
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
@@ -58,7 +59,7 @@ func (c CatalogAdapterOut) ListStock() (map[string]int64, error) {
 }
 
 func (c CatalogAdapterOut) ListWarehouses() (map[string]dto.Warehouse, error) {
-	resp, err := c.Broker.Nats.Request("catalog.getGoodsGlobalQuantity", []byte("{}"), nats.DefaultTimeout)
+	resp, err := c.Broker.Nats.Request("catalog.getWarehouses", []byte("{}"), nats.DefaultTimeout)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package business
 import (
 	"errors"
 	"fmt"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
@@ -73,6 +74,11 @@ func (b *Business) GetGoods() ([]dto.GoodAndAmount, error) {
 		return nil, fmt.Errorf("%w: %w", ErrorGetStock, err)
 	}
 
+	warehouses, err := b.catalog.ListWarehouses()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrorGetWarehouses, err)
+	}
+
 	result := make([]dto.GoodAndAmount, 0, len(goods))
 	for _, good := range goods {
 		amount, ok := amounts[good.ID]
@@ -80,11 +86,20 @@ func (b *Business) GetGoods() ([]dto.GoodAndAmount, error) {
 			amount = 0
 		}
 
+		// amount of stock per warehouse
+		amounts := make(map[string]int64, len(warehouses))
+		for _, warehouse := range warehouses {
+			if stock, ok := warehouse.Stock[good.ID]; ok {
+				amounts[warehouse.ID] = stock
+			}
+		}
+
 		result = append(result, dto.GoodAndAmount{
 			Name:        good.Name,
 			Description: good.Description,
 			ID:          good.ID,
 			Amount:      amount,
+			Amounts:     amounts,
 		})
 	}
 

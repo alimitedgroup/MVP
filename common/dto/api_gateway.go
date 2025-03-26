@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+
 	"github.com/alimitedgroup/MVP/common/dto/response"
 )
 
@@ -31,10 +32,11 @@ type MissingRequiredFieldError struct {
 }
 
 type GoodAndAmount struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ID          string `json:"id"`
-	Amount      int64  `json:"amount"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	ID          string           `json:"id"`
+	Amount      int64            `json:"amount"`
+	Amounts     map[string]int64 `json:"amounts"`
 }
 
 func FieldIsRequired(fieldName string) response.ResponseDTO[MissingRequiredFieldError] {
