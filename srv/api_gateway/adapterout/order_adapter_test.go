@@ -14,7 +14,8 @@ func TestGetTransfers(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 
 	sub, err := nc.Subscribe("transfer.get.all", func(msg *nats.Msg) {
-		msg.Respond([]byte(`{"error": "", "message": []}`))
+		err := msg.Respond([]byte(`{"error": "", "message": []}`))
+		require.NoError(t, err)
 	})
 	require.NoError(t, err)
 	defer func() {
@@ -35,7 +36,8 @@ func TestGetOrders(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 
 	sub, err := nc.Subscribe("order.get.all", func(msg *nats.Msg) {
-		msg.Respond([]byte(`{"error": "", "message": []}`))
+		err := msg.Respond([]byte(`{"error": "", "message": []}`))
+		require.NoError(t, err)
 	})
 	require.NoError(t, err)
 	defer func() {
@@ -56,7 +58,8 @@ func TestCreateOrder(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 
 	sub, err := nc.Subscribe("order.create", func(msg *nats.Msg) {
-		msg.Respond([]byte(`{"error": "", "message": {"order_id": "1"}}`))
+		err := msg.Respond([]byte(`{"error": "", "message": {"order_id": "1"}}`))
+		require.NoError(t, err)
 	})
 	require.NoError(t, err)
 	defer func() {
@@ -88,7 +91,8 @@ func TestCreateTransfer(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 
 	sub, err := nc.Subscribe("transfer.create", func(msg *nats.Msg) {
-		msg.Respond([]byte(`{"error": "", "message": {"transfer_id": "1"}}`))
+		err := msg.Respond([]byte(`{"error": "", "message": {"transfer_id": "1"}}`))
+		require.NoError(t, err)
 	})
 	require.NoError(t, err)
 	defer func() {

@@ -84,7 +84,8 @@ func TestAddStock(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 
 	sub, err := nc.Subscribe("warehouse.1.stock.add", func(msg *nats.Msg) {
-		msg.Respond([]byte(`{"error": "", "message": "ok"}`))
+		err := msg.Respond([]byte(`{"error": "", "message": "ok"}`))
+		require.NoError(t, err)
 	})
 	require.NoError(t, err)
 	defer func() {
