@@ -39,6 +39,40 @@ type GoodAndAmount struct {
 	Amounts     map[string]int64 `json:"amounts"`
 }
 
+type CreateOrderResponse struct {
+	OrderID string `json:"order_id"`
+}
+
+type GetOrdersResponse struct {
+	Orders []Order `json:"orders"`
+}
+
+type Order struct {
+	OrderID      string           `json:"order_id"`
+	Status       string           `json:"status"`
+	Name         string           `json:"name"`
+	FullName     string           `json:"full_name"`
+	Address      string           `json:"address"`
+	Goods        map[string]int64 `json:"goods"`
+	Reservations []string         `json:"reservations"`
+}
+
+type CreateTransferResponse struct {
+	TransferID string `json:"transfer_id"`
+}
+
+type GetTransfersResponse struct {
+	Transfers []Transfer `json:"transfers"`
+}
+
+type Transfer struct {
+	Status     string           `json:"status"`
+	TransferID string           `json:"transfer_id"`
+	SenderID   string           `json:"sender_id"`
+	ReceiverID string           `json:"receiver_id"`
+	Goods      map[string]int64 `json:"goods"`
+}
+
 func FieldIsRequired(fieldName string) response.ResponseDTO[MissingRequiredFieldError] {
 	return response.ResponseDTO[MissingRequiredFieldError]{
 		Error: "missing_field",

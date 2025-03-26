@@ -20,6 +20,8 @@ var (
 	ErrorGetWarehouses      = errors.New("error getting warehouses")
 	ErrorGetGoods           = errors.New("error getting goods")
 	ErrorGetStock           = errors.New("error getting global stock")
+	ErrorGetTransfers       = errors.New("error getting transfers")
+	ErrorGetOrders          = errors.New("error getting orders")
 	ErrorInvalidCredentials = errors.New("invalid credentials")
 	ErrorTokenInvalid       = errors.New("this token is invalid")
 	ErrorTokenExpired       = errors.New("this token is expired")
@@ -31,23 +33,85 @@ var Module = fx.Module(
 		NewBusiness,
 		fx.As(new(portin.Auth)),
 		fx.As(new(portin.Warehouses)),
+		fx.As(new(portin.Order)),
 	)),
 	fx.Decorate(observability.WrapLogger("business")),
 )
 
-func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, logger *zap.Logger) *Business {
-	return &Business{auth: auth, catalog: catalog, Logger: logger}
+func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, order portout.OrderPortOut, logger *zap.Logger) *Business {
+	return &Business{auth: auth, catalog: catalog, order: order, Logger: logger}
 }
 
 type Business struct {
 	auth    portout.AuthenticationPortOut
 	catalog portout.CatalogPortOut
+	order   portout.OrderPortOut
 	*zap.Logger
 }
 
 func (b *Business) GetWarehouseByID(_ int64) (dto.Warehouse, error) {
 	//TODO da implementare quando catalog supporta questa query
 	panic("implement me")
+}
+
+func (b *Business) CreateOrder(any) (string, error) {
+	panic("implement me")
+}
+
+func (b *Business) GetOrders() ([]dto.Order, error) {
+	orders, err := b.order.GetAllOrders()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrorGetOrders, err)
+	}
+
+	resp := make([]dto.Order, 0, len(orders))
+	for _, order := range orders {
+		goods := make(map[string]int64, len(order.Goods))
+		for _, good := range order.Goods {
+			goods[good.GoodID] = good.Quantity
+		}
+
+		resp = append(resp, dto.Order{
+			Status:       order.Status,
+			OrderID:      order.OrderID,
+			Name:         order.Name,
+			FullName:     order.FullName,
+			Address:      order.Address,
+			Reservations: order.Reservations,
+			Goods:        goods,
+		})
+	}
+
+	return resp, nil
+}
+
+func (b *Business) CreateTransfer(any) (string, error) {
+	panic("implement me")
+}
+
+func (b *Business) GetTransfers() ([]dto.Transfer, error) {
+	transfers, err := b.order.GetAllTransfers()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrorGetTransfers, err)
+	}
+
+	resp := make([]dto.Transfer, 0, len(transfers))
+	for _, transfer := range transfers {
+		goods := make(map[string]int64, len(transfer.Goods))
+		for _, good := range transfer.Goods {
+			goods[good.GoodID] = good.Quantity
+		}
+
+		resp = append(resp, dto.Transfer{
+			Status:     transfer.Status,
+			TransferID: transfer.TransferID,
+			SenderID:   transfer.SenderID,
+			ReceiverID: transfer.ReceiverID,
+			Goods:      goods,
+		})
+	}
+
+	return resp, nil
 }
 
 func (b *Business) GetWarehouses() ([]portin.WarehouseOverview, error) {
@@ -177,3 +241,4 @@ func (b *Business) ValidateToken(token string) (portin.UserData, error) {
 // Asserzione a compile time che Business implementi le interfaccie delle porte di input
 var _ portin.Auth = (*Business)(nil)
 var _ portin.Warehouses = (*Business)(nil)
+var _ portin.Order = (*Business)(nil)
