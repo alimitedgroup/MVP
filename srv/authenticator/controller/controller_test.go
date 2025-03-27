@@ -3,9 +3,12 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/zap/zaptest"
 
 	commonobj "github.com/alimitedgroup/MVP/common"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -39,6 +42,10 @@ var p = fx.Options(
 	fx.Provide(NewAuthRouter),
 	fx.Provide(NewAuthRouterMessageBroker),
 	fx.Provide(NewControllerRouter),
+	fx.Provide(func() metric.Meter {
+		a := otel.Meter("test")
+		return a
+	}),
 	fx.Provide(
 		fx.Annotate(NewFakeService,
 			fx.As(new(serviceportin.IGetTokenUseCase)),

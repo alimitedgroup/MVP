@@ -2,8 +2,11 @@ package controller
 
 import (
 	"context"
-	"go.uber.org/zap/zaptest"
 	"testing"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
@@ -28,6 +31,10 @@ func Test_Router(t *testing.T) {
 				fx.As(new(serviceportin.IGetTokenUseCase)),
 			)),
 		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(func() metric.Meter {
+			a := otel.Meter("test")
+			return a
+		}),
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{

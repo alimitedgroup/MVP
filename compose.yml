@@ -2,6 +2,7 @@ volumes:
   nats_data:
   grafana_data:
 
+
 services:
   nats:
     image: nats:2.10-alpine3.21
@@ -13,7 +14,7 @@ services:
     volumes:
       - nats_data:/data/jetstream
     healthcheck:
-      test: ["CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -"]
+      test: [ "CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -" ]
       interval: 1s
       timeout: 5s
       retries: 5
@@ -73,6 +74,7 @@ services:
     build: { args: { SERVICE: authenticator } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:
