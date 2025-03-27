@@ -50,7 +50,7 @@ func (c *UpdateGoodController) Method() string {
 }
 
 func (c *UpdateGoodController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*UpdateGoodController)(nil)

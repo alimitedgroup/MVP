@@ -50,7 +50,7 @@ func (c *AddStockController) Method() string {
 }
 
 func (c *AddStockController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*AddStockController)(nil)

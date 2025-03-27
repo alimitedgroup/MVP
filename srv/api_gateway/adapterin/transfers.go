@@ -39,7 +39,7 @@ func (c *GetTransfersController) Method() string {
 }
 
 func (c *GetTransfersController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*GetTransfersController)(nil)

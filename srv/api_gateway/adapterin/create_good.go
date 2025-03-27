@@ -46,7 +46,7 @@ func (c *CreateGoodController) Method() string {
 }
 
 func (c *CreateGoodController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*CreateGoodController)(nil)

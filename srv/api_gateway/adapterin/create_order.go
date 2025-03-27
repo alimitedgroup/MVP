@@ -46,7 +46,7 @@ func (c *CreateOrderController) Method() string {
 }
 
 func (c *CreateOrderController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*CreateOrderController)(nil)

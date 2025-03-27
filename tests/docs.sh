@@ -1,3 +1,7 @@
+# login (valid usernames: global_admin, local_admin, client)
+curl -Ss -X POST localhost:8080/api/v1/login \
+  -d username=global_admin | jq
+
 # create good (return the good id)
 curl -Ss -H "Content-Type: application/json" -X POST localhost:8080/api/v1/goods \
   -d '{"name":"hat","description":"blue hat"}' | jq

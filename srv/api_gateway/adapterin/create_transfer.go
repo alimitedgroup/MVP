@@ -46,7 +46,7 @@ func (c *CreateTransferController) Method() string {
 }
 
 func (c *CreateTransferController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*CreateTransferController)(nil)
