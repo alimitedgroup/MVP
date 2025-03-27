@@ -2,6 +2,43 @@ package main
 
 import (
 	"context"
+	"log"
+
+	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
+	"github.com/alimitedgroup/MVP/srv/notification/config"
+	"go.uber.org/fx"
+)
+
+func main() {
+	ctx := context.Background()
+	cfg := config.LoadConfig()
+
+	app := fx.New(
+		cfg,
+		config.Modules,
+		fx.Provide(broker.NewNatsConn),
+		fx.Invoke(config.RunLifeCycle),
+		fx.Provide(observability.New),
+	)
+
+	err := app.Start(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		err = app.Stop(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+}
+
+/*package main
+
+import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -226,3 +263,4 @@ func checkRule(queryAPI api.QueryAPI, rule *QueryRule) {
 		log.Printf("[checkRule] Errore result: %v\n", result.Err())
 	}
 }
+*/

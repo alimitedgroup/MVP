@@ -7,7 +7,8 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		fx.Annotate(NewStockAdapter,
+		NewInfluxClient,
+		fx.Annotate(NewNotificationAdapter,
 			fx.As(new(serviceportout.IStockRepository)),
 			fx.As(new(serviceportout.IStockEventPublisher)),
 			fx.As(new(serviceportout.IRuleQueryRepository)),

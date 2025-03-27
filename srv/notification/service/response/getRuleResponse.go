@@ -13,3 +13,7 @@ func NewGetRuleResultResponse(goodID string, quantity int, err error) *GetRuleRe
 		Err:             err,
 	}
 }
+
+func (asr *GetRuleResultResponse) GetOperationResult() error {
+	return asr.Err
+}

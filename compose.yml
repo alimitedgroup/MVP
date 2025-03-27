@@ -85,8 +85,6 @@ services:
       - "8086:8086"
     volumes:
       - ./influxdb_data:/var/lib/influxdb2
-    networks:
-      - warehouse
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
@@ -94,14 +92,15 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=my-org
       - DOCKER_INFLUXDB_INIT_BUCKET=stockdb
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-token
+
   notification:
     build: { args: { SERVICE: notification } }
     environment:
       - INFLUXDB_TOKEN=my-token
       - INFLUXDB_ORG=my-org
       - ENV_BROKER_URL=nats://nats:4222
-    networks:
-      - warehouse
+    volumes:
+      - ./config.yml:/data/config.yml
     depends_on:
       - nats
       - influxdb
