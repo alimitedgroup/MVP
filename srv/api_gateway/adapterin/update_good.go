@@ -37,7 +37,7 @@ func (c *UpdateGoodController) Handler() gin.HandlerFunc {
 			ctx.JSON(500, dto.InternalError())
 			return
 		}
-		ctx.JSON(200, nil)
+		ctx.JSON(200, map[string]interface{}{})
 	}
 }
 
