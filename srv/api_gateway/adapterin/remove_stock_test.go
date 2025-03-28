@@ -14,7 +14,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func TestAddStock(t *testing.T) {
+func TestRemoveStock(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
@@ -22,10 +22,10 @@ func TestAddStock(t *testing.T) {
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
-	s.warehouses.EXPECT().AddStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	s.warehouses.EXPECT().RemoveStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 	payload := bytes.NewReader([]byte(`{"quantity": 10}`))
-	req, err := http.NewRequest(http.MethodPost, s.base+"/api/v1/goods/1/warehouse/1/stock", payload)
+	req, err := http.NewRequest(http.MethodDelete, s.base+"/api/v1/goods/1/warehouse/1/stock", payload)
 	require.NoError(t, err)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")
 	req.Header.Set("Content-Type", "application/json")
@@ -39,7 +39,7 @@ func TestAddStock(t *testing.T) {
 	require.Empty(t, respbody)
 }
 
-func TestAddStockError(t *testing.T) {
+func TestRemoveStockError(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
@@ -47,11 +47,11 @@ func TestAddStockError(t *testing.T) {
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
-	s.warehouses.EXPECT().AddStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
+	s.warehouses.EXPECT().RemoveStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
 
 	payload := bytes.NewReader([]byte(`{"quantity": 10}`))
 
-	req, err := http.NewRequest(http.MethodPost, s.base+"/api/v1/goods/1/warehouse/1/stock", payload)
+	req, err := http.NewRequest(http.MethodDelete, s.base+"/api/v1/goods/1/warehouse/1/stock", payload)
 	require.NoError(t, err)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")
 	req.Header.Set("Content-Type", "application/json")
@@ -65,7 +65,7 @@ func TestAddStockError(t *testing.T) {
 	require.Equal(t, "internal_error", respbody.Error)
 }
 
-func TestAddStockMalformedInput(t *testing.T) {
+func TestRemoveStockMalformedInput(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
@@ -76,7 +76,7 @@ func TestAddStockMalformedInput(t *testing.T) {
 
 	payload := bytes.NewReader([]byte(`"quantity": 10`))
 
-	req, err := http.NewRequest(http.MethodPost, s.base+"/api/v1/goods/1/warehouse/1/stock", payload)
+	req, err := http.NewRequest(http.MethodDelete, s.base+"/api/v1/goods/1/warehouse/1/stock", payload)
 	require.NoError(t, err)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")
 	req.Header.Set("Content-Type", "application/json")

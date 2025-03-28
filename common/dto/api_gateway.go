@@ -28,6 +28,12 @@ type AddStockRequest struct {
 	Quantity    int64  `json:"quantity"`
 }
 
+type RemoveStockRequest struct {
+	WarehouseID string `uri:"warehouse_id"`
+	GoodID      string `uri:"good_id"`
+	Quantity    int64  `json:"quantity"`
+}
+
 type CreateGoodRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`

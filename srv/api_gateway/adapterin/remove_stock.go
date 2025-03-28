@@ -8,17 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewAddStockController(warehouses portin.Warehouses) *AddStockController {
-	return &AddStockController{warehouses: warehouses}
+func NewRemoveStockController(warehouses portin.Warehouses) *RemoveStockController {
+	return &RemoveStockController{warehouses: warehouses}
 }
 
-type AddStockController struct {
+type RemoveStockController struct {
 	warehouses portin.Warehouses
 }
 
-func (c *AddStockController) Handler() gin.HandlerFunc {
+func (c *RemoveStockController) Handler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req dto.AddStockRequest
+		var req dto.RemoveStockRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			slog.Error("invalid request body", "error", err)
 			ctx.JSON(400, dto.InternalError())
@@ -31,7 +31,7 @@ func (c *AddStockController) Handler() gin.HandlerFunc {
 			return
 		}
 
-		err := c.warehouses.AddStock(req.WarehouseID, req.GoodID, req.Quantity)
+		err := c.warehouses.RemoveStock(req.WarehouseID, req.GoodID, req.Quantity)
 		if err != nil {
 			slog.Error("error while handling request to /api/v1/goods/:good_id/warehouse/:warehouse_id/stock", "error", err)
 			ctx.JSON(500, dto.InternalError())
@@ -41,16 +41,16 @@ func (c *AddStockController) Handler() gin.HandlerFunc {
 	}
 }
 
-func (c *AddStockController) Pattern() string {
+func (c *RemoveStockController) Pattern() string {
 	return "/goods/:good_id/warehouse/:warehouse_id/stock"
 }
 
-func (c *AddStockController) Method() string {
-	return "POST"
+func (c *RemoveStockController) Method() string {
+	return "DELETE"
 }
 
-func (c *AddStockController) RequiresAuth() bool {
+func (c *RemoveStockController) RequiresAuth() bool {
 	return true
 }
 
-var _ Controller = (*AddStockController)(nil)
+var _ Controller = (*RemoveStockController)(nil)

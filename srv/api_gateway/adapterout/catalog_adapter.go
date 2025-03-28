@@ -109,6 +109,33 @@ func (c CatalogAdapterOut) AddStock(warehouseId string, goodId string, quantity 
 	return err
 }
 
+func (c CatalogAdapterOut) RemoveStock(warehouseId string, goodId string, quantity int64) error {
+	payload, err := json.Marshal(request.RemoveStockRequestDTO{
+		GoodID:   goodId,
+		Quantity: quantity,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.Broker.Nats.Request(fmt.Sprintf("warehouse.%s.stock.remove", warehouseId), payload, nats.DefaultTimeout)
+	if err != nil {
+		return err
+	}
+
+	var respDto response.ResponseDTO[string]
+	err = json.Unmarshal(resp.Data, &respDto)
+	if err != nil {
+		return err
+	}
+
+	if respDto.Error != "" {
+		return fmt.Errorf("%s", respDto.Error)
+	}
+
+	return err
+}
+
 func (c CatalogAdapterOut) CreateGood(ctx context.Context, name string, description string) (string, error) {
 	goodId := uuid.New().String()
 

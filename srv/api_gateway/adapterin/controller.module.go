@@ -22,6 +22,7 @@ var Module = fx.Module(
 	fx.Provide(AsController(NewGetTransfersController)),
 	fx.Provide(AsController(NewCreateTransferController)),
 	fx.Provide(AsController(NewAddStockController)),
+	fx.Provide(AsController(NewRemoveStockController)),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
 )
 

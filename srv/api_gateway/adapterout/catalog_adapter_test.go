@@ -101,6 +101,27 @@ func TestAddStock(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestRemoveStock(t *testing.T) {
+	nc, _ := broker.NewInProcessNATSServer(t)
+
+	sub, err := nc.Subscribe("warehouse.1.stock.remove", func(msg *nats.Msg) {
+		err := msg.Respond([]byte(`{"error": "", "message": "ok"}`))
+		require.NoError(t, err)
+	})
+	require.NoError(t, err)
+	defer func() {
+		err := sub.Unsubscribe()
+		require.NoError(t, err)
+	}()
+
+	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
+	require.NoError(t, err)
+	catalog := NewCatalogAdapter(brk)
+
+	err = catalog.RemoveStock("1", "1", 1)
+	require.NoError(t, err)
+}
+
 func TestCreateGood(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 

@@ -25,6 +25,7 @@ var (
 	ErrorGetTransfers       = errors.New("error getting transfers")
 	ErrorGetOrders          = errors.New("error getting orders")
 	ErrorAddStock           = errors.New("error adding stock")
+	ErrorRemoveStock        = errors.New("error adding stock")
 	ErrorCreateOrder        = errors.New("error creating order")
 	ErrorCreateTransfer     = errors.New("error creating transfer")
 	ErrorCreateGood         = errors.New("error creating good")
@@ -65,6 +66,14 @@ func (b *Business) AddStock(warehouseId string, goodId string, quantity int64) e
 	err := b.catalog.AddStock(warehouseId, goodId, quantity)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrorAddStock, err)
+	}
+	return nil
+}
+
+func (b *Business) RemoveStock(warehouseId string, goodId string, quantity int64) error {
+	err := b.catalog.RemoveStock(warehouseId, goodId, quantity)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrorRemoveStock, err)
 	}
 	return nil
 }

@@ -17,7 +17,11 @@ curl -Ss -H "Content-Type: application/json" -X GET localhost:8080/api/v1/goods 
 curl -Ss -H "Content-Type: application/json" -X GET localhost:8080/api/v1/warehouses | jq
 
 # add stock to a good in a warehouse
-curl -Ss -H "Content-Type: application/json" -X POST localhost:8080/api/v1/goods/hat-1/warehouse/1/add \
+curl -Ss -H "Content-Type: application/json" -X POST localhost:8080/api/v1/goods/hat-1/warehouse/1/stock \
+  -d '{"quantity": 10}' | jq
+
+# remove stock of a good in a warehouse
+curl -Ss -H "Content-Type: application/json" -X DELETE localhost:8080/api/v1/goods/hat-1/warehouse/1/stock \
   -d '{"quantity": 10}' | jq
 
 # create an order (return the order id)
