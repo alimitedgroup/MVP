@@ -9,7 +9,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/stream"
 	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
 	serviceportin "github.com/alimitedgroup/MVP/srv/notification/service/portin"
-	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"go.uber.org/fx"
 )
@@ -55,12 +54,13 @@ func (nc *notificationController) addStockUpdateRequest(ctx context.Context, msg
 	return err
 }
 
-func (nc *notificationController) addQueryRuleRequest(ctx context.Context, msg *nats.Msg) error {
-	log.Printf("addQueryRuleRequest ricevuto: %s", string(msg.Data))
+
+func (nc *notificationController) addQueryRuleRequest(ctx context.Context, msg jetstream.Msg) error {
+	log.Printf("addQueryRuleRequest ricevuto: %s", string(msg.Data()))
 
 	request := &stream.AddQueryRule{}
 
-	err := json.Unmarshal(msg.Data, request)
+	err := json.Unmarshal(msg.Data(), request)
 	if err != nil {
 		return err
 	}

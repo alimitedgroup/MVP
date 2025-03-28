@@ -14,4 +14,6 @@ var Module = fx.Options(
 		),
 		NewRuleChecker,
 	),
+
+	fx.Invoke(func(rc *RuleChecker) {}),
 )

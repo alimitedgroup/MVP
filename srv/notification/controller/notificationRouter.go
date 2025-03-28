@@ -23,12 +23,12 @@ func (nr *notificationRouter) Setup(ctx context.Context) error {
 		return err
 	}
 
-	nr.rsc.Wait()
-
-	err = nr.mb.RegisterRequest(ctx, "notification.addQueryRule", "notification", nr.controller.addQueryRuleRequest)
+	err = nr.mb.RegisterJsHandler(ctx, nr.rsc, stream.QueryRuleStreamConfig, nr.controller.addQueryRuleRequest)
 	if err != nil {
 		return err
 	}
+
+	nr.rsc.Wait()
 
 	return nil
 }
