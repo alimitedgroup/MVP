@@ -38,10 +38,10 @@ type TransferControllerParams struct {
 }
 
 func NewTransferController(p TransferControllerParams) *TransferController {
-	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &metricMap, "num_order_transfer_requests")
-	observability.CounterSetup(&p.Meter, p.Logger, &TransferCreateRequestCounter, &metricMap, "num_transfer_create_requests")
-	observability.CounterSetup(&p.Meter, p.Logger, &GetTransferRequestCounter, &metricMap, "num_get_transfer_requests")
-	observability.CounterSetup(&p.Meter, p.Logger, &GetAllTransferRequestCounter, &metricMap, "num_get_all_transfer_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_order_transfer_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &TransferCreateRequestCounter, &MetricMap, "num_transfer_create_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetTransferRequestCounter, &MetricMap, "num_get_transfer_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetAllTransferRequestCounter, &MetricMap, "num_get_all_transfer_requests")
 	Logger = p.Logger
 	return &TransferController{p.CreateTransferUseCase, p.GetTransferUseCase}
 }

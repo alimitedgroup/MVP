@@ -2,10 +2,12 @@ package listener
 
 import (
 	"context"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/stretchr/testify/require"
@@ -26,6 +28,8 @@ func TestRouter(t *testing.T) {
 		Module,
 		lib.ModuleTest,
 		fx.Supply(ns, t, &cfg, ctrl),
+		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Provide(fx.Annotate(NewMockIApplyReservationUseCase, fx.As(new(port.IApplyReservationUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIApplyCatalogUpdateUseCase, fx.As(new(port.IApplyCatalogUpdateUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIConfirmOrderUseCase, fx.As(new(port.IConfirmOrderUseCase)))),

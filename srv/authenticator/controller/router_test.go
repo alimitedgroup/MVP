@@ -2,8 +2,9 @@ package controller
 
 import (
 	"context"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
+
+	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/lib/observability"
@@ -23,6 +24,8 @@ func Test_Router(t *testing.T) {
 		Module,
 		lib.ModuleTest,
 		fx.Supply(ns, t, ctrl),
+		fx.Provide(observability.TestLogger),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(fx.Annotate(NewFakeService, fx.As(new(serviceportin.IGetTokenUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{

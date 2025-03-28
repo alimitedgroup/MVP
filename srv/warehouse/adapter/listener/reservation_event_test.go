@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
@@ -36,6 +38,8 @@ func TestReservationEventListener(t *testing.T) {
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyReservationUseCase)))),
 		fx.Provide(NewReservationEventListener),
 		fx.Provide(NewReservationEventRouter),
+		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *ReservationEventRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

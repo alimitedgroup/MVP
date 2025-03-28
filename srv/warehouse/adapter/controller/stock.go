@@ -22,7 +22,7 @@ var (
 	AddStockRequestCounter    metric.Int64Counter
 	TotalRequestsCounter      metric.Int64Counter
 	Logger                    *zap.Logger
-	metricMap                 sync.Map
+	MetricMap                 sync.Map
 )
 
 type MetricParams struct {
@@ -37,9 +37,9 @@ type StockController struct {
 }
 
 func NewStockController(addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase, mp MetricParams) *StockController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestsCounter, &metricMap, "num_warehouse_requests")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &AddStockRequestCounter, &metricMap, "num_add_stock_requests")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &RemoveStockRequestCounter, &metricMap, "num_remove_stock_requests")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestsCounter, &MetricMap, "num_warehouse_requests")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &AddStockRequestCounter, &MetricMap, "num_add_stock_requests")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &RemoveStockRequestCounter, &MetricMap, "num_remove_stock_requests")
 	Logger = mp.Logger
 	return &StockController{addStockUseCase, removeStockUseCase}
 }

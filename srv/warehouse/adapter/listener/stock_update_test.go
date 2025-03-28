@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
@@ -68,6 +70,8 @@ func TestStockUpdateListener(t *testing.T) {
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyStockUpdateUseCase)))),
 		fx.Provide(NewStockUpdateListener),
 		fx.Provide(NewStockUpdateRouter),
+		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockUpdateRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

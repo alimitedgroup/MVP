@@ -4,9 +4,10 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
+
+	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
@@ -39,6 +40,7 @@ func TestOrderControllerCreateOrder(t *testing.T) {
 		fx.Provide(NewOrderController),
 		fx.Provide(observability.TestMeter),
 		fx.Provide(NewOrderRouter),
+		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *OrderRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -155,6 +157,7 @@ func TestOrderControllerGetOrder(t *testing.T) {
 		fx.Provide(NewOrderController),
 		fx.Provide(NewOrderRouter),
 		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *OrderRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

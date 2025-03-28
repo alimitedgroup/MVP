@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
+
+	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
@@ -35,6 +36,7 @@ func TestReservationController(t *testing.T) {
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.ICreateReservationUseCase)))),
 		fx.Provide(NewReservationController),
 		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Provide(NewReservationRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *ReservationRouter) {
 			lc.Append(fx.Hook{

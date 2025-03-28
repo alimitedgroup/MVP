@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"go.uber.org/zap/zaptest"
-
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib"
@@ -31,6 +29,7 @@ var modules = fx.Options(
 	lib.ModuleTest,
 	adapter.Module,
 	business.Module,
+	fx.Provide(observability.TestLogger),
 	fx.Provide(observability.TestMeter),
 )
 

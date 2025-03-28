@@ -2,10 +2,12 @@ package listener
 
 import (
 	"context"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
@@ -24,6 +26,8 @@ func TestRouter(t *testing.T) {
 		Module,
 		lib.ModuleTest,
 		fx.Supply(ns, t, ctrl),
+		fx.Provide(observability.TestLogger),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(fx.Annotate(NewMockIApplyOrderUpdateUseCase, fx.As(new(port.IApplyOrderUpdateUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIApplyTransferUpdateUseCase, fx.As(new(port.IApplyTransferUpdateUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIApplyStockUpdateUseCase, fx.As(new(port.IApplyStockUpdateUseCase)))),

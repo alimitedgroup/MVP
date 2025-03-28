@@ -25,7 +25,7 @@ var (
 	OrderCreateRequestCounter metric.Int64Counter
 	TotalRequestCounter       metric.Int64Counter
 	Logger                    *zap.Logger
-	metricMap                 sync.Map
+	MetricMap                 sync.Map
 	//Mutex                     sync.Mutex
 )
 
@@ -44,10 +44,10 @@ type OrderControllerParams struct {
 }
 
 func NewOrderController(p OrderControllerParams) *OrderController {
-	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &metricMap, "num_order_transfer_requests")
-	observability.CounterSetup(&p.Meter, p.Logger, &OrderCreateRequestCounter, &metricMap, "num_order_create_requests")
-	observability.CounterSetup(&p.Meter, p.Logger, &GetOrderRequestCounter, &metricMap, "num_get_order_requests")
-	observability.CounterSetup(&p.Meter, p.Logger, &GetAllOrderRequestCounter, &metricMap, "num_get_all_order_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_order_transfer_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &OrderCreateRequestCounter, &MetricMap, "num_order_create_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetOrderRequestCounter, &MetricMap, "num_get_order_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetAllOrderRequestCounter, &MetricMap, "num_get_all_order_requests")
 	//Mutex.Lock()
 	Logger = p.Logger
 	//Mutex.Unlock()

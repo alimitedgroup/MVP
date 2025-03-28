@@ -36,6 +36,7 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 	app := fx.New(
 		fx.Supply(t),
 		fx.Supply(ns),
+		fx.Provide(observability.TestMeter),
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewTest),
@@ -153,6 +154,7 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewTest),
+		fx.Provide(observability.TestMeter),
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
@@ -264,6 +266,7 @@ func TestInsertGetGoods(t *testing.T) {
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewTest),
+		fx.Provide(observability.TestMeter),
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{

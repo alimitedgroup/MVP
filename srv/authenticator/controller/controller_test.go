@@ -3,21 +3,20 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"github.com/alimitedgroup/MVP/common/lib"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
+
 	commonobj "github.com/alimitedgroup/MVP/common"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 	servicecmd "github.com/alimitedgroup/MVP/srv/authenticator/service/cmd"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
-	"go.uber.org/zap/zaptest"
 )
 
 //INIZIO MOCK SERVICE
@@ -48,7 +47,6 @@ var modules = fx.Options(
 
 func TestGetToken(t *testing.T) {
 	ctx := t.Context()
-
 	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
 		modules,

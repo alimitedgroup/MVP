@@ -3,11 +3,13 @@ package listener
 import (
 	"context"
 	"encoding/json"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/nats-io/nats.go/jetstream"
@@ -33,6 +35,8 @@ func TestStockUpdateListener(t *testing.T) {
 		fx.Supply(fx.Annotate(applyStockUpdateUseCaseMock, fx.As(new(port.IApplyStockUpdateUseCase)))),
 		fx.Provide(NewStockUpdateListener),
 		fx.Provide(NewStockUpdateRouter),
+		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockUpdateRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

@@ -24,8 +24,8 @@ type ReservationController struct {
 }
 
 func NewReservationController(createReservationUseCase port.ICreateReservationUseCase, mp MetricParams) *ReservationController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestsCounter, &metricMap, "num_warehouse_requests")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &CreateReservationCounter, &metricMap, "num_create_reservation_requests")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestsCounter, &MetricMap, "num_warehouse_requests")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &CreateReservationCounter, &MetricMap, "num_create_reservation_requests")
 	Logger = mp.Logger
 	return &ReservationController{createReservationUseCase}
 }

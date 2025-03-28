@@ -14,18 +14,18 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	"go.uber.org/zap/zaptest"
-	"testing"
 )
 
 func startCatalog(t *testing.T, nc *nats.Conn) {
+	logger := observability.TestLogger(t)
 	catalogSvc := fx.New(
 		lib.ModuleTest,
 		controller.Module,
 		goodRepository.Module,
 		catalogAdapter.Module,
 		service.Module,
-		fx.Supply(nc, t),
+		fx.Provide(observability.TestMeter),
+		fx.Supply(nc, t, logger),
 		fx.Invoke(Run),
 	)
 

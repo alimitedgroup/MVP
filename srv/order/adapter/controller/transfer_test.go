@@ -4,9 +4,10 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
+
+	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
@@ -38,6 +39,8 @@ func TestTransferControllerCreateTransfer(t *testing.T) {
 		fx.Supply(fx.Annotate(getTransferUseCaseMock, fx.As(new(port.IGetTransferUseCase)))),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),
+		fx.Provide(observability.TestLogger),
+		fx.Provide(observability.TestMeter),
 		fx.Invoke(func(lc fx.Lifecycle, r *TransferRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -149,6 +152,7 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 		fx.Supply(fx.Annotate(getTransferUseCaseMock, fx.As(new(port.IGetTransferUseCase)))),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),
+		fx.Provide(observability.TestLogger),
 		fx.Provide(observability.TestMeter),
 		fx.Invoke(func(lc fx.Lifecycle, r *TransferRouter) {
 			lc.Append(fx.Hook{

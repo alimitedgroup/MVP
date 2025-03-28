@@ -3,11 +3,13 @@ package listener
 import (
 	"context"
 	"encoding/json"
-	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
@@ -39,6 +41,8 @@ func TestOrderUpdateListenerForOrder(t *testing.T) {
 		fx.Supply(fx.Annotate(confirmTransferMock, fx.As(new(port.IConfirmTransferUseCase)))),
 		fx.Provide(NewOrderUpdateListener),
 		fx.Provide(NewOrderUpdateRouter),
+		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *OrderUpdateRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -113,6 +117,8 @@ func TestOrderUpdateListenerForTransfer(t *testing.T) {
 		fx.Supply(fx.Annotate(confirmTransferMock, fx.As(new(port.IConfirmTransferUseCase)))),
 		fx.Provide(NewOrderUpdateListener),
 		fx.Provide(NewOrderUpdateRouter),
+		fx.Provide(observability.TestMeter),
+		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *OrderUpdateRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
