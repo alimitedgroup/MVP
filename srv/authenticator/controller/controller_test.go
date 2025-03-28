@@ -3,9 +3,10 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
+
+	"go.uber.org/zap/zaptest"
 
 	commonobj "github.com/alimitedgroup/MVP/common"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -37,7 +38,6 @@ func (fs *fakeService) GetToken(cmd *servicecmd.GetTokenCmd) *serviceresponse.Ge
 var p = fx.Options(
 	fx.Provide(broker.NewNatsMessageBroker),
 	fx.Provide(NewAuthRouter),
-	fx.Provide(NewAuthRouterMessageBroker),
 	fx.Provide(NewControllerRouter),
 	fx.Provide(
 		fx.Annotate(NewFakeService,

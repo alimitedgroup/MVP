@@ -2,6 +2,10 @@ package adapterin
 
 import (
 	"context"
+	"net"
+	"testing"
+	"time"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
@@ -10,19 +14,18 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap/zaptest"
-	"net"
-	"testing"
-	"time"
 )
 
 type startResult struct {
 	base       string
 	auth       *MockAuth
 	warehouses *MockWarehouses
+	order      *MockOrder
 }
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination business_auth_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Auth
 //go:generate go run go.uber.org/mock/mockgen@latest -destination business_warehouses_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Warehouses
+//go:generate go run go.uber.org/mock/mockgen@latest -destination business_order_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Order
 
 // start starts the application with a mock business login,
 // and returns it, along with the base url that can be used to send requests
@@ -30,6 +33,7 @@ func start(t *testing.T) startResult {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuth(ctrl)
 	wMock := NewMockWarehouses(ctrl)
+	orderMock := NewMockOrder(ctrl)
 
 	nc, _ := broker.NewInProcessNATSServer(t)
 
@@ -46,6 +50,7 @@ func start(t *testing.T) startResult {
 		fx.Supply(
 			fx.Annotate(mock, fx.As(new(portin.Auth))),
 			fx.Annotate(wMock, fx.As(new(portin.Warehouses))),
+			fx.Annotate(orderMock, fx.As(new(portin.Order))),
 			ln, nc,
 		),
 	)
@@ -65,6 +70,7 @@ func start(t *testing.T) startResult {
 	return startResult{
 		auth:       mock,
 		warehouses: wMock,
+		order:      orderMock,
 		base:       "http://" + ln.Addr().String(),
 	}
 }

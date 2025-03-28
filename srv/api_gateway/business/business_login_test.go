@@ -2,16 +2,18 @@ package business
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portout"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap/zaptest"
-	"testing"
 )
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination mock_auth.go -package business github.com/alimitedgroup/MVP/srv/api_gateway/portout AuthenticationPortOut
 //go:generate go run go.uber.org/mock/mockgen@latest -destination mock_catalog.go -package business github.com/alimitedgroup/MVP/srv/api_gateway/portout CatalogPortOut
+//go:generate go run go.uber.org/mock/mockgen@latest -destination mock_order.go -package business github.com/alimitedgroup/MVP/srv/api_gateway/portout OrderPortOut
 
 func TestLogin(t *testing.T) {
 	var token types.ParsedToken = struct{ test int }{}
@@ -30,12 +32,13 @@ func TestLogin(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			authMock := NewMockAuthenticationPortOut(ctrl)
 			catalogMock := NewMockCatalogPortOut(ctrl)
+			orderMock := NewMockOrderPortOut(ctrl)
 
 			authMock.EXPECT().GetToken(gomock.Any()).Return(types.UserToken("some.secure.jwt"), nil)
 			authMock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(token, nil)
 			authMock.EXPECT().GetRole(token).Return(c.UserRole, nil)
 
-			business := NewBusiness(authMock, catalogMock, zaptest.NewLogger(t))
+			business := NewBusiness(authMock, catalogMock, orderMock, zaptest.NewLogger(t))
 			result, err := business.Login(c.string)
 			require.NoError(t, err)
 			require.Equal(t, types.UserToken("some.secure.jwt"), result.Token)
@@ -48,10 +51,11 @@ func TestLoginNoSuchUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 	catalogMock := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
 
 	mock.EXPECT().GetToken(gomock.Any()).Return(types.TokenNone, nil)
 
-	business := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+	business := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 	_, err := business.Login("user")
 	require.ErrorIs(t, err, ErrorInvalidCredentials)
 }
@@ -60,10 +64,11 @@ func TestLoginGetTokenError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 	catalogMock := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
 
 	mock.EXPECT().GetToken(gomock.Any()).Return(types.TokenNone, fmt.Errorf("some error"))
 
-	business := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+	business := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 	_, err := business.Login("user")
 	require.ErrorIs(t, err, ErrorGetToken)
 }
@@ -74,12 +79,13 @@ func TestLoginGetRoleError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 	catalogMock := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
 
 	mock.EXPECT().GetToken(gomock.Any()).Return(types.UserToken("some.secure.jwt"), nil)
 	mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(token, nil)
 	mock.EXPECT().GetRole(token).Return(types.RoleNone, fmt.Errorf("some error"))
 
-	business := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+	business := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 	_, err := business.Login("user")
 	require.ErrorIs(t, err, ErrorGetRole)
 }
@@ -88,11 +94,12 @@ func TestLoginVerifyTokenError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 	catalogMock := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
 
 	mock.EXPECT().GetToken(gomock.Any()).Return(types.UserToken("some.secure.jwt"), nil)
 	mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(nil, fmt.Errorf("some error"))
 
-	business := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+	business := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 	_, err := business.Login("user")
 	require.ErrorIs(t, err, ErrorGetToken)
 }
@@ -103,12 +110,13 @@ func TestVerifyToken(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockAuthenticationPortOut(ctrl)
 	catalogMock := NewMockCatalogPortOut(ctrl)
+	orderMock := NewMockOrderPortOut(ctrl)
 
 	mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(token, nil)
 	mock.EXPECT().GetUsername(token).Return("admin", nil)
 	mock.EXPECT().GetRole(token).Return(types.RoleClient, nil)
 
-	b := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+	b := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 	data, err := b.ValidateToken("some.secure.jwt")
 	require.NoError(t, err)
 	require.Equal(t, data.Username, "admin")
@@ -133,10 +141,11 @@ func TestVerifyTokenErrors(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mock := NewMockAuthenticationPortOut(ctrl)
 			catalogMock := NewMockCatalogPortOut(ctrl)
+			orderMock := NewMockOrderPortOut(ctrl)
 
 			mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(42, c.port)
 
-			b := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+			b := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 			data, err := b.ValidateToken("some.secure.jwt")
 			require.ErrorIs(t, err, c.business)
 			require.Zero(t, data)
@@ -164,11 +173,12 @@ func TestVerifyUsernameError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mock := NewMockAuthenticationPortOut(ctrl)
 			catalogMock := NewMockCatalogPortOut(ctrl)
+			orderMock := NewMockOrderPortOut(ctrl)
 
 			mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(token, nil)
 			mock.EXPECT().GetUsername(token).Return("", c.port)
 
-			b := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+			b := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 			data, err := b.ValidateToken("some.secure.jwt")
 
 			require.Zero(t, data)
@@ -196,12 +206,13 @@ func TestVerifyRoleError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mock := NewMockAuthenticationPortOut(ctrl)
 			catalogMock := NewMockCatalogPortOut(ctrl)
+			orderMock := NewMockOrderPortOut(ctrl)
 
 			mock.EXPECT().VerifyToken(types.UserToken("some.secure.jwt")).Return(token, nil)
 			mock.EXPECT().GetUsername(token).Return("admin", nil)
 			mock.EXPECT().GetRole(token).Return(types.RoleNone, c.port)
 
-			b := NewBusiness(mock, catalogMock, zaptest.NewLogger(t))
+			b := NewBusiness(mock, catalogMock, orderMock, zaptest.NewLogger(t))
 			data, err := b.ValidateToken("some.secure.jwt")
 
 			require.Zero(t, data)

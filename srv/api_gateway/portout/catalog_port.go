@@ -1,6 +1,8 @@
 package portout
 
 import (
+	"context"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 )
 
@@ -12,4 +14,8 @@ type CatalogPortOut interface {
 	ListStock() (map[string]int64, error)
 	// ListWarehouses ritorna la lista di magazzini esistenti
 	ListWarehouses() (map[string]dto.Warehouse, error)
+	CreateGood(ctx context.Context, name string, description string) (string, error)
+	UpdateGood(ctx context.Context, goodId string, name string, description string) error
+	AddStock(warehouseId string, goodId string, quantity int64) error
+	RemoveStock(warehouseId string, goodId string, quantity int64) error
 }

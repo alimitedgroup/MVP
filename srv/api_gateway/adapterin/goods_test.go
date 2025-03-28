@@ -3,11 +3,12 @@ package adapterin
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"testing"
 )
 
 func TestGetGoods(t *testing.T) {
@@ -16,8 +17,8 @@ func TestGetGoods(t *testing.T) {
 
 	s.warehouses.EXPECT().GetGoods().Return(
 		[]dto.GoodAndAmount{
-			{Name: "Apple", Description: "A tasty apple", ID: "id1", Amount: 20},
-			{Name: "Orange", Description: "A tasty orange", ID: "id2", Amount: 10},
+			{Name: "Apple", Description: "A tasty apple", ID: "id1", Amount: 20, Amounts: map[string]int64{"id1": 20}},
+			{Name: "Orange", Description: "A tasty orange", ID: "id2", Amount: 10, Amounts: map[string]int64{"id1": 10}},
 		},
 		nil,
 	)
@@ -30,8 +31,8 @@ func TestGetGoods(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&respbody)
 	require.NoError(t, err)
 	require.Equal(t, []dto.GoodAndAmount{
-		{Name: "Apple", Description: "A tasty apple", ID: "id1", Amount: 20},
-		{Name: "Orange", Description: "A tasty orange", ID: "id2", Amount: 10},
+		{Name: "Apple", Description: "A tasty apple", ID: "id1", Amount: 20, Amounts: map[string]int64{"id1": 20}},
+		{Name: "Orange", Description: "A tasty orange", ID: "id2", Amount: 10, Amounts: map[string]int64{"id1": 10}},
 	}, respbody.Goods)
 }
 

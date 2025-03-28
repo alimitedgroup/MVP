@@ -1,10 +1,11 @@
 package adapterin
 
 import (
+	"log/slog"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
-	"log/slog"
 )
 
 func NewGetGoodsController(warehouses portin.Warehouses) *GetGoodsController {

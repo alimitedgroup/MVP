@@ -10,4 +10,5 @@ var Module = fx.Module(
 	fx.Decorate(observability.WrapLogger("adapterout")),
 	fx.Provide(NewAuthenticationAdapter),
 	fx.Provide(NewCatalogAdapter),
+	fx.Provide(NewOrderAdapter),
 )
