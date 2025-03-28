@@ -8,13 +8,12 @@ import (
 
 	commonobj "github.com/alimitedgroup/MVP/common"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 	servicecmd "github.com/alimitedgroup/MVP/srv/authenticator/service/cmd"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 	"github.com/magiconair/properties/assert"
-	"go.opentelemetry.io/otel/metric"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zaptest"
 )
@@ -41,11 +40,7 @@ var p = fx.Options(
 	fx.Provide(NewAuthRouter),
 	fx.Provide(NewAuthRouterMessageBroker),
 	fx.Provide(NewControllerRouter),
-	fx.Provide(func() metric.Meter {
-		provider := sdkmetric.NewMeterProvider()
-		a := provider.Meter("test-meter")
-		return a
-	}),
+	fx.Provide(observability.TestMeter),
 	fx.Provide(
 		fx.Annotate(NewFakeService,
 			fx.As(new(serviceportin.IGetTokenUseCase)),

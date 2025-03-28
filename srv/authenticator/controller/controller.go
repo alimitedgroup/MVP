@@ -7,6 +7,7 @@ import (
 
 	"github.com/alimitedgroup/MVP/common"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	commonauth "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 	servicecmd "github.com/alimitedgroup/MVP/srv/authenticator/service/cmd"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
@@ -20,20 +21,8 @@ import (
 var (
 	AuthRequests metric.Int64Counter
 	Logger       *zap.Logger
-	Mutex        sync.Mutex
+	metricMap    sync.Map
 )
-
-func setCounter(c metric.Int64Counter) {
-	Mutex.Lock()
-	defer Mutex.Unlock()
-	AuthRequests = c
-}
-
-func incrementCounter(v string) {
-	Mutex.Lock()
-	defer Mutex.Unlock()
-	AuthRequests.Add(context.Background(), 1, metric.WithAttributes(attribute.String("verdict", v)))
-}
 
 type MetricParams struct {
 	fx.In
@@ -41,20 +30,12 @@ type MetricParams struct {
 	Meter  metric.Meter
 }
 
-func counter(p MetricParams, name string, options ...metric.Int64CounterOption) metric.Int64Counter {
-	ctr, err := (p.Meter).Int64Counter(name, options...)
-	if err != nil {
-		p.Logger.Fatal("Failed to setup OpenTelemetry counter", zap.String("name", name), zap.Error(err))
-	}
-	return ctr
-}
-
 type authController struct {
 	tokenUseCase serviceportin.IGetTokenUseCase
 }
 
 func NewAuthController(tokenUseCase serviceportin.IGetTokenUseCase, mp MetricParams) *authController {
-	setCounter(counter(mp, "num_token_requests"))
+	observability.CounterSetup(&mp.Meter, mp.Logger, &AuthRequests, &metricMap, "num_token_requests")
 	Logger = mp.Logger
 	return &authController{tokenUseCase: tokenUseCase}
 }
@@ -72,8 +53,7 @@ func (ar *authController) NewTokenRequest(ctx context.Context, msg *nats.Msg) er
 	verdict := "success"
 
 	defer func() {
-		//AuthRequests.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
-		incrementCounter(verdict)
+		AuthRequests.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
 
 	var dto common.AuthLoginRequest

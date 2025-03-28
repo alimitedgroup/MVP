@@ -5,10 +5,9 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap/zaptest"
@@ -30,10 +29,7 @@ func Test_Router(t *testing.T) {
 				fx.As(new(serviceportin.IGetTokenUseCase)),
 			)),
 		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(func() metric.Meter {
-			a := otel.Meter("test")
-			return a
-		}),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{
