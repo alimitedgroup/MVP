@@ -10,9 +10,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	cfg := config.LoadConfig()
 	app := fx.New(
-		cfg,
 		config.Modules,
 		fx.Invoke(config.RunLifeCycle),
 	)
