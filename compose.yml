@@ -1,6 +1,7 @@
 volumes:
   nats_data:
   grafana_data:
+  influxdb_data:
 
 services:
   nats:
@@ -84,7 +85,7 @@ services:
     ports:
       - "8086:8086"
     volumes:
-      - ./influxdb_data:/var/lib/influxdb2
+      - influxdb_data:/var/lib/influxdb2
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
