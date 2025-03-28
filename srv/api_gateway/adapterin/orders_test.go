@@ -8,6 +8,8 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/dto/response"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,6 +17,10 @@ func TestGetOrders(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+		Username: "test",
+		Role:     types.RoleGlobalAdmin,
+	}, nil)
 	s.order.EXPECT().GetOrders().Return(
 		[]dto.Order{
 			{
@@ -29,7 +35,10 @@ func TestGetOrders(t *testing.T) {
 		nil,
 	)
 
-	resp, err := client.Get(s.base + "/api/v1/orders")
+	req, err := http.NewRequest(http.MethodGet, s.base+"/api/v1/orders", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", "Bearer some.secure.jwt")
+	resp, err := client.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -52,9 +61,17 @@ func TestGetOrdersError(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+		Username: "test",
+		Role:     types.RoleGlobalAdmin,
+	}, nil)
+
 	s.order.EXPECT().GetOrders().Return([]dto.Order{}, fmt.Errorf("some error"))
 
-	resp, err := client.Get(s.base + "/api/v1/orders")
+	req, err := http.NewRequest(http.MethodGet, s.base+"/api/v1/orders", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", "Bearer some.secure.jwt")
+	resp, err := client.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 
