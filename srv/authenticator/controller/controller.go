@@ -53,19 +53,20 @@ func (ar *authController) NewTokenRequest(ctx context.Context, msg *nats.Msg) er
 	verdict := "success"
 
 	defer func() {
+		Logger.Info("Generation token request terminated")
 		AuthRequests.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
 
 	var dto common.AuthLoginRequest
 	err := json.Unmarshal(msg.Data, &dto)
 	if err != nil {
+		verdict = "bad request"
 		Logger.Debug("Bad request", zap.Error(err))
 		err = broker.RespondToMsg(msg, common.AuthLoginResponse{Token: ""})
 		if err != nil {
 			Logger.Error("Cannot send response", zap.Error(err))
-			return nil
+			return err
 		}
-		verdict = "bad request"
 		return nil
 	}
 
@@ -78,7 +79,7 @@ func (ar *authController) NewTokenRequest(ctx context.Context, msg *nats.Msg) er
 			Logger.Error("Cannot send response", zap.Error(err))
 		}
 		verdict = "bad request"
-		return nil
+		return err
 	}
 
 	tokenResponse := ar.tokenUseCase.GetToken(servicecmd.NewGetTokenCmd(dto.Username))
@@ -90,15 +91,14 @@ func (ar *authController) NewTokenRequest(ctx context.Context, msg *nats.Msg) er
 			Logger.Error("Cannot send response", zap.Error(err))
 		}
 		verdict = "cannot generate token"
-		return nil
+		return err
 	}
 
 	err = broker.RespondToMsg(msg, common.AuthLoginResponse{Token: tokenResponse.GetToken()})
 	if err != nil {
 		Logger.Error("Cannot send response", zap.Error(err))
 		verdict = "token generated"
-		return nil
+		return err
 	}
-	Logger.Debug("Genereation token request terminated")
 	return nil
 }

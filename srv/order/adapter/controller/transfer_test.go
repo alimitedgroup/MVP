@@ -10,6 +10,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
@@ -35,6 +36,7 @@ func TestTransferControllerCreateTransfer(t *testing.T) {
 		fx.Supply(fx.Annotate(createTransferUseCaseMock, fx.As(new(port.ICreateTransferUseCase)))),
 		fx.Supply(fx.Annotate(getTransferUseCaseMock, fx.As(new(port.IGetTransferUseCase)))),
 		fx.Supply(zaptest.NewLogger(t)),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),
@@ -150,6 +152,7 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),
+		fx.Provide(observability.TestMeter),
 		fx.Invoke(func(lc fx.Lifecycle, r *TransferRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

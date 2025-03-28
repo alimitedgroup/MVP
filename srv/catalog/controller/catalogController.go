@@ -63,9 +63,10 @@ func NewCatalogController(p CatalogControllerParams) *catalogController {
 }
 
 func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg) error { //GetGoodsInfo
-	Logger.Info("Received Get Goods Request")
+	Logger.Info("Received getGoods Request")
 	verdict := "success"
 	defer func() {
+		Logger.Info("Completed getGoods request")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		GoodsRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -81,7 +82,7 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 		if err != nil {
 			Logger.Debug("Cannot send response", zap.Error(err))
 		}
-		return nil
+		return err
 	}
 
 	responseFromService := cc.getGoodsInfoUseCase.GetGoodsInfo(servicecmd.NewGetGoodsInfoCmd())
@@ -89,6 +90,7 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 	err = broker.RespondToMsg(msg, dto.GetGoodsDataResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""})
 	if err != nil {
 		Logger.Debug("Cannot send response", zap.Error(err))
+		return err
 	}
 
 	return nil
@@ -96,9 +98,10 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 
 func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.Msg) error { //GetWarehouses
 
-	Logger.Info("Received Get Warehouse Request")
+	Logger.Info("Received getWarehouse Request")
 	verdict := "success"
 	defer func() {
+		Logger.Info("Completed getWarehouse request")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		WarehouseRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -114,7 +117,7 @@ func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.
 		if err != nil {
 			Logger.Debug("Cannot send response", zap.Error(err))
 		}
-		return nil
+		return err
 	}
 
 	responseFromService := cc.getWarehouseInfoUseCase.GetWarehouses(servicecmd.NewGetWarehousesCmd())
@@ -123,9 +126,10 @@ func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.
 
 	if err != nil {
 		Logger.Debug("Cannot send response", zap.Error(err))
+		return err
 	}
 
-	return err
+	return nil
 }
 
 func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, msg *nats.Msg) error { //GetGoodsQuantity
@@ -133,6 +137,7 @@ func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, 
 	Logger.Info("Received GetGoodsGlobalQuantity Request")
 	verdict := "success"
 	defer func() {
+		Logger.Info("Completed GetGoodsGlobalQuantity request")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		GoodsGlobalQuantityCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -149,7 +154,7 @@ func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, 
 		if err != nil {
 			Logger.Debug("Cannot send response", zap.Error(err))
 		}
-		return nil
+		return err
 	}
 
 	responseFromService := cc.getGoodsQuantityUseCase.GetGoodsQuantity(servicecmd.NewGetGoodsQuantityCmd())
@@ -158,6 +163,7 @@ func (cc *catalogController) getGoodsGlobalQuantityRequest(ctx context.Context, 
 
 	if err != nil {
 		Logger.Debug("Cannot send response", zap.Error(err))
+		return err
 	}
 
 	return nil
@@ -175,6 +181,7 @@ func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstre
 	Logger.Info("Received setGoodData Request")
 	verdict := "success"
 	defer func() {
+		Logger.Info("Completed setGoodData request")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		SetGoodDataCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -186,7 +193,7 @@ func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstre
 	if err != nil {
 		verdict = "bad request"
 		Logger.Debug("Bad request", zap.Error(err))
-		return nil
+		return err
 	}
 
 	err = cc.checkSetGoodDataRequest(request)
@@ -194,13 +201,14 @@ func (cc *catalogController) setGoodDataRequest(ctx context.Context, msg jetstre
 	if err != nil {
 		verdict = "bad request"
 		Logger.Debug("Bad request", zap.Error(err))
-		return nil
+		return err
 	}
 
 	responseFromService := cc.updateGoodDataUseCase.AddOrChangeGoodData(servicecmd.NewAddChangeGoodCmd(request.GoodID, request.GoodNewName, request.GoodNewDescription))
 
 	if responseFromService.GetOperationResult() == catalogCommon.ErrGenericFailure {
 		Logger.Debug("Cannot complete operation", zap.Error(catalogCommon.ErrGenericFailure))
+		return catalogCommon.ErrGenericFailure
 	}
 
 	return nil
@@ -218,6 +226,7 @@ func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jet
 	Logger.Info("Received setGoodQuantity Request")
 	verdict := "success"
 	defer func() {
+		Logger.Info("Completed setGoodQuantity request")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		SetGoodQuantityCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -229,7 +238,7 @@ func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jet
 	if err != nil {
 		verdict = "bad request"
 		Logger.Debug("Bad request", zap.Error(err))
-		return nil
+		return err
 	}
 
 	err = cc.checkSetGoodQuantityRequest(request)
@@ -237,13 +246,14 @@ func (cc *catalogController) setGoodQuantityRequest(ctx context.Context, msg jet
 	if err != nil {
 		verdict = "bad request"
 		Logger.Debug("Bad request", zap.Error(err))
-		return nil
+		return err
 	}
 
 	responseFromService := cc.setMultipleGoodsQuantityUseCase.SetMultipleGoodsQuantity(servicecmd.NewSetMultipleGoodsQuantityCmd(request.WarehouseID, request.Goods))
 
 	if responseFromService.GetOperationResult() == catalogCommon.ErrGenericFailure {
 		Logger.Debug("Cannot complete operation", zap.Error(catalogCommon.ErrGenericFailure))
+		return catalogCommon.ErrGenericFailure
 	}
 
 	return nil

@@ -10,6 +10,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
@@ -37,6 +38,7 @@ func TestOrderControllerCreateOrder(t *testing.T) {
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewOrderController),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(NewOrderRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *OrderRouter) {
 			lc.Append(fx.Hook{
@@ -154,6 +156,7 @@ func TestOrderControllerGetOrder(t *testing.T) {
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewOrderController),
 		fx.Provide(NewOrderRouter),
+		fx.Provide(observability.TestMeter),
 		fx.Invoke(func(lc fx.Lifecycle, r *OrderRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

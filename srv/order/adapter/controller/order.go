@@ -4,14 +4,29 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sync"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/nats-io/nats.go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
+)
+
+var (
+	GetAllOrderRequestCounter metric.Int64Counter
+	GetOrderRequestCounter    metric.Int64Counter
+	OrderCreateRequestCounter metric.Int64Counter
+	TotalRequestCounter       metric.Int64Counter
+	Logger                    *zap.Logger
+	metricMap                 sync.Map
+	//Mutex                     sync.Mutex
 )
 
 type OrderController struct {
@@ -24,15 +39,36 @@ type OrderControllerParams struct {
 
 	CreateOrderUseCase port.ICreateOrderUseCase
 	GetOrderUseCase    port.IGetOrderUseCase
+	Logger             *zap.Logger
+	Meter              metric.Meter
 }
 
 func NewOrderController(p OrderControllerParams) *OrderController {
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &metricMap, "num_order_transfer_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &OrderCreateRequestCounter, &metricMap, "num_order_create_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetOrderRequestCounter, &metricMap, "num_get_order_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetAllOrderRequestCounter, &metricMap, "num_get_all_order_requests")
+	//Mutex.Lock()
+	Logger = p.Logger
+	//Mutex.Unlock()
 	return &OrderController{p.CreateOrderUseCase, p.GetOrderUseCase}
 }
 
 func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg) error {
+
+	Logger.Info("Received new order creation request")
+	verdict := "success"
+
+	defer func() {
+		Logger.Info("Completed create order request")
+		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		OrderCreateRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	var dto request.CreateOrderRequestDTO
 	if err := json.Unmarshal(msg.Data, &dto); err != nil {
+		Logger.Debug("Bad request", zap.Error(err))
+		verdict = "bad request"
 		return err
 	}
 
@@ -40,7 +76,10 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 		resp := response.ErrorResponseDTO{
 			Error: err.Error(),
 		}
+		Logger.Debug("Bad request", zap.Error(err))
+		verdict = "bad request"
 		if err := broker.RespondToMsg(msg, resp); err != nil {
+			Logger.Error("Cannot send response", zap.Error(err))
 			return err
 		}
 
@@ -64,10 +103,13 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 
 	resp, err := c.createOrderUseCase.CreateOrder(ctx, cmd)
 	if err != nil {
+		verdict = "cannot create order"
+		Logger.Debug("Cannot create order", zap.Error(err))
 		resp := response.ErrorResponseDTO{
 			Error: err.Error(),
 		}
 		if err := broker.RespondToMsg(msg, resp); err != nil {
+			Logger.Error("Cannot send response", zap.Error(err))
 			return err
 		}
 
@@ -81,6 +123,7 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 	}
 
 	if err = broker.RespondToMsg(msg, respDto); err != nil {
+		Logger.Error("Cannot send response", zap.Error(err))
 		return err
 	}
 
@@ -88,16 +131,31 @@ func (c *OrderController) OrderCreateHandler(ctx context.Context, msg *nats.Msg)
 }
 
 func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) error {
+
+	Logger.Info("Received new get order request")
+	verdict := "success"
+
+	defer func() {
+		Logger.Info("Completed get order request")
+		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		GetOrderRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	var dto request.GetOrderRequestDTO
 	if err := json.Unmarshal(msg.Data, &dto); err != nil {
+		verdict = "bad request"
+		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
 
 	if dto.OrderID == "" {
+		verdict = "bad request"
+		Logger.Debug("Bad request", zap.Error(errors.New("order id is required")))
 		resp := response.ErrorResponseDTO{
 			Error: "order id is required",
 		}
 		if err := broker.RespondToMsg(msg, resp); err != nil {
+			Logger.Error("Cannot send response", zap.Error(err))
 			return err
 		}
 		return nil
@@ -105,16 +163,20 @@ func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) er
 
 	order, err := c.getOrderUseCase.GetOrder(ctx, port.GetOrderCmd(dto.OrderID))
 	if err != nil {
+		verdict = "cannot get order"
+		Logger.Debug("Cannot get order", zap.Error(err))
 		resp := response.ErrorResponseDTO{
 			Error: err.Error(),
 		}
 		if err := broker.RespondToMsg(msg, resp); err != nil {
+			Logger.Error("Cannot send response", zap.Error(err))
 			return err
 		}
 	}
 
 	respDto := orderToGetGoodResponseDTO(order)
 	if err := broker.RespondToMsg(msg, respDto); err != nil {
+		Logger.Error("Cannot send response", zap.Error(err))
 		return err
 	}
 
@@ -122,9 +184,20 @@ func (c *OrderController) OrderGetHandler(ctx context.Context, msg *nats.Msg) er
 }
 
 func (c *OrderController) OrderGetAllHandler(ctx context.Context, msg *nats.Msg) error {
+
+	Logger.Info("Received new get all order request")
+	verdict := "success"
+
+	defer func() {
+		Logger.Info("Completed get all order request")
+		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		GetAllOrderRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	orders := c.getOrderUseCase.GetAllOrders(ctx)
 	respDto := ordersToGetAllGoodResponseDTO(orders)
 	if err := broker.RespondToMsg(msg, respDto); err != nil {
+		Logger.Error("Cannot send response", zap.Error(err))
 		return err
 	}
 

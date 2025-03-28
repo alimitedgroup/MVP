@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
@@ -24,6 +25,7 @@ func TestRouter(t *testing.T) {
 		Module,
 		fx.Supply(ns),
 		fx.Supply(ctrl),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(fx.Annotate(NewMockICreateTransferUseCase, fx.As(new(port.ICreateTransferUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIGetTransferUseCase, fx.As(new(port.IGetTransferUseCase)))),
 		fx.Provide(fx.Annotate(NewMockICreateOrderUseCase, fx.As(new(port.ICreateOrderUseCase)))),
