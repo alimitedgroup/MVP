@@ -40,15 +40,15 @@ func NewTest(t *testing.T, nc *nats.Conn) *NatsMessageBroker {
 	return brk
 }
 
-func newConfigFromEnv() (*Config, error) {
+func newConfigFromEnv() (*BrokerConfig, error) {
 	url, found := os.LookupEnv("ENV_BROKER_URL")
 	if !found {
 		return nil, fmt.Errorf("ENV_BROKER_URL environment variable not set")
 	}
-	return &Config{Url: url}, nil
+	return &BrokerConfig{Url: url}, nil
 }
 
-func newNatsConn(cfg *Config, logger *zap.Logger) (*nats.Conn, error) {
+func newNatsConn(cfg *BrokerConfig, logger *zap.Logger) (*nats.Conn, error) {
 	logger.Debug("Connecting to NATS", zap.String("url", cfg.Url))
 
 	nc, err := nats.Connect(cfg.Url)

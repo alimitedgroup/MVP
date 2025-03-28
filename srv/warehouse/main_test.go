@@ -22,7 +22,7 @@ func TestRunWithBadConfigParams(t *testing.T) {
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Supply(brokerRouter.BrokerRoutes{}),
 		fx.Provide(broker.NewTest),
-		fx.Invoke(func(config *broker.Config, broker *broker.NatsMessageBroker) {
+		fx.Invoke(func(config *broker.BrokerConfig, broker *broker.NatsMessageBroker) {
 			assert.Equal(t, cfg.Url, config.Url)
 			assert.Equal(t, broker, nil)
 		}),
