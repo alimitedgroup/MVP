@@ -6,10 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/metric"
-	"go.uber.org/zap/zaptest"
-
 	commonobj "github.com/alimitedgroup/MVP/common"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
@@ -17,7 +13,10 @@ import (
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
 	serviceresponse "github.com/alimitedgroup/MVP/srv/authenticator/service/response"
 	"github.com/magiconair/properties/assert"
+	"go.opentelemetry.io/otel/metric"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.uber.org/fx"
+	"go.uber.org/zap/zaptest"
 )
 
 //INIZIO MOCK SERVICE
@@ -43,7 +42,8 @@ var p = fx.Options(
 	fx.Provide(NewAuthRouterMessageBroker),
 	fx.Provide(NewControllerRouter),
 	fx.Provide(func() metric.Meter {
-		a := otel.Meter("test")
+		provider := sdkmetric.NewMeterProvider()
+		a := provider.Meter("test-meter")
 		return a
 	}),
 	fx.Provide(

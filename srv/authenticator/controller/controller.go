@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/alimitedgroup/MVP/common"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -19,7 +20,20 @@ import (
 var (
 	AuthRequests metric.Int64Counter
 	Logger       *zap.Logger
+	Mutex        sync.Mutex
 )
+
+func setCounter(c metric.Int64Counter) {
+	Mutex.Lock()
+	defer Mutex.Unlock()
+	AuthRequests = c
+}
+
+func incrementCounter(v string) {
+	Mutex.Lock()
+	defer Mutex.Unlock()
+	AuthRequests.Add(context.Background(), 1, metric.WithAttributes(attribute.String("verdict", v)))
+}
 
 type MetricParams struct {
 	fx.In
@@ -40,7 +54,7 @@ type authController struct {
 }
 
 func NewAuthController(tokenUseCase serviceportin.IGetTokenUseCase, mp MetricParams) *authController {
-	AuthRequests = counter(mp, "num_token_requests")
+	setCounter(counter(mp, "num_token_requests"))
 	Logger = mp.Logger
 	return &authController{tokenUseCase: tokenUseCase}
 }
@@ -58,7 +72,8 @@ func (ar *authController) NewTokenRequest(ctx context.Context, msg *nats.Msg) er
 	verdict := "success"
 
 	defer func() {
-		AuthRequests.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		//AuthRequests.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		incrementCounter(verdict)
 	}()
 
 	var dto common.AuthLoginRequest

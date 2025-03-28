@@ -4,15 +4,14 @@ import (
 	"context"
 	"testing"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/metric"
-	"go.uber.org/zap/zaptest"
-
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
-	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/mock/gomock"
+	"go.uber.org/zap/zaptest"
 )
 
 func Test_Router(t *testing.T) {
