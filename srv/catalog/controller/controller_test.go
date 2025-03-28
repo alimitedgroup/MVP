@@ -3,13 +3,14 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/dto"
 	"go.uber.org/zap/zaptest"
-
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/lib/observability"
@@ -101,6 +102,22 @@ func (f *FakeControllerUC) GetWarehouses(gwc *servicecmd.GetWarehousesCmd) *serv
 
 // FINE MOCK PORTE CONTROLLER
 
+var modules = fx.Options(
+	lib.ModuleTest,
+	fx.Provide(NewCatalogController),
+	fx.Provide(NewCatalogRouter),
+	fx.Provide(NewControllerRouter),
+	fx.Provide(
+		fx.Annotate(NewFakeControllerUC,
+			fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
+			fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
+			fx.As(new(serviceportin.IGetWarehousesUseCase)),
+			fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
+			fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
+		),
+	),
+)
+
 func TestGetGoodsWrongRequest(t *testing.T) {
 	ctx := t.Context()
 
@@ -177,23 +194,8 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(
-			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
-				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IGetWarehousesUseCase)),
-				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
-			),
-		),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewCatalogController),
-		fx.Provide(NewCatalogRouter),
-		fx.Provide(NewControllerRouter),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(broker.NewRestoreStreamControl),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -256,23 +258,8 @@ func TestSetGoodDataRequest(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(
-			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
-				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IGetWarehousesUseCase)),
-				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
-			),
-		),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewCatalogController),
-		fx.Provide(NewCatalogRouter),
-		fx.Provide(NewControllerRouter),
-		fx.Provide(broker.NewRestoreStreamControl),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -334,23 +321,8 @@ func TestGetGoodsRequest(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(
-			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
-				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IGetWarehousesUseCase)),
-				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
-			),
-		),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(NewCatalogController),
-		fx.Provide(NewCatalogRouter),
-		fx.Provide(NewControllerRouter),
-		fx.Provide(broker.NewRestoreStreamControl),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -485,23 +457,8 @@ func TestGetWarehousesRequest(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(
-			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
-				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IGetWarehousesUseCase)),
-				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
-			),
-		),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewCatalogController),
-		fx.Provide(NewCatalogRouter),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(NewControllerRouter),
-		fx.Provide(broker.NewRestoreStreamControl),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -636,23 +593,8 @@ func TestGetGoodsGlobalQuantityRequest(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Supply(ns),
-		fx.Provide(
-			fx.Annotate(NewFakeControllerUC,
-				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
-				fx.As(new(serviceportin.IGetGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IGetWarehousesUseCase)),
-				fx.As(new(serviceportin.ISetMultipleGoodsQuantityUseCase)),
-				fx.As(new(serviceportin.IUpdateGoodDataUseCase)),
-			),
-		),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewCatalogController),
-		fx.Provide(NewCatalogRouter),
-		fx.Provide(NewControllerRouter),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(broker.NewRestoreStreamControl),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

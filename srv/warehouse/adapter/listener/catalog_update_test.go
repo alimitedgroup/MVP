@@ -3,7 +3,7 @@ package listener
 import (
 	"context"
 	"encoding/json"
-	"go.uber.org/zap/zaptest"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"sync"
 	"testing"
 	"time"
@@ -65,11 +65,8 @@ func TestCatalogUpdateListener(t *testing.T) {
 	mock := newApplyCatalogUpdateMock()
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyCatalogUpdateUseCase)))),
 		fx.Provide(NewCatalogListener),
 		fx.Provide(NewCatalogRouter),

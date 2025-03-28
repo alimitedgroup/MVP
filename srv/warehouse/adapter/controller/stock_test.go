@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
-
-	"go.uber.org/zap/zaptest"
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
@@ -17,7 +16,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestStockController(t *testing.T) {
@@ -34,10 +33,8 @@ func TestStockController(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewStockController),
 		fx.Provide(observability.TestMeter),
 		fx.Provide(NewStockRouter),
@@ -113,10 +110,8 @@ func TestStockControllerAddStockErr(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),
 		fx.Provide(observability.TestMeter),
@@ -178,10 +173,8 @@ func TestStockControllerRemStockErr(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),
 		fx.Provide(observability.TestMeter),

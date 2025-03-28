@@ -2,6 +2,7 @@ package listener
 
 import (
 	"context"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -10,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
 )
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination=mock_listener.go -package listener github.com/alimitedgroup/MVP/srv/warehouse/business/port IApplyReservationUseCase,IApplyCatalogUpdateUseCase,IConfirmOrderUseCase,IConfirmTransferUseCase,IApplyStockUpdateUseCase
@@ -24,17 +24,13 @@ func TestRouter(t *testing.T) {
 
 	app := fx.New(
 		Module,
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(ctrl),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg, ctrl),
 		fx.Provide(fx.Annotate(NewMockIApplyReservationUseCase, fx.As(new(port.IApplyReservationUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIApplyCatalogUpdateUseCase, fx.As(new(port.IApplyCatalogUpdateUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIConfirmOrderUseCase, fx.As(new(port.IConfirmOrderUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIConfirmTransferUseCase, fx.As(new(port.IConfirmTransferUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIApplyStockUpdateUseCase, fx.As(new(port.IApplyStockUpdateUseCase)))),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *ListenerRoutes) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
 
@@ -15,8 +16,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	gomock "go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
+	"go.uber.org/mock/gomock"
 )
 
 func TestReservationController(t *testing.T) {
@@ -30,11 +30,9 @@ func TestReservationController(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.ICreateReservationUseCase)))),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewReservationController),
 		fx.Provide(observability.TestMeter),
 		fx.Provide(NewReservationRouter),

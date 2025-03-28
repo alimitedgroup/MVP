@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestReservationEventListener(t *testing.T) {
@@ -31,11 +31,8 @@ func TestReservationEventListener(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyReservationUseCase)))),
 		fx.Provide(NewReservationEventListener),
 		fx.Provide(NewReservationEventRouter),

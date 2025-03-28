@@ -15,19 +15,18 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zaptest"
+	"testing"
 )
 
 func startCatalog(t *testing.T, nc *nats.Conn) {
 	catalogSvc := fx.New(
-		lib.Module,
+		lib.ModuleTest,
 		controller.Module,
 		goodRepository.Module,
 		catalogAdapter.Module,
 		service.Module,
-		fx.Supply(nc),
+		fx.Supply(nc, t),
 		fx.Invoke(Run),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(observability.TestMeter),
 	)
 
 	err := catalogSvc.Start(context.Background())
@@ -43,11 +42,10 @@ func TestListGoods(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 	startCatalog(t, nc)
 
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	catalog := NewCatalogAdapter(brk)
 
-	_, err = catalog.ListGoods()
+	_, err := catalog.ListGoods()
 	require.NoError(t, err)
 }
 
@@ -55,11 +53,10 @@ func TestListStock(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 	startCatalog(t, nc)
 
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	catalog := NewCatalogAdapter(brk)
 
-	_, err = catalog.ListStock()
+	_, err := catalog.ListStock()
 	require.NoError(t, err)
 }
 
@@ -67,11 +64,10 @@ func TestListWarehouses(t *testing.T) {
 	nc, _ := broker.NewInProcessNATSServer(t)
 	startCatalog(t, nc)
 
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	catalog := NewCatalogAdapter(brk)
 
-	_, err = catalog.ListWarehouses()
+	_, err := catalog.ListWarehouses()
 	require.NoError(t, err)
 }
 

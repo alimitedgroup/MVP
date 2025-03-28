@@ -210,13 +210,10 @@ func CounterSetup(meter *metric.Meter, logger *zap.Logger, counter *metric.Int64
 
 var Module = fx.Options(
 	fx.NopLogger,
-	// fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
-	//     logger := &fxevent.ZapLogger{Logger: log.Named("fx")}
-	//     logger.UseLogLevel(zap.DebugLevel)
-	//     return logger
-	// }),
 	fx.Provide(New),
 )
+
+var ModuleTest = fx.Options(fx.Provide(TestLogger, TestMeter))
 
 func TestLogger(t *testing.T) *zap.Logger {
 	return zaptest.NewLogger(t)

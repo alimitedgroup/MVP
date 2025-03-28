@@ -2,14 +2,13 @@ package adapterin
 
 import (
 	"context"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
 	"net"
 	"testing"
 	"time"
@@ -40,13 +39,12 @@ func start(t *testing.T) startResult {
 
 	app := fx.New(
 		Module,
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(func() metric.Meter { return otel.Meter("test") }),
+		lib.ModuleTest,
+		fx.Provide(observability.TestLogger, observability.TestMeter),
 		fx.Supply(
 			fx.Annotate(mock, fx.As(new(portin.Auth))),
 			fx.Annotate(wMock, fx.As(new(portin.Warehouses))),
-			ln, nc,
+			ln, nc, t,
 		),
 	)
 

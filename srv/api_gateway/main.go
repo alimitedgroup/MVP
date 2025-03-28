@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/alimitedgroup/MVP/common/lib"
-	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterin"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/adapterout"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
@@ -38,9 +36,7 @@ func main() {
 		business.Module,
 		adapterout.Module,
 		adapterin.Module,
-		observability.Module,
 		fx.Supply(addr),
-		fx.Provide(broker.NewNatsConn),
 		fx.Provide(adapterin.NewListener),
 	)
 

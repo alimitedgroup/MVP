@@ -2,9 +2,8 @@ package sender
 
 import (
 	"context"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
-
-	"go.uber.org/zap/zaptest"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
@@ -19,7 +18,7 @@ import (
 
 func TestStockUpdateAdapter(t *testing.T) {
 	ctx := t.Context()
-	cfg := &config.WarehouseConfig{
+	cfg := config.WarehouseConfig{
 		ID: "1",
 	}
 
@@ -35,10 +34,8 @@ func TestStockUpdateAdapter(t *testing.T) {
 	}
 
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(cfg),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewPublishStockUpdateAdapter),
 		fx.Invoke(func(lc fx.Lifecycle, a *PublishStockUpdateAdapter) {
 			lc.Append(fx.Hook{
@@ -82,15 +79,13 @@ func TestStockUpdateAdapter(t *testing.T) {
 
 func TestStockUpdateAdapterNetworkErr(t *testing.T) {
 	ctx := t.Context()
-	logger := zaptest.NewLogger(t)
 	cfg := &config.WarehouseConfig{
 		ID: "1",
 	}
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 
-	broker, err := broker.NewNatsMessageBroker(ns, logger)
-	require.NoError(t, err)
+	broker := broker.NewTest(t, ns)
 
 	ns.Close()
 
@@ -103,6 +98,6 @@ func TestStockUpdateAdapterNetworkErr(t *testing.T) {
 		},
 	}
 
-	err = a.CreateStockUpdate(ctx, cmd)
+	err := a.CreateStockUpdate(ctx, cmd)
 	require.Error(t, err)
 }
