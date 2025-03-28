@@ -38,7 +38,7 @@ func start(t *testing.T) startResult {
 	require.NoError(t, err)
 
 	app := fx.New(
-		Module,
+		ModuleTest,
 		lib.ModuleTest,
 		fx.Provide(observability.TestLogger, observability.TestMeter),
 		fx.Supply(
