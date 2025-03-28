@@ -3,14 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/alimitedgroup/MVP/common/dto"
-	"go.uber.org/zap/zaptest"
 	"log"
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/dto"
+	"go.uber.org/zap/zaptest"
+
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
 	"github.com/alimitedgroup/MVP/srv/catalog/controller"
@@ -36,6 +38,7 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(observability.TestMeter),
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
@@ -148,6 +151,7 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 		fx.Supply(ns),
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
@@ -259,6 +263,7 @@ func TestInsertGetGoods(t *testing.T) {
 		ModulesfForTesting,
 		fx.Provide(broker.NewRestoreStreamControl),
 		fx.Provide(broker.NewNatsMessageBroker),
+		fx.Provide(observability.TestMeter),
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{

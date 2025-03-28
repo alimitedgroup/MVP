@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
-	"go.uber.org/zap/zaptest"
 	"testing"
 
+	"go.uber.org/zap/zaptest"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	serviceportin "github.com/alimitedgroup/MVP/srv/catalog/service/portin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
@@ -25,6 +27,7 @@ func Test_Router(t *testing.T) {
 		fx.Supply(zaptest.NewLogger(t)),
 		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(broker.NewRestoreStreamControl),
+		fx.Provide(observability.TestMeter),
 		fx.Provide(
 			fx.Annotate(NewFakeControllerUC,
 				fx.As(new(serviceportin.IGetGoodsInfoUseCase)),

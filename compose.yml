@@ -56,6 +56,7 @@ services:
     build: { args: { SERVICE: catalog } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:

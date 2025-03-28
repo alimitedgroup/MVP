@@ -2,8 +2,11 @@ package adapterout
 
 import (
 	"context"
+	"testing"
+
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
 	"github.com/alimitedgroup/MVP/srv/catalog/controller"
 	goodRepository "github.com/alimitedgroup/MVP/srv/catalog/persistence"
@@ -12,7 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zaptest"
-	"testing"
 )
 
 func startCatalog(t *testing.T, nc *nats.Conn) {
@@ -25,6 +27,7 @@ func startCatalog(t *testing.T, nc *nats.Conn) {
 		fx.Supply(nc),
 		fx.Invoke(Run),
 		fx.Supply(zaptest.NewLogger(t)),
+		fx.Provide(observability.TestMeter),
 	)
 
 	err := catalogSvc.Start(context.Background())
