@@ -37,6 +37,7 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=1
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:
@@ -47,6 +48,7 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=2
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:
@@ -66,6 +68,7 @@ services:
     build: { args: { SERVICE: order } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:

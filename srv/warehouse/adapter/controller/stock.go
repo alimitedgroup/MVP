@@ -18,11 +18,11 @@ import (
 )
 
 var (
-	RemoveStockCounter     metric.Int64Counter
-	AddStockRequestCounter metric.Int64Counter
-	TotalRequestsCounter   metric.Int64Counter
-	Logger                 *zap.Logger
-	metricMap              sync.Map
+	RemoveStockRequestCounter metric.Int64Counter
+	AddStockRequestCounter    metric.Int64Counter
+	TotalRequestsCounter      metric.Int64Counter
+	Logger                    *zap.Logger
+	metricMap                 sync.Map
 )
 
 type MetricParams struct {
@@ -39,7 +39,7 @@ type StockController struct {
 func NewStockController(addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase, mp MetricParams) *StockController {
 	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestsCounter, &metricMap, "num_warehouse_requests")
 	observability.CounterSetup(&mp.Meter, mp.Logger, &AddStockRequestCounter, &metricMap, "num_add_stock_requests")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &RemoveStockCounter, &metricMap, "num_remove_stock_requests")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &RemoveStockRequestCounter, &metricMap, "num_remove_stock_requests")
 	Logger = mp.Logger
 	return &StockController{addStockUseCase, removeStockUseCase}
 }
@@ -101,7 +101,7 @@ func (c *StockController) RemoveStockHandler(ctx context.Context, msg *nats.Msg)
 
 	defer func() {
 		Logger.Info("Remove stock request terminated")
-		AddStockRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		RemoveStockRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		TotalRequestsCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
 
