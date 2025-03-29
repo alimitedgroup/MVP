@@ -19,11 +19,10 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	"go.uber.org/zap/zaptest"
 )
 
 var Module = fx.Options(
-	lib.Module,
+	lib.ModuleTest,
 	adapter.Module,
 	business.Module,
 )
@@ -48,10 +47,8 @@ func IntegrationTest(t *testing.T, testFunc any) {
 
 	app := fx.New(
 		Module,
-		fx.Supply(&p),
-		fx.Supply(ns),
+		fx.Supply(&p, ns, t),
 		fx.Invoke(testFunc),
-		fx.Supply(zaptest.NewLogger(t)),
 	)
 	err = app.Start(ctx)
 	require.NoError(t, err)
