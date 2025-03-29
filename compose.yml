@@ -36,7 +36,6 @@ services:
     build: { args: { SERVICE: warehouse } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
-      - ENV_WAREHOUSE_ID=1
       - ENV_SERVICE_ID=1
       - OTLP_URL=collector:4317
     volumes:
@@ -48,7 +47,6 @@ services:
     build: { args: { SERVICE: warehouse } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
-      - ENV_WAREHOUSE_ID=2
       - ENV_SERVICE_ID=2
       - OTLP_URL=collector:4317
     volumes:
