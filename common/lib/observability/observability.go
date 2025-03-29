@@ -209,7 +209,6 @@ func CounterSetup(meter *metric.Meter, logger *zap.Logger, counter *metric.Int64
 }
 
 var Module = fx.Options(
-	fx.NopLogger,
 	fx.Provide(New),
 )
 
