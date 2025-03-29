@@ -5,6 +5,6 @@ import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
 )
 
-type IAddQueryRuleUseCase interface {
+type QueryRules interface {
 	AddQueryRule(cmd *servicecmd.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse
 }

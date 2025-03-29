@@ -5,6 +5,6 @@ import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
 )
 
-type IAddStockUpdateUseCase interface {
+type StockUpdates interface {
 	AddStockUpdate(cmd *servicecmd.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error)
 }

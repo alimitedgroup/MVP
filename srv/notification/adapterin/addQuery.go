@@ -11,12 +11,12 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 )
 
-func NewAddQueryController(addQueryRuleUseCase portin.IAddQueryRuleUseCase) *AddQueryController {
+func NewAddQueryController(addQueryRuleUseCase portin.QueryRules) *AddQueryController {
 	return &AddQueryController{addQueryRuleUseCase: addQueryRuleUseCase}
 }
 
 type AddQueryController struct {
-	addQueryRuleUseCase portin.IAddQueryRuleUseCase
+	addQueryRuleUseCase portin.QueryRules
 }
 
 // Asserzione a compile-time che AddQueryController implementi JsController

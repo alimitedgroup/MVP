@@ -8,8 +8,8 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(NewNotificationService,
-			fx.As(new(portin.IAddQueryRuleUseCase)),
-			fx.As(new(portin.IAddStockUpdateUseCase)),
+			fx.As(new(portin.QueryRules)),
+			fx.As(new(portin.StockUpdates)),
 			fx.As(new(IService)),
 		),
 		NewRuleChecker,

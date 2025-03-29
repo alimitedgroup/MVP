@@ -10,14 +10,14 @@ import (
 	"time"
 )
 
-func NewStockUpdateReceiver(addStockUpdateUseCase portin.IAddStockUpdateUseCase) *StockUpdateReceiver {
+func NewStockUpdateReceiver(addStockUpdateUseCase portin.StockUpdates) *StockUpdateReceiver {
 	return &StockUpdateReceiver{
 		addStockUpdateUseCase: addStockUpdateUseCase,
 	}
 }
 
 type StockUpdateReceiver struct {
-	addStockUpdateUseCase portin.IAddStockUpdateUseCase
+	addStockUpdateUseCase portin.StockUpdates
 }
 
 var _ JsController = (*StockUpdateReceiver)(nil)

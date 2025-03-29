@@ -28,8 +28,8 @@ func NewNotificationService(
 	}
 }
 
-var _ portin.IAddQueryRuleUseCase = (*NotificationService)(nil)
-var _ portin.IAddStockUpdateUseCase = (*NotificationService)(nil)
+var _ portin.QueryRules = (*NotificationService)(nil)
+var _ portin.StockUpdates = (*NotificationService)(nil)
 
 func (ns *NotificationService) AddQueryRule(cmd *servicecmd.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse {
 	err := ns.ruleRepo.AddRule(cmd)
