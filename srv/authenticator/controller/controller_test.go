@@ -3,11 +3,11 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
 
 	commonobj "github.com/alimitedgroup/MVP/common"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 	servicecmd "github.com/alimitedgroup/MVP/srv/authenticator/service/cmd"
@@ -34,28 +34,20 @@ func (fs *fakeService) GetToken(cmd *servicecmd.GetTokenCmd) *serviceresponse.Ge
 	}
 }
 
-var p = fx.Options(
-	fx.Provide(broker.NewNatsMessageBroker),
-	fx.Provide(NewAuthRouter),
-	fx.Provide(NewAuthRouterMessageBroker),
-	fx.Provide(NewControllerRouter),
-	fx.Provide(
-		fx.Annotate(NewFakeService,
-			fx.As(new(serviceportin.IGetTokenUseCase)),
-		)))
+var modules = fx.Options(
+	lib.ModuleTest,
+	fx.Provide(fx.Annotate(NewFakeService, fx.As(new(serviceportin.IGetTokenUseCase)))),
+	fx.Provide(NewAuthController, NewAuthRouter, NewAuthRouterMessageBroker, NewControllerRouter),
+)
 
 // FINE MOCK SERVICE
 
 func TestGetToken(t *testing.T) {
 	ctx := t.Context()
-
 	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Supply(ns),
-		p,
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(NewAuthController),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -97,11 +89,8 @@ func TestGetTokenWithWrongUser(t *testing.T) {
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Supply(ns),
-		p,
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(NewAuthController),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -143,11 +132,8 @@ func TestGetTokenEmptyUsername(t *testing.T) {
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Supply(ns),
-		p,
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(NewAuthController),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -189,11 +175,8 @@ func TestGetTokenWrongRequest(t *testing.T) {
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Supply(ns),
-		p,
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(NewAuthController),
+		modules,
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *AuthRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
