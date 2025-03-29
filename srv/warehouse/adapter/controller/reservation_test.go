@@ -7,12 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alimitedgroup/MVP/common/lib"
-
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/stretchr/testify/require"
@@ -35,8 +33,6 @@ func TestReservationController(t *testing.T) {
 		fx.Supply(ns, t, &cfg),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.ICreateReservationUseCase)))),
 		fx.Provide(NewReservationController),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(observability.TestLogger),
 		fx.Provide(NewReservationRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *ReservationRouter) {
 			lc.Append(fx.Hook{

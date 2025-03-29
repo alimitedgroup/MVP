@@ -2,8 +2,6 @@ package config
 
 import (
 	"context"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
-
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/authenticator/adapter"
 	"github.com/alimitedgroup/MVP/srv/authenticator/controller"
@@ -54,5 +52,4 @@ var ModulesTest = fx.Options(
 	publisher.Module,
 	service.Module,
 	serviceauthenticator.Module,
-	observability.ModuleTest,
 )

@@ -7,7 +7,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
@@ -30,8 +29,6 @@ func TestRouter(t *testing.T) {
 		fx.Provide(fx.Annotate(NewMockIGetTransferUseCase, fx.As(new(port.IGetTransferUseCase)))),
 		fx.Provide(fx.Annotate(NewMockICreateOrderUseCase, fx.As(new(port.ICreateOrderUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIGetOrderUseCase, fx.As(new(port.IGetOrderUseCase)))),
-		fx.Provide(observability.TestLogger),
-		fx.Provide(observability.TestMeter),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRoutes) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

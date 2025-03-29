@@ -17,4 +17,5 @@ var ModuleTest = fx.Options(
 	fx.Provide(broker.NewTest),
 	fx.Provide(broker.NewRestoreStreamControl),
 	fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+	observability.ModuleTest,
 )

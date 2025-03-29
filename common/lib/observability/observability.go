@@ -213,7 +213,7 @@ var Module = fx.Options(
 	fx.Provide(New),
 )
 
-var ModuleTest = fx.Options(fx.Provide(TestLogger, TestMeter))
+var ModuleTest = fx.Provide(TestLogger, TestMeter)
 
 func TestLogger(t *testing.T) *zap.Logger {
 	return zaptest.NewLogger(t)

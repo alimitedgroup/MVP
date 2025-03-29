@@ -7,7 +7,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
@@ -24,8 +23,6 @@ func Test_Router(t *testing.T) {
 		Module,
 		lib.ModuleTest,
 		fx.Supply(ns, t, ctrl),
-		fx.Provide(observability.TestLogger),
-		fx.Provide(observability.TestMeter),
 		fx.Provide(fx.Annotate(NewFakeService, fx.As(new(serviceportin.IGetTokenUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{

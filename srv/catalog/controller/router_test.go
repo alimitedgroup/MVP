@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
@@ -20,7 +19,6 @@ func Test_Router(t *testing.T) {
 	app := fx.New(
 		modules,
 		fx.Supply(ns, t, ctrl),
-		fx.Provide(observability.TestLogger),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

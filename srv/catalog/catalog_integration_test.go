@@ -3,16 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"log"
 	"testing"
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/dto"
-	"go.uber.org/zap/zaptest"
-
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogAdapter"
 	"github.com/alimitedgroup/MVP/srv/catalog/controller"
@@ -23,7 +21,8 @@ import (
 	"go.uber.org/fx"
 )
 
-var ModulesfForTesting = fx.Options(
+var ModulesForTesting = fx.Options(
+	lib.ModuleTest,
 	controller.Module,
 	goodRepository.Module,
 	catalogAdapter.Module,
@@ -34,13 +33,8 @@ func TestInsertGetWarehousesQuantity(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
-		fx.Supply(t),
-		fx.Supply(ns),
-		fx.Provide(observability.TestMeter),
-		ModulesfForTesting,
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Provide(broker.NewTest),
-		fx.Supply(zaptest.NewLogger(t)),
+		fx.Supply(ns, t),
+		ModulesForTesting,
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -149,13 +143,8 @@ func TestInsertGetGoodsQuantity(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
-		fx.Supply(t),
-		fx.Supply(ns),
-		ModulesfForTesting,
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Provide(broker.NewTest),
-		fx.Provide(observability.TestMeter),
-		fx.Supply(zaptest.NewLogger(t)),
+		fx.Supply(t, ns),
+		ModulesForTesting,
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -261,13 +250,8 @@ func TestInsertGetGoods(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
-		fx.Supply(t),
-		fx.Supply(ns),
-		ModulesfForTesting,
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Provide(broker.NewTest),
-		fx.Provide(observability.TestMeter),
-		fx.Supply(zaptest.NewLogger(t)),
+		fx.Supply(t, ns),
+		ModulesForTesting,
 		fx.Invoke(func(lc fx.Lifecycle, r *controller.ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
