@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"log"
 	"time"
 
@@ -11,23 +12,22 @@ import (
 	serviceportout "github.com/alimitedgroup/MVP/srv/notification/service/portout"
 	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
-	"github.com/nats-io/nats.go"
 )
 
 type NotificationAdapter struct {
 	influxClient influxdb2.Client
 	influxOrg    string
 	influxBucket string
-	natsConn     *nats.Conn
+	brk          *broker.NatsMessageBroker
 	ruleRepo     serviceportout.IRuleRepository
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, natsConn *nats.Conn, ruleRepo serviceportout.IRuleRepository) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo serviceportout.IRuleRepository) *NotificationAdapter {
 	return &NotificationAdapter{
 		influxClient: influxClient,
 		influxOrg:    "my-org",
 		influxBucket: "stockdb",
-		natsConn:     natsConn,
+		brk:          brk,
 		ruleRepo:     ruleRepo,
 	}
 }
@@ -57,7 +57,7 @@ func (na *NotificationAdapter) PublishStockAlert(alert serviceportout.StockAlert
 		log.Printf("Error marshalling alert: %v", err)
 		return err
 	}
-	if err := na.natsConn.Publish("stock.alert", data); err != nil {
+	if err := na.brk.Nats.Publish("stock.alert", data); err != nil {
 		log.Printf("Error publishing alert to NATS: %v", err)
 		return err
 	}
