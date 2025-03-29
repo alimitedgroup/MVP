@@ -3,44 +3,42 @@ package adapterin
 import (
 	"context"
 	"encoding/json"
+	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	servicecmd "github.com/alimitedgroup/MVP/srv/notification/types"
-	"log"
-
-	"github.com/alimitedgroup/MVP/common/stream"
-	"github.com/nats-io/nats.go/jetstream"
+	"github.com/nats-io/nats.go"
 )
 
 func NewAddQueryController(addQueryRuleUseCase portin.QueryRules) *AddQueryController {
-	return &AddQueryController{addQueryRuleUseCase: addQueryRuleUseCase}
+	return &AddQueryController{addQueryRulePort: addQueryRuleUseCase}
 }
 
 type AddQueryController struct {
-	addQueryRuleUseCase portin.QueryRules
+	addQueryRulePort portin.QueryRules
 }
 
-// Asserzione a compile-time che AddQueryController implementi JsController
-var _ JsController = (*AddQueryController)(nil)
+// Asserzione a compile-time che AddQueryController implementi Controller
+var _ Controller = (*AddQueryController)(nil)
 
-func (c *AddQueryController) Stream() jetstream.StreamConfig {
-	return stream.QueryRuleStreamConfig
-}
-
-func (c *AddQueryController) Handle(_ context.Context, msg jetstream.Msg) error {
-	log.Printf("addQueryRuleRequest ricevuto: %s", string(msg.Data()))
-
+func (c *AddQueryController) Handle(ctx context.Context, msg *nats.Msg) error {
 	request := stream.AddQueryRule{}
-	err := json.Unmarshal(msg.Data(), &request)
+	err := json.Unmarshal(msg.Data, &request)
 	if err != nil {
+		_ = broker.RespondToMsg(msg, dto.InvalidJson())
 		return err
 	}
 
 	cmd := servicecmd.QueryRule{GoodId: request.GoodID, Operator: request.Operator, Threshold: request.Threshold}
-	// TODO: respond with id
-	_, err = c.addQueryRuleUseCase.AddQueryRule(cmd)
+	id, err := c.addQueryRulePort.AddQueryRule(cmd)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return broker.RespondToMsg(msg, id.String())
+}
+
+func (c *AddQueryController) Subject() broker.Subject {
+	return "notification.queries.add"
 }
