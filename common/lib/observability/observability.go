@@ -38,7 +38,7 @@ func getBuildInfo() (string, string) {
 		return "unknown", "unknown"
 	}
 
-	name := bi.Path
+	name := bi.Path + os.Getenv("ENV_SERVICE_ID")
 
 	version := "unknown"
 
