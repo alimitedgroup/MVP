@@ -9,43 +9,18 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 	"go.uber.org/zap/zaptest"
 	"testing"
-	"time"
 )
 
 func createAuthAdapter(t *testing.T, nc *nats.Conn) portout.AuthenticationPortOut {
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	return NewAuthenticationAdapter(brk, zaptest.NewLogger(t))
 }
 
 func startAuthMock(t *testing.T, nc *nats.Conn, issuer string) func() {
-	app := fx.New(
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Supply(issuer),
-		fx.Supply(nc),
-		fx.Supply(DefaultUsers),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(NewAuthMock),
-		fx.Invoke(StartAuthMock),
-	)
-
-	// Start microservice, with timeout of 1 second
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	t.Cleanup(cancel)
-	require.NoError(t, app.Start(ctx))
-
-	// Stop microservice, with timeout of 1 second
-	stopFunc := func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-		t.Cleanup(cancel)
-		require.NoError(t, app.Stop(ctx))
-	}
-
-	t.Cleanup(stopFunc)
-	return stopFunc
+	authMock := NewAuthMock(issuer, broker.NewTest(t, nc), DefaultUsers)
+	return StartAuthMock(t, authMock)
 }
 
 func TestLogin(t *testing.T) {

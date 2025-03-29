@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
@@ -13,8 +15,7 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	gomock "go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
+	"go.uber.org/mock/gomock"
 )
 
 func TestOrderUpdateListenerForOrder(t *testing.T) {
@@ -33,11 +34,8 @@ func TestOrderUpdateListenerForOrder(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg, ctrl),
 		fx.Supply(fx.Annotate(confirmOrderMock, fx.As(new(port.IConfirmOrderUseCase)))),
 		fx.Supply(fx.Annotate(confirmTransferMock, fx.As(new(port.IConfirmTransferUseCase)))),
 		fx.Provide(NewOrderUpdateListener),
@@ -110,11 +108,8 @@ func TestOrderUpdateListenerForTransfer(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg, ctrl),
 		fx.Supply(fx.Annotate(confirmOrderMock, fx.As(new(port.IConfirmOrderUseCase)))),
 		fx.Supply(fx.Annotate(confirmTransferMock, fx.As(new(port.IConfirmTransferUseCase)))),
 		fx.Provide(NewOrderUpdateListener),

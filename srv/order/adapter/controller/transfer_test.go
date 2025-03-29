@@ -9,13 +9,13 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	gomock "go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
+	"go.uber.org/mock/gomock"
 	"golang.org/x/exp/slices"
 )
 
@@ -31,11 +31,10 @@ func TestTransferControllerCreateTransfer(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns),
+		lib.ModuleTest,
+		fx.Supply(ns, t),
 		fx.Supply(fx.Annotate(createTransferUseCaseMock, fx.As(new(port.ICreateTransferUseCase)))),
 		fx.Supply(fx.Annotate(getTransferUseCaseMock, fx.As(new(port.IGetTransferUseCase)))),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *TransferRouter) {
@@ -143,11 +142,10 @@ func TestTransferControllerGetTransfer(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns),
+		lib.ModuleTest,
+		fx.Supply(ns, t),
 		fx.Supply(fx.Annotate(createTransferUseCaseMock, fx.As(new(port.ICreateTransferUseCase)))),
 		fx.Supply(fx.Annotate(getTransferUseCaseMock, fx.As(new(port.IGetTransferUseCase)))),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewTransferController),
 		fx.Provide(NewTransferRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *TransferRouter) {

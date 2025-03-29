@@ -3,6 +3,10 @@ package broker
 import (
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
+	"os"
+	"testing"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
@@ -16,14 +20,35 @@ type BrokerConfig struct {
 	Url string `mapstructure:"url"`
 }
 
-type NatsMessageBroker struct {
-	Nats   *nats.Conn
-	NatsJs nats.JetStream
-	Js     jetstream.JetStream
-	*zap.Logger
+func New(logger *zap.Logger) (*NatsMessageBroker, error) {
+	cfg, err := newConfigFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	nc, err := newNatsConn(cfg, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return newNatsMessageBroker(nc, logger)
 }
 
-func NewNatsConn(cfg *BrokerConfig, logger *zap.Logger) (*nats.Conn, error) {
+func NewTest(t *testing.T, nc *nats.Conn) *NatsMessageBroker {
+	brk, err := newNatsMessageBroker(nc, zaptest.NewLogger(t))
+	require.NoError(t, err)
+	return brk
+}
+
+func newConfigFromEnv() (*BrokerConfig, error) {
+	url, found := os.LookupEnv("ENV_BROKER_URL")
+	if !found {
+		return nil, fmt.Errorf("ENV_BROKER_URL environment variable not set")
+	}
+	return &BrokerConfig{Url: url}, nil
+}
+
+func newNatsConn(cfg *BrokerConfig, logger *zap.Logger) (*nats.Conn, error) {
 	logger.Debug("Connecting to NATS", zap.String("url", cfg.Url))
 
 	nc, err := nats.Connect(cfg.Url)
@@ -34,18 +59,19 @@ func NewNatsConn(cfg *BrokerConfig, logger *zap.Logger) (*nats.Conn, error) {
 	return nc, nil
 }
 
-func NewNatsMessageBroker(nc *nats.Conn, logger *zap.Logger) (*NatsMessageBroker, error) {
-	ncJs, err := nc.JetStream()
-	if err != nil {
-		return nil, err
-	}
+type NatsMessageBroker struct {
+	Nats *nats.Conn
+	Js   jetstream.JetStream
+	*zap.Logger
+}
 
+func newNatsMessageBroker(nc *nats.Conn, logger *zap.Logger) (*NatsMessageBroker, error) {
 	js, err := jetstream.New(nc)
 	if err != nil {
 		return nil, err
 	}
 
-	return &NatsMessageBroker{Nats: nc, NatsJs: ncJs, Js: js, Logger: logger}, nil
+	return &NatsMessageBroker{Nats: nc, Js: js, Logger: logger}, nil
 }
 
 func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject, queue Queue, handler RequestHandler) error {

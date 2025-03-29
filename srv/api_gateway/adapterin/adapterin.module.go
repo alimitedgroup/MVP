@@ -6,10 +6,22 @@ import (
 	"go.uber.org/fx"
 )
 
-var Module = fx.Module(
+var ModuleTest = fx.Module(
 	"adapterin",
 	fx.Decorate(observability.WrapLogger("adapterin")),
 	fx.Provide(NewHTTPHandler),
+	fx.Provide(AsController(NewHealthCheckController)),
+	fx.Provide(AsController(NewLoginController)),
+	fx.Provide(AsController(NewAuthHealthCheckController)),
+	fx.Provide(AsController(NewListWarehousesController)),
+	fx.Provide(AsController(NewGetGoodsController)),
+	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
+)
+
+var Module = fx.Module(
+	"adapterin",
+	fx.Decorate(observability.WrapLogger("adapterin")),
+	fx.Provide(ConfigFromEnv, NewListener, NewHTTPHandler),
 	fx.Provide(AsController(NewHealthCheckController)),
 	fx.Provide(AsController(NewLoginController)),
 	fx.Provide(AsController(NewAuthHealthCheckController)),

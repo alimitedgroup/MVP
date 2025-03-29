@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap/zaptest"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
 
@@ -22,10 +22,8 @@ func TestHealthCheckController(t *testing.T) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	app := fx.New(
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewHealthCheckController),
 		fx.Provide(NewHealthCheckRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *HealthCheckRouter) {
