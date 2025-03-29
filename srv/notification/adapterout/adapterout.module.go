@@ -1,4 +1,4 @@
-package notificationAdapter
+package adapterout
 
 import (
 	serviceportout "github.com/alimitedgroup/MVP/srv/notification/service/portout"

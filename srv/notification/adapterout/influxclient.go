@@ -1,4 +1,4 @@
-package notificationAdapter
+package adapterout
 
 import (
 	"os"
