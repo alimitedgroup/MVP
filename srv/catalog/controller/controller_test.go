@@ -104,7 +104,6 @@ var modules = fx.Options(
 	fx.Provide(NewCatalogController),
 	fx.Provide(NewCatalogRouter),
 	fx.Provide(NewControllerRouter),
-	fx.Provide(observability.TestMeter),
 	fx.Provide(
 		fx.Annotate(NewFakeControllerUC,
 			fx.As(new(serviceportin.IGetGoodsInfoUseCase)),
@@ -118,12 +117,10 @@ var modules = fx.Options(
 
 func TestGetGoodsWrongRequest(t *testing.T) {
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 	app := fx.New(
 		fx.Supply(t),
 		fx.Supply(ns),
-		fx.Supply(logger),
 		modules,
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
@@ -172,13 +169,10 @@ func TestGetGoodsWrongRequest(t *testing.T) {
 }
 
 func TestSetMultipleGoodQuantityRequest(t *testing.T) {
-
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(logger),
 		modules,
 		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
@@ -239,12 +233,11 @@ func TestSetMultipleGoodQuantityRequest(t *testing.T) {
 }
 func TestSetGoodDataRequest(t *testing.T) {
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		modules,
-		fx.Supply(ns, t, logger),
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -302,12 +295,11 @@ func TestSetGoodDataRequest(t *testing.T) {
 
 func TestGetGoodsRequest(t *testing.T) {
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		modules,
-		fx.Supply(ns, t, logger),
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -368,11 +360,10 @@ func TestGetGoodsRequest(t *testing.T) {
 
 func TestGetWarehousesWrongRequest(t *testing.T) {
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns, t, logger),
+		fx.Supply(ns, t),
 		modules,
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
@@ -423,12 +414,11 @@ func TestGetWarehousesWrongRequest(t *testing.T) {
 
 func TestGetWarehousesRequest(t *testing.T) {
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		modules,
-		fx.Supply(ns, t, logger),
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -489,11 +479,10 @@ func TestGetWarehousesRequest(t *testing.T) {
 
 func TestGetGoodsGlobalQuantityWrongRequest(t *testing.T) {
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns, t, logger),
+		fx.Supply(ns, t),
 		modules,
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
@@ -544,12 +533,11 @@ func TestGetGoodsGlobalQuantityWrongRequest(t *testing.T) {
 
 func TestGetGoodsGlobalQuantityRequest(t *testing.T) {
 	ctx := t.Context()
-	logger := observability.TestLogger(t)
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
 		modules,
-		fx.Supply(ns, t, logger),
+		fx.Supply(ns, t),
 		fx.Invoke(func(lc fx.Lifecycle, r *catalogRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

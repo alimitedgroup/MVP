@@ -23,8 +23,6 @@ func Test_Router(t *testing.T) {
 		Module,
 		lib.ModuleTest,
 		fx.Supply(ns, t, ctrl),
-		fx.Provide(observability.TestLogger),
-		fx.Provide(observability.TestMeter),
 		fx.Provide(fx.Annotate(NewFakeService, fx.As(new(serviceportin.IGetTokenUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{

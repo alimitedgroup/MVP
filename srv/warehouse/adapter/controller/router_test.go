@@ -29,8 +29,6 @@ func TestRouter(t *testing.T) {
 		fx.Supply(ns, t, &cfg, ctrl),
 		fx.Provide(fx.Annotate(NewMockIAddStockUseCase, fx.As(new(port.IAddStockUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIRemoveStockUseCase, fx.As(new(port.IRemoveStockUseCase)))),
-		fx.Provide(observability.TestLogger),
-		fx.Provide(observability.TestMeter),
 		fx.Provide(fx.Annotate(NewMockICreateReservationUseCase, fx.As(new(port.ICreateReservationUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *BrokerRoutes) {
 			lc.Append(fx.Hook{

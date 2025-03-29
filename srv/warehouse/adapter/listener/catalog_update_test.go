@@ -10,7 +10,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
@@ -71,8 +70,6 @@ func TestCatalogUpdateListener(t *testing.T) {
 		fx.Supply(ns, t, &cfg),
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyCatalogUpdateUseCase)))),
 		fx.Provide(NewCatalogListener),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(observability.TestLogger),
 		fx.Provide(NewCatalogRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *CatalogRouter) {
 			lc.Append(fx.Hook{

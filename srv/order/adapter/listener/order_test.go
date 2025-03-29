@@ -9,7 +9,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	internalStream "github.com/alimitedgroup/MVP/srv/order/adapter/stream"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
@@ -45,8 +44,6 @@ func runTestOrderListener(t *testing.T, build func(*orderListenerMockSuite), bui
 		fx.Supply(fx.Annotate(suite.applyOrderUpdateUseCaseMock, fx.As(new(port.IApplyOrderUpdateUseCase)))),
 		fx.Supply(fx.Annotate(suite.applyTransferUpdateUseCaseMock, fx.As(new(port.IApplyTransferUpdateUseCase)))),
 		fx.Supply(fx.Annotate(suite.contactWarehouseUseCaseMock, fx.As(new(port.IContactWarehousesUseCase)))),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(observability.TestLogger),
 		fx.Provide(NewOrderListener),
 		fx.Provide(NewOrderRouter),
 		fx.Invoke(runLifeCycle()),

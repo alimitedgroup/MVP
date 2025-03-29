@@ -16,15 +16,13 @@ import (
 )
 
 func startCatalog(t *testing.T, nc *nats.Conn) {
-	logger := observability.TestLogger(t)
 	catalogSvc := fx.New(
 		lib.ModuleTest,
 		controller.Module,
 		goodRepository.Module,
 		catalogAdapter.Module,
 		service.Module,
-		fx.Provide(observability.TestMeter),
-		fx.Supply(nc, t, logger),
+		fx.Supply(nc, t),
 		fx.Invoke(Run),
 	)
 
