@@ -2,14 +2,15 @@ package controller
 
 import (
 	"context"
-	"go.uber.org/zap/zaptest"
 	"testing"
+
+	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	serviceportin "github.com/alimitedgroup/MVP/srv/authenticator/service/portIn"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Router(t *testing.T) {
@@ -20,15 +21,9 @@ func Test_Router(t *testing.T) {
 
 	app := fx.New(
 		Module,
-		fx.Supply(ns),
-		fx.Supply(ctrl),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(
-			fx.Annotate(NewFakeService,
-				fx.As(new(serviceportin.IGetTokenUseCase)),
-			)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(broker.NewRestoreStreamControl),
+		lib.ModuleTest,
+		fx.Supply(ns, t, ctrl),
+		fx.Provide(fx.Annotate(NewFakeService, fx.As(new(serviceportin.IGetTokenUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *ControllerRouter) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

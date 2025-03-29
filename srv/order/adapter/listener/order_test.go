@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
 	internalStream "github.com/alimitedgroup/MVP/srv/order/adapter/stream"
@@ -14,7 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	gomock "go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
 )
 
 type orderListenerMockSuite struct {
@@ -43,13 +44,12 @@ func runTestOrderListener(t *testing.T, build func(*orderListenerMockSuite), bui
 		fx.Supply(fx.Annotate(suite.applyOrderUpdateUseCaseMock, fx.As(new(port.IApplyOrderUpdateUseCase)))),
 		fx.Supply(fx.Annotate(suite.applyTransferUpdateUseCaseMock, fx.As(new(port.IApplyTransferUpdateUseCase)))),
 		fx.Supply(fx.Annotate(suite.contactWarehouseUseCaseMock, fx.As(new(port.IContactWarehousesUseCase)))),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewOrderListener),
 		fx.Provide(NewOrderRouter),
 		fx.Invoke(runLifeCycle()),
 		buildOptions(),
+		lib.ModuleTest,
+		fx.Supply(t),
 	)
 
 	err := app.Start(ctx)
@@ -196,9 +196,7 @@ func TestOrderListenerContactWarehousesTransfer(t *testing.T) {
 						resp, err := js.Publish(ctx, "contact.warehouses", payload)
 						require.NoError(t, err)
 						require.Equal(t, resp.Stream, "contact_warehouses")
-
 						time.Sleep(100 * time.Millisecond)
-
 						return nil
 					},
 				})

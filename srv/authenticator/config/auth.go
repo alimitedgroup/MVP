@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/authenticator/adapter"
 	"github.com/alimitedgroup/MVP/srv/authenticator/controller"
@@ -37,6 +36,16 @@ func RunLifeCycle(lc fx.Lifecycle, cr *controller.ControllerRouter) {
 
 var Modules = fx.Options(
 	lib.Module,
+	adapter.Module,
+	controller.Module,
+	persistence.Module,
+	publisher.Module,
+	service.Module,
+	serviceauthenticator.Module,
+)
+
+var ModulesTest = fx.Options(
+	lib.ModuleTest,
 	adapter.Module,
 	controller.Module,
 	persistence.Module,

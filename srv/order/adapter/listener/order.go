@@ -5,11 +5,22 @@ import (
 	"encoding/json"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
+	"github.com/alimitedgroup/MVP/srv/order/adapter/controller"
 	internalStream "github.com/alimitedgroup/MVP/srv/order/adapter/stream"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
+)
+
+var (
+	OrderUpdateRequestCounter      metric.Int64Counter
+	TransferUpdateRequestCounter   metric.Int64Counter
+	ContactWarehouseRequestCounter metric.Int64Counter
 )
 
 type OrderListener struct {
@@ -24,15 +35,34 @@ type OrderListenerParams struct {
 	ApplyOrderUpdateUseCase    port.IApplyOrderUpdateUseCase
 	ApplyTransferUpdateUseCase port.IApplyTransferUpdateUseCase
 	ContactWarehouseUseCase    port.IContactWarehousesUseCase
+	Logger                     *zap.Logger
+	Meter                      metric.Meter
 }
 
 func NewOrderListener(p OrderListenerParams) *OrderListener {
+	observability.CounterSetup(&p.Meter, p.Logger, &OrderUpdateRequestCounter, &controller.MetricMap, "num_order_updates_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &TransferUpdateRequestCounter, &controller.MetricMap, "num_transfer_updates_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &ContactWarehouseRequestCounter, &controller.MetricMap, "num_contact_warehouse_requests")
+	observability.CounterSetup(&p.Meter, p.Logger, &controller.TotalRequestCounter, &controller.MetricMap, "num_order_transfer_requests")
+	Logger = p.Logger
 	return &OrderListener{p.ApplyOrderUpdateUseCase, p.ApplyTransferUpdateUseCase, p.ContactWarehouseUseCase}
 }
 
 func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg) error {
+
+	Logger.Info("Received good update request")
+	verdict := "success"
+
+	defer func() {
+		Logger.Info("Good update request terminated")
+		OrderUpdateRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		controller.TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	var event stream.OrderUpdate
 	if err := json.Unmarshal(msg.Data(), &event); err != nil {
+		verdict = "bad request"
+		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
 
@@ -43,8 +73,20 @@ func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg
 }
 
 func (l *OrderListener) ListenTransferUpdate(ctx context.Context, msg jetstream.Msg) error {
+
+	Logger.Info("Received transfer update request")
+	verdict := "success"
+
+	defer func() {
+		Logger.Info("Transfer update request terminated")
+		TransferUpdateRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		controller.TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	var event stream.TransferUpdate
 	if err := json.Unmarshal(msg.Data(), &event); err != nil {
+		verdict = "bad request"
+		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
 
@@ -55,8 +97,20 @@ func (l *OrderListener) ListenTransferUpdate(ctx context.Context, msg jetstream.
 }
 
 func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstream.Msg) error {
+
+	Logger.Info("Received contact warehouse request")
+	verdict := "success"
+
+	defer func() {
+		Logger.Info("Contact warehouse request terminated")
+		ContactWarehouseRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		controller.TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	var event internalStream.ContactWarehouses
 	if err := json.Unmarshal(msg.Data(), &event); err != nil {
+		verdict = "bad request"
+		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
 
@@ -125,6 +179,8 @@ func (l *OrderListener) ListenContactWarehouses(ctx context.Context, msg jetstre
 
 	retry, err := l.contactWarehouseUseCase.ContactWarehouses(ctx, cmd)
 	if err != nil {
+		verdict = "cannot contact warehouse"
+		Logger.Debug("Cannot contact warehouse", zap.Error(err))
 		return err
 	}
 

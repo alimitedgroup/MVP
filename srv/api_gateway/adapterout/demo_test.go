@@ -17,8 +17,9 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
-	"go.uber.org/fx"
+	"github.com/stretchr/testify/require"
 	"log"
+	"testing"
 	"time"
 )
 
@@ -46,7 +47,7 @@ func NewAuthMock(issuer string, broker *broker.NatsMessageBroker, users Users) *
 	}
 }
 
-func StartAuthMock(mock *AuthMock, lc fx.Lifecycle) {
+func StartAuthMock(t *testing.T, mock *AuthMock) func() {
 	subscription, err := mock.broker.Nats.Subscribe("auth.login", func(msg *nats.Msg) {
 		var req dto.AuthLoginRequest
 		_ = json.Unmarshal(msg.Data, &req)
@@ -76,15 +77,18 @@ func StartAuthMock(mock *AuthMock, lc fx.Lifecycle) {
 			panic(err)
 		}
 	})
+	require.NoError(t, err)
 
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			return err
-		},
-		OnStop: func(context.Context) error {
-			return subscription.Unsubscribe()
-		},
-	})
+	stopped := false
+	stopEarly := func() {
+		if !stopped {
+			err := subscription.Unsubscribe()
+			require.NoError(t, err)
+			stopped = true
+		}
+	}
+	t.Cleanup(stopEarly)
+	return stopEarly
 }
 
 func (a *AuthMock) genJwt(username string, role string) (string, error) {

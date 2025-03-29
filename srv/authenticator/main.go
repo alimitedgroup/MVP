@@ -4,20 +4,14 @@ import (
 	"context"
 	"log"
 
-	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/authenticator/config"
 	"go.uber.org/fx"
 )
 
 func main() {
 	ctx := context.Background()
-	cfg := config.LoadConfig()
 	app := fx.New(
-		cfg,
 		config.Modules,
-		fx.Provide(observability.New),
-		fx.Provide(broker.NewNatsConn),
 		fx.Invoke(config.RunLifeCycle),
 	)
 

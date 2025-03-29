@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	gomock "go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
+	"go.uber.org/mock/gomock"
 )
 
 func TestStockUpdateListener(t *testing.T) {
@@ -28,11 +29,9 @@ func TestStockUpdateListener(t *testing.T) {
 	require.NoError(t, err)
 
 	app := fx.New(
-		fx.Supply(ns),
+		lib.ModuleTest,
+		fx.Supply(ns, t),
 		fx.Supply(fx.Annotate(applyStockUpdateUseCaseMock, fx.As(new(port.IApplyStockUpdateUseCase)))),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Provide(NewStockUpdateListener),
 		fx.Provide(NewStockUpdateRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockUpdateRouter) {

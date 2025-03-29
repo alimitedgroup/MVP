@@ -3,8 +3,16 @@ package observability
 import (
 	"context"
 	"fmt"
+	"os"
+	"regexp"
+	"runtime/debug"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
-	"github.com/thessem/zap-prettyconsole"
+	prettyconsole "github.com/thessem/zap-prettyconsole"
 	"go.opentelemetry.io/contrib/bridges/otelzap"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
@@ -21,12 +29,6 @@ import (
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"os"
-	"regexp"
-	"runtime/debug"
-	"strings"
-	"testing"
-	"time"
 )
 
 func getBuildInfo() (string, string) {
@@ -36,7 +38,18 @@ func getBuildInfo() (string, string) {
 		return "unknown", "unknown"
 	}
 
-	name := bi.Path
+	logger := setupZap(zapcore.DebugLevel)
+
+	id, err := os.LookupEnv("ENV_SERVICE_ID")
+
+	if !err {
+		logger.Error("ENV_SERVICE_ID environment variable not set, generating a unique UUID. PLEASE TAKE NOTE OF THE GENERATED UUID, IT WILL BE RESET AT THE FIRST SERVER SHUTDOWN. Please refer to the User Manual.")
+		id = uuid.NewString()
+	} else {
+		logger.Debug("Found id " + id + " for " + bi.Path + " service")
+	}
+
+	name := bi.Path + id
 
 	version := "unknown"
 
@@ -151,8 +164,18 @@ func setupOtel(otlpUrl string, tempLogger *zap.Logger) func(context.Context) err
 	)
 	otel.SetMeterProvider(meterProvider)
 
-	return func(ctx context.Context) error {
-		return logProvider.Shutdown(ctx)
+	return func(ctx context.Context) (err error) {
+		wg := sync.WaitGroup{}
+		wg.Add(2)
+		go func() {
+			err = logProvider.Shutdown(ctx)
+			wg.Done()
+		}()
+		go func() {
+			err = meterProvider.Shutdown(ctx)
+			wg.Done()
+		}()
+		return
 	}
 }
 
@@ -185,15 +208,23 @@ func New(lc fx.Lifecycle) (*zap.Logger, metric.Meter) {
 	return logger, otel.Meter(name)
 }
 
+func CounterSetup(meter *metric.Meter, logger *zap.Logger, counter *metric.Int64Counter, counterMap *sync.Map, name string, options ...metric.Int64CounterOption) {
+	ctr, err := (*meter).Int64Counter(name, options...)
+	if err != nil {
+		logger.Fatal("Failed to setup OpenTelemetry counter", zap.String("name", name), zap.Error(err))
+	}
+	_, loaded := counterMap.LoadOrStore(name, ctr)
+	if !loaded {
+		*counter = ctr
+	}
+}
+
 var Module = fx.Options(
 	fx.NopLogger,
-	// fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
-	//     logger := &fxevent.ZapLogger{Logger: log.Named("fx")}
-	//     logger.UseLogLevel(zap.DebugLevel)
-	//     return logger
-	// }),
 	fx.Provide(New),
 )
+
+var ModuleTest = fx.Provide(TestLogger, TestMeter)
 
 func TestLogger(t *testing.T) *zap.Logger {
 	return zaptest.NewLogger(t)
