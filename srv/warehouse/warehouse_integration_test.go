@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"go.uber.org/zap/zaptest"
-
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib"
@@ -25,8 +23,8 @@ import (
 	"go.uber.org/fx"
 )
 
-var Module = fx.Options(
-	lib.Module,
+var modules = fx.Options(
+	lib.ModuleTest,
 	adapter.Module,
 	business.Module,
 )
@@ -51,12 +49,9 @@ func IntegrationTest(t *testing.T, testFunc any) {
 	}
 
 	app := fx.New(
-		Module,
-		fx.Supply(&cfg),
-		fx.Supply(&p),
-		fx.Supply(ns),
+		modules,
+		fx.Supply(ns, &p, &cfg, t),
 		fx.Invoke(testFunc),
-		fx.Supply(zaptest.NewLogger(t)),
 	)
 	err = app.Start(ctx)
 	require.NoError(t, err)

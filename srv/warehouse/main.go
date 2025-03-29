@@ -2,17 +2,14 @@ package main
 
 import (
 	"context"
+	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"log"
-
-	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business"
-	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"go.uber.org/fx"
 )
 
@@ -59,17 +56,9 @@ var Modules = fx.Options(
 func main() {
 	ctx := context.Background()
 
-	config := config.LoadConfig()
-
-	opts := fx.Options(
-		config,
-		Modules,
-		fx.Provide(observability.New),
-		fx.Provide(broker.NewNatsConn),
-	)
-
 	app := fx.New(
-		opts,
+		Modules,
+		fx.Provide(config.ConfigFromEnv),
 		fx.Invoke(RunLifeCycle),
 	)
 
