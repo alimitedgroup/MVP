@@ -10,7 +10,11 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		AsJsController(NewAddQueryController),
+		AsController(NewAddQueryController),
+		AsController(NewGetQueryController),
+		AsController(NewListQueriesController),
+		AsController(NewEditQueryController),
+		AsController(NewRemoveQueryController),
 		AsJsController(NewStockUpdateReceiver),
 	),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags(`group:"routes"`, `group:"js_routes"`))),
@@ -50,7 +54,7 @@ type Controller interface {
 func AsController(f any) any {
 	return fx.Annotate(
 		f,
-		fx.As(new(JsController)),
+		fx.As(new(Controller)),
 		fx.ResultTags(`group:"routes"`),
 	)
 }

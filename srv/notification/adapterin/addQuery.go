@@ -5,38 +5,39 @@ import (
 	"encoding/json"
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/types"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
 	"github.com/nats-io/nats.go"
 )
 
 func NewAddQueryController(addQueryRuleUseCase portin.QueryRules) *AddQueryController {
-	return &AddQueryController{addQueryRulePort: addQueryRuleUseCase}
+	return &AddQueryController{rulesPort: addQueryRuleUseCase}
 }
 
 type AddQueryController struct {
-	addQueryRulePort portin.QueryRules
+	rulesPort portin.QueryRules
 }
 
 // Asserzione a compile-time che AddQueryController implementi Controller
 var _ Controller = (*AddQueryController)(nil)
 
-func (c *AddQueryController) Handle(ctx context.Context, msg *nats.Msg) error {
-	request := stream.AddQueryRule{}
+func (c *AddQueryController) Handle(_ context.Context, msg *nats.Msg) error {
+	var request dto.Rule
 	err := json.Unmarshal(msg.Data, &request)
 	if err != nil {
 		_ = broker.RespondToMsg(msg, dto.InvalidJson())
-		return err
+		return nil
 	}
 
-	cmd := servicecmd.QueryRule{GoodId: request.GoodID, Operator: request.Operator, Threshold: request.Threshold}
-	id, err := c.addQueryRulePort.AddQueryRule(cmd)
+	cmd := types.QueryRule{GoodId: request.GoodId, Operator: request.Operator, Threshold: request.Threshold}
+	id, err := c.rulesPort.AddQueryRule(cmd)
 	if err != nil {
-		return err
+		_ = broker.RespondToMsg(msg, dto.InternalError())
+	} else {
+		_ = broker.RespondToMsg(msg, id.String())
 	}
 
-	return broker.RespondToMsg(msg, id.String())
+	return nil
 }
 
 func (c *AddQueryController) Subject() broker.Subject {
