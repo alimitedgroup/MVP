@@ -24,7 +24,7 @@ reset:
 
 # Run `go generate`
 generate:
-    # go generate ./...
+    go generate ./...
 
 # Run all tests
 test: generate
