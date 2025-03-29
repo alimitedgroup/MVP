@@ -89,10 +89,10 @@ func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *types.
 	return types.NewGetRuleResultResponse(goodID, 0, nil)
 }
 
-func (na *NotificationAdapter) AddRule(cmd *types.AddQueryRuleCmd) error {
+func (na *NotificationAdapter) AddRule(cmd *types.QueryRule) error {
 	return na.ruleRepo.AddRule(cmd)
 }
 
-func (na *NotificationAdapter) GetAllRules() []types.AddQueryRuleCmd {
+func (na *NotificationAdapter) GetAllRules() []types.QueryRule {
 	return na.ruleRepo.GetAllRules()
 }

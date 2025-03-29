@@ -31,7 +31,7 @@ func NewBusiness(
 var _ portin.QueryRules = (*Business)(nil)
 var _ portin.StockUpdates = (*Business)(nil)
 
-func (ns *Business) AddQueryRule(cmd *types.AddQueryRuleCmd) *types.AddQueryRuleResponse {
+func (ns *Business) AddQueryRule(cmd *types.QueryRule) *types.AddQueryRuleResponse {
 	err := ns.ruleRepo.AddRule(cmd)
 	return types.NewAddQueryRuleResponse(err)
 }
@@ -42,7 +42,7 @@ func (ns *Business) AddStockUpdate(cmd *types.AddStockUpdateCmd) (*types.AddStoc
 
 // ========== Utility per RuleChecker ==========
 
-func (ns *Business) GetAllQueryRules() []types.AddQueryRuleCmd {
+func (ns *Business) GetAllQueryRules() []types.QueryRule {
 	return ns.ruleRepo.GetAllRules()
 }
 

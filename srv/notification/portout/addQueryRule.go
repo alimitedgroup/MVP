@@ -5,6 +5,6 @@ import (
 )
 
 type IRuleRepository interface {
-	AddRule(cmd *types.AddQueryRuleCmd) error
-	GetAllRules() []types.AddQueryRuleCmd
+	AddRule(cmd *types.QueryRule) error
+	GetAllRules() []types.QueryRule
 }

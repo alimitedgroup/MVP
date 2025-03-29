@@ -67,9 +67,9 @@ func (rc *RuleChecker) checkAllRules() {
 		log.Printf("[RuleChecker] Controllo regola: %+v", rule)
 
 		// Esempio: se rule è un AddQueryRuleCmd con metodi GetGoodID, GetOperator e GetThreshold
-		goodID := rule.GetGoodID()
-		operator := rule.GetOperator()
-		threshold := rule.GetThreshold()
+		goodID := rule.GoodId
+		operator := rule.Operator
+		threshold := rule.Threshold
 
 		// Invoca il metodo del service che interroga Influx
 		resp := rc.service.GetCurrentQuantityByGoodID(goodID)

@@ -5,5 +5,5 @@ import (
 )
 
 type QueryRules interface {
-	AddQueryRule(cmd *serviceresponse.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse
+	AddQueryRule(cmd *serviceresponse.QueryRule) *serviceresponse.AddQueryRuleResponse
 }

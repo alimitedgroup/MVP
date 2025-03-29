@@ -5,8 +5,8 @@ import (
 )
 
 type IService interface {
-	AddQueryRule(cmd *types.AddQueryRuleCmd) *types.AddQueryRuleResponse
+	AddQueryRule(cmd *types.QueryRule) *types.AddQueryRuleResponse
 	AddStockUpdate(cmd *types.AddStockUpdateCmd) (*types.AddStockUpdateResponse, error)
-	GetAllQueryRules() []types.AddQueryRuleCmd
+	GetAllQueryRules() []types.QueryRule
 	GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse
 }
