@@ -5,5 +5,5 @@ import (
 )
 
 type IStockRepository interface {
-	SaveStockUpdate(cmd *serviceresponse.AddStockUpdateCmd) *serviceresponse.AddStockUpdateResponse
+	SaveStockUpdate(cmd *serviceresponse.AddStockUpdateCmd) error
 }

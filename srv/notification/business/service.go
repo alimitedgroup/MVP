@@ -35,8 +35,8 @@ func (ns *Business) AddQueryRule(cmd *types.QueryRule) error {
 	return ns.ruleRepo.AddRule(cmd)
 }
 
-func (ns *Business) AddStockUpdate(cmd *types.AddStockUpdateCmd) (*types.AddStockUpdateResponse, error) {
-	return ns.stockRepo.SaveStockUpdate(cmd), nil
+func (ns *Business) AddStockUpdate(cmd *types.AddStockUpdateCmd) error {
+	return ns.stockRepo.SaveStockUpdate(cmd)
 }
 
 // ========== Utility per RuleChecker ==========

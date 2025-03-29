@@ -5,5 +5,5 @@ import (
 )
 
 type StockUpdates interface {
-	AddStockUpdate(cmd *serviceresponse.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error)
+	AddStockUpdate(cmd *serviceresponse.AddStockUpdateCmd) error
 }

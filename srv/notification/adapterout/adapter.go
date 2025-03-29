@@ -31,10 +31,10 @@ func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessa
 	}
 }
 
-func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) *types.AddStockUpdateResponse {
+func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) error {
 	writeAPI := na.influxClient.WriteAPIBlocking(na.influxOrg, na.influxBucket)
 	if len(cmd.Goods) == 0 {
-		return types.NewAddStockUpdateResponse(errors.New("no goods provided"))
+		return errors.New("no goods provided")
 	}
 	good := cmd.Goods[0]
 	p := influxdb2.NewPoint(
@@ -45,9 +45,9 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) *ty
 	)
 	if err := writeAPI.WritePoint(context.Background(), p); err != nil {
 		log.Printf("Error saving to InfluxDB: %v", err)
-		return types.NewAddStockUpdateResponse(err)
+		return err
 	}
-	return types.NewAddStockUpdateResponse(nil)
+	return nil
 }
 
 func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
