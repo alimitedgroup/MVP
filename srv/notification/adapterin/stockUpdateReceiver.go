@@ -4,20 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/alimitedgroup/MVP/common/stream"
+	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	serviceportin "github.com/alimitedgroup/MVP/srv/notification/service/portin"
 	"github.com/nats-io/nats.go/jetstream"
 	"time"
 )
 
-func NewStockUpdateReceiver(addStockUpdateUseCase serviceportin.IAddStockUpdateUseCase) *StockUpdateReceiver {
+func NewStockUpdateReceiver(addStockUpdateUseCase portin.IAddStockUpdateUseCase) *StockUpdateReceiver {
 	return &StockUpdateReceiver{
 		addStockUpdateUseCase: addStockUpdateUseCase,
 	}
 }
 
 type StockUpdateReceiver struct {
-	addStockUpdateUseCase serviceportin.IAddStockUpdateUseCase
+	addStockUpdateUseCase portin.IAddStockUpdateUseCase
 }
 
 var _ JsController = (*StockUpdateReceiver)(nil)

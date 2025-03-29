@@ -1,14 +1,14 @@
 package persistence
 
 import (
-	serviceportout "github.com/alimitedgroup/MVP/srv/notification/service/portout"
+	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(NewRuleRepository,
-			fx.As(new(serviceportout.IRuleRepository)),
+			fx.As(new(portout.IRuleRepository)),
 		),
 	),
 )

@@ -1,7 +1,7 @@
 package adapterout
 
 import (
-	serviceportout "github.com/alimitedgroup/MVP/srv/notification/service/portout"
+	serviceportout2 "github.com/alimitedgroup/MVP/srv/notification/portout"
 	"go.uber.org/fx"
 )
 
@@ -9,9 +9,9 @@ var Module = fx.Options(
 	fx.Provide(
 		NewInfluxClient,
 		fx.Annotate(NewNotificationAdapter,
-			fx.As(new(serviceportout.IStockRepository)),
-			fx.As(new(serviceportout.IStockEventPublisher)),
-			fx.As(new(serviceportout.IRuleQueryRepository)),
+			fx.As(new(serviceportout2.IStockRepository)),
+			fx.As(new(serviceportout2.IStockEventPublisher)),
+			fx.As(new(serviceportout2.IRuleQueryRepository)),
 		),
 	),
 )

@@ -3,20 +3,20 @@ package adapterin
 import (
 	"context"
 	"encoding/json"
+	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/stream"
 	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	serviceportin "github.com/alimitedgroup/MVP/srv/notification/service/portin"
 	"github.com/nats-io/nats.go/jetstream"
 )
 
-func NewAddQueryController(addQueryRuleUseCase serviceportin.IAddQueryRuleUseCase) *AddQueryController {
+func NewAddQueryController(addQueryRuleUseCase portin.IAddQueryRuleUseCase) *AddQueryController {
 	return &AddQueryController{addQueryRuleUseCase: addQueryRuleUseCase}
 }
 
 type AddQueryController struct {
-	addQueryRuleUseCase serviceportin.IAddQueryRuleUseCase
+	addQueryRuleUseCase portin.IAddQueryRuleUseCase
 }
 
 // Asserzione a compile-time che AddQueryController implementi JsController

@@ -1,4 +1,4 @@
-package serviceportout
+package portout
 
 import (
 	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"

@@ -1,8 +1,8 @@
 package service
 
 import (
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
+	"github.com/alimitedgroup/MVP/srv/notification/service/cmd"
+	"github.com/alimitedgroup/MVP/srv/notification/service/response"
 )
 
 type IService interface {

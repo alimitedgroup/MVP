@@ -1,4 +1,4 @@
-package serviceportout
+package portout
 
 type IStockEventPublisher interface {
 	PublishStockAlert(alert StockAlertEvent) error

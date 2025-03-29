@@ -1,24 +1,24 @@
 package service
 
 import (
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	serviceportin "github.com/alimitedgroup/MVP/srv/notification/service/portin"
-	serviceportout "github.com/alimitedgroup/MVP/srv/notification/service/portout"
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
+	"github.com/alimitedgroup/MVP/srv/notification/portin"
+	"github.com/alimitedgroup/MVP/srv/notification/portout"
+	"github.com/alimitedgroup/MVP/srv/notification/service/cmd"
+	"github.com/alimitedgroup/MVP/srv/notification/service/response"
 )
 
 type NotificationService struct {
-	ruleRepo       serviceportout.IRuleRepository
-	alertPublisher serviceportout.IStockEventPublisher
-	quantityReader serviceportout.IRuleQueryRepository
-	stockRepo      serviceportout.IStockRepository
+	ruleRepo       portout.IRuleRepository
+	alertPublisher portout.IStockEventPublisher
+	quantityReader portout.IRuleQueryRepository
+	stockRepo      portout.IStockRepository
 }
 
 func NewNotificationService(
-	ruleRepo serviceportout.IRuleRepository,
-	alertPublisher serviceportout.IStockEventPublisher,
-	quantityReader serviceportout.IRuleQueryRepository,
-	stockRepo serviceportout.IStockRepository,
+	ruleRepo portout.IRuleRepository,
+	alertPublisher portout.IStockEventPublisher,
+	quantityReader portout.IRuleQueryRepository,
+	stockRepo portout.IStockRepository,
 ) *NotificationService {
 	return &NotificationService{
 		ruleRepo:       ruleRepo,
@@ -28,8 +28,8 @@ func NewNotificationService(
 	}
 }
 
-var _ serviceportin.IAddQueryRuleUseCase = (*NotificationService)(nil)
-var _ serviceportin.IAddStockUpdateUseCase = (*NotificationService)(nil)
+var _ portin.IAddQueryRuleUseCase = (*NotificationService)(nil)
+var _ portin.IAddStockUpdateUseCase = (*NotificationService)(nil)
 
 func (ns *NotificationService) AddQueryRule(cmd *servicecmd.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse {
 	err := ns.ruleRepo.AddRule(cmd)
@@ -50,6 +50,6 @@ func (ns *NotificationService) GetCurrentQuantityByGoodID(goodID string) *servic
 	return ns.quantityReader.GetCurrentQuantityByGoodID(goodID)
 }
 
-func (ns *NotificationService) PublishStockAlert(alert serviceportout.StockAlertEvent) error {
+func (ns *NotificationService) PublishStockAlert(alert portout.StockAlertEvent) error {
 	return ns.alertPublisher.PublishStockAlert(alert)
 }

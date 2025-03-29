@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	serviceportout2 "github.com/alimitedgroup/MVP/srv/notification/portout"
 	"log"
 	"time"
 
 	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	serviceportout "github.com/alimitedgroup/MVP/srv/notification/service/portout"
 	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
@@ -19,10 +19,10 @@ type NotificationAdapter struct {
 	influxOrg    string
 	influxBucket string
 	brk          *broker.NatsMessageBroker
-	ruleRepo     serviceportout.IRuleRepository
+	ruleRepo     serviceportout2.IRuleRepository
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo serviceportout.IRuleRepository) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo serviceportout2.IRuleRepository) *NotificationAdapter {
 	return &NotificationAdapter{
 		influxClient: influxClient,
 		influxOrg:    "my-org",
@@ -51,7 +51,7 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *servicecmd.AddStockUpdateCmd
 	return serviceresponse.NewAddStockUpdateResponse(nil)
 }
 
-func (na *NotificationAdapter) PublishStockAlert(alert serviceportout.StockAlertEvent) error {
+func (na *NotificationAdapter) PublishStockAlert(alert serviceportout2.StockAlertEvent) error {
 	data, err := json.Marshal(alert)
 	if err != nil {
 		log.Printf("Error marshalling alert: %v", err)

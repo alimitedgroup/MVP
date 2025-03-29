@@ -1,4 +1,4 @@
-package serviceportout
+package portout
 
 import servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
 

@@ -1,4 +1,4 @@
-package serviceportin
+package portin
 
 import (
 	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
