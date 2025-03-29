@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+
 	"github.com/alimitedgroup/MVP/common/dto/response"
 )
 
@@ -21,6 +22,33 @@ type GetWarehousesResponse struct {
 	Ids []string `json:"warehouse_ids"`
 }
 
+type AddStockRequest struct {
+	WarehouseID string `uri:"warehouse_id"`
+	GoodID      string `uri:"good_id"`
+	Quantity    int64  `json:"quantity"`
+}
+
+type RemoveStockRequest struct {
+	WarehouseID string `uri:"warehouse_id"`
+	GoodID      string `uri:"good_id"`
+	Quantity    int64  `json:"quantity"`
+}
+
+type CreateGoodRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type UpdateGoodRequest struct {
+	Id          string `uri:"good_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type CreateGoodResponse struct {
+	GoodID string `json:"good_id"`
+}
+
 type GetGoodsResponse struct {
 	Goods []GoodAndAmount `json:"goods"`
 }
@@ -31,10 +59,58 @@ type MissingRequiredFieldError struct {
 }
 
 type GoodAndAmount struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ID          string `json:"id"`
-	Amount      int64  `json:"amount"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	ID          string           `json:"id"`
+	Amount      int64            `json:"amount"`
+	Amounts     map[string]int64 `json:"amounts"`
+}
+
+type CreateOrderResponse struct {
+	OrderID string `json:"order_id"`
+}
+
+type GetOrdersResponse struct {
+	Orders []Order `json:"orders"`
+}
+
+type Order struct {
+	OrderID      string           `json:"order_id"`
+	Status       string           `json:"status"`
+	Name         string           `json:"name"`
+	FullName     string           `json:"full_name"`
+	Address      string           `json:"address"`
+	Goods        map[string]int64 `json:"goods"`
+	Reservations []string         `json:"reservations"`
+}
+
+type CreateTransferResponse struct {
+	TransferID string `json:"transfer_id"`
+}
+
+type GetTransfersResponse struct {
+	Transfers []Transfer `json:"transfers"`
+}
+
+type Transfer struct {
+	Status     string           `json:"status"`
+	TransferID string           `json:"transfer_id"`
+	SenderID   string           `json:"sender_id"`
+	ReceiverID string           `json:"receiver_id"`
+	Goods      map[string]int64 `json:"goods"`
+}
+
+type CreateOrderRequest struct {
+	Name     string           `json:"name"`
+	FullName string           `json:"full_name"`
+	Address  string           `json:"address"`
+	Goods    map[string]int64 `json:"goods"`
+}
+
+type CreateTransferRequest struct {
+	SenderID   string           `json:"sender_id"`
+	ReceiverID string           `json:"receiver_id"`
+	Goods      map[string]int64 `json:"goods"`
 }
 
 func FieldIsRequired(fieldName string) response.ResponseDTO[MissingRequiredFieldError] {

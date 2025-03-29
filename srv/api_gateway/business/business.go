@@ -1,9 +1,12 @@
 package business
 
 import (
+	"context"
 	"errors"
 	"fmt"
+
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
@@ -19,6 +22,14 @@ var (
 	ErrorGetWarehouses      = errors.New("error getting warehouses")
 	ErrorGetGoods           = errors.New("error getting goods")
 	ErrorGetStock           = errors.New("error getting global stock")
+	ErrorGetTransfers       = errors.New("error getting transfers")
+	ErrorGetOrders          = errors.New("error getting orders")
+	ErrorAddStock           = errors.New("error adding stock")
+	ErrorRemoveStock        = errors.New("error adding stock")
+	ErrorCreateOrder        = errors.New("error creating order")
+	ErrorCreateTransfer     = errors.New("error creating transfer")
+	ErrorCreateGood         = errors.New("error creating good")
+	ErrorUpdateGood         = errors.New("error updating good")
 	ErrorInvalidCredentials = errors.New("invalid credentials")
 	ErrorTokenInvalid       = errors.New("this token is invalid")
 	ErrorTokenExpired       = errors.New("this token is expired")
@@ -30,23 +41,152 @@ var Module = fx.Module(
 		NewBusiness,
 		fx.As(new(portin.Auth)),
 		fx.As(new(portin.Warehouses)),
+		fx.As(new(portin.Order)),
 	)),
 	fx.Decorate(observability.WrapLogger("business")),
 )
 
-func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, logger *zap.Logger) *Business {
-	return &Business{auth: auth, catalog: catalog, Logger: logger}
+func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, order portout.OrderPortOut, logger *zap.Logger) *Business {
+	return &Business{auth: auth, catalog: catalog, order: order, Logger: logger}
 }
 
 type Business struct {
 	auth    portout.AuthenticationPortOut
 	catalog portout.CatalogPortOut
+	order   portout.OrderPortOut
 	*zap.Logger
 }
 
 func (b *Business) GetWarehouseByID(_ int64) (dto.Warehouse, error) {
 	//TODO da implementare quando catalog supporta questa query
 	panic("implement me")
+}
+
+func (b *Business) AddStock(warehouseId string, goodId string, quantity int64) error {
+	err := b.catalog.AddStock(warehouseId, goodId, quantity)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrorAddStock, err)
+	}
+	return nil
+}
+
+func (b *Business) RemoveStock(warehouseId string, goodId string, quantity int64) error {
+	err := b.catalog.RemoveStock(warehouseId, goodId, quantity)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrorRemoveStock, err)
+	}
+	return nil
+}
+
+func (b *Business) CreateOrder(name string, fullname string, address string, goods map[string]int64) (string, error) {
+	goodList := make([]request.CreateOrderGood, 0, len(goods))
+	for goodID, quantity := range goods {
+		goodList = append(goodList, request.CreateOrderGood{
+			GoodID:   goodID,
+			Quantity: quantity,
+		})
+	}
+	createDto := request.CreateOrderRequestDTO{
+		Name:     name,
+		FullName: fullname,
+		Address:  address,
+		Goods:    goodList,
+	}
+	orderId, err := b.order.CreateOrder(createDto)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrorCreateOrder, err)
+	}
+	return orderId.OrderID, nil
+
+}
+
+func (b *Business) GetOrders() ([]dto.Order, error) {
+	orders, err := b.order.GetAllOrders()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrorGetOrders, err)
+	}
+
+	resp := make([]dto.Order, 0, len(orders))
+	for _, order := range orders {
+		goods := make(map[string]int64, len(order.Goods))
+		for _, good := range order.Goods {
+			goods[good.GoodID] = good.Quantity
+		}
+
+		resp = append(resp, dto.Order{
+			Status:       order.Status,
+			OrderID:      order.OrderID,
+			Name:         order.Name,
+			FullName:     order.FullName,
+			Address:      order.Address,
+			Reservations: order.Reservations,
+			Goods:        goods,
+		})
+	}
+
+	return resp, nil
+}
+
+func (b *Business) CreateTransfer(senderID string, receiverID string, goods map[string]int64) (string, error) {
+	goodList := make([]request.TransferGood, 0, len(goods))
+	for goodID, quantity := range goods {
+		goodList = append(goodList, request.TransferGood{
+			GoodID:   goodID,
+			Quantity: quantity,
+		})
+	}
+	createDto := request.CreateTransferRequestDTO{
+		SenderID:   senderID,
+		ReceiverID: receiverID,
+		Goods:      goodList,
+	}
+
+	transferId, err := b.order.CreateTransfer(createDto)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrorCreateTransfer, err)
+	}
+	return transferId.TransferID, nil
+}
+
+func (b *Business) GetTransfers() ([]dto.Transfer, error) {
+	transfers, err := b.order.GetAllTransfers()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrorGetTransfers, err)
+	}
+
+	resp := make([]dto.Transfer, 0, len(transfers))
+	for _, transfer := range transfers {
+		goods := make(map[string]int64, len(transfer.Goods))
+		for _, good := range transfer.Goods {
+			goods[good.GoodID] = good.Quantity
+		}
+
+		resp = append(resp, dto.Transfer{
+			Status:     transfer.Status,
+			TransferID: transfer.TransferID,
+			SenderID:   transfer.SenderID,
+			ReceiverID: transfer.ReceiverID,
+			Goods:      goods,
+		})
+	}
+
+	return resp, nil
+}
+
+func (b *Business) CreateGood(ctx context.Context, name string, description string) (string, error) {
+	goodId, err := b.catalog.CreateGood(ctx, name, description)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrorCreateGood, err)
+	}
+	return goodId, nil
+}
+
+func (b *Business) UpdateGood(ctx context.Context, goodId string, name string, description string) error {
+	err := b.catalog.UpdateGood(ctx, goodId, name, description)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrorUpdateGood, err)
+	}
+	return nil
 }
 
 func (b *Business) GetWarehouses() ([]portin.WarehouseOverview, error) {
@@ -73,6 +213,11 @@ func (b *Business) GetGoods() ([]dto.GoodAndAmount, error) {
 		return nil, fmt.Errorf("%w: %w", ErrorGetStock, err)
 	}
 
+	warehouses, err := b.catalog.ListWarehouses()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrorGetWarehouses, err)
+	}
+
 	result := make([]dto.GoodAndAmount, 0, len(goods))
 	for _, good := range goods {
 		amount, ok := amounts[good.ID]
@@ -80,11 +225,20 @@ func (b *Business) GetGoods() ([]dto.GoodAndAmount, error) {
 			amount = 0
 		}
 
+		// amount of stock per warehouse
+		amounts := make(map[string]int64, len(warehouses))
+		for _, warehouse := range warehouses {
+			if stock, ok := warehouse.Stock[good.ID]; ok {
+				amounts[warehouse.ID] = stock
+			}
+		}
+
 		result = append(result, dto.GoodAndAmount{
 			Name:        good.Name,
 			Description: good.Description,
 			ID:          good.ID,
 			Amount:      amount,
+			Amounts:     amounts,
 		})
 	}
 
@@ -162,3 +316,4 @@ func (b *Business) ValidateToken(token string) (portin.UserData, error) {
 // Asserzione a compile time che Business implementi le interfaccie delle porte di input
 var _ portin.Auth = (*Business)(nil)
 var _ portin.Warehouses = (*Business)(nil)
+var _ portin.Order = (*Business)(nil)
