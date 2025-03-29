@@ -3,14 +3,9 @@ package config
 import (
 	"context"
 
-	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/notification/controller"
-	"github.com/alimitedgroup/MVP/srv/notification/notificationAdapter"
-	"github.com/alimitedgroup/MVP/srv/notification/persistence"
-	"github.com/alimitedgroup/MVP/srv/notification/service"
 	"go.uber.org/fx"
 )
-
 
 func Run(ctx context.Context, nr *controller.ControllerRouter) error {
 	err := nr.Setup(ctx)
@@ -31,11 +26,3 @@ func RunLifeCycle(lc fx.Lifecycle, nr *controller.ControllerRouter) {
 		},
 	})
 }
-
-var Modules = fx.Options(
-	lib.Module,
-	controller.Module,
-	notificationAdapter.Module,
-	service.Module,
-	persistence.Module,
-)
