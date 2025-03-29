@@ -1,26 +1,26 @@
-package service
+package business
 
 import (
+	"github.com/alimitedgroup/MVP/srv/notification/business/cmd"
+	"github.com/alimitedgroup/MVP/srv/notification/business/response"
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
-	"github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	"github.com/alimitedgroup/MVP/srv/notification/service/response"
 )
 
-type NotificationService struct {
+type Business struct {
 	ruleRepo       portout.IRuleRepository
 	alertPublisher portout.IStockEventPublisher
 	quantityReader portout.IRuleQueryRepository
 	stockRepo      portout.IStockRepository
 }
 
-func NewNotificationService(
+func NewBusiness(
 	ruleRepo portout.IRuleRepository,
 	alertPublisher portout.IStockEventPublisher,
 	quantityReader portout.IRuleQueryRepository,
 	stockRepo portout.IStockRepository,
-) *NotificationService {
-	return &NotificationService{
+) *Business {
+	return &Business{
 		ruleRepo:       ruleRepo,
 		alertPublisher: alertPublisher,
 		quantityReader: quantityReader,
@@ -28,28 +28,29 @@ func NewNotificationService(
 	}
 }
 
-var _ portin.QueryRules = (*NotificationService)(nil)
-var _ portin.StockUpdates = (*NotificationService)(nil)
+// Asserzione a compile-time che Business implementi le interfacce delle port-in
+var _ portin.QueryRules = (*Business)(nil)
+var _ portin.StockUpdates = (*Business)(nil)
 
-func (ns *NotificationService) AddQueryRule(cmd *servicecmd.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse {
+func (ns *Business) AddQueryRule(cmd *servicecmd.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse {
 	err := ns.ruleRepo.AddRule(cmd)
 	return serviceresponse.NewAddQueryRuleResponse(err)
 }
 
-func (ns *NotificationService) AddStockUpdate(cmd *servicecmd.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error) {
+func (ns *Business) AddStockUpdate(cmd *servicecmd.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error) {
 	return ns.stockRepo.SaveStockUpdate(cmd), nil
 }
 
 // ========== Utility per RuleChecker ==========
 
-func (ns *NotificationService) GetAllQueryRules() []servicecmd.AddQueryRuleCmd {
+func (ns *Business) GetAllQueryRules() []servicecmd.AddQueryRuleCmd {
 	return ns.ruleRepo.GetAllRules()
 }
 
-func (ns *NotificationService) GetCurrentQuantityByGoodID(goodID string) *serviceresponse.GetRuleResultResponse {
+func (ns *Business) GetCurrentQuantityByGoodID(goodID string) *serviceresponse.GetRuleResultResponse {
 	return ns.quantityReader.GetCurrentQuantityByGoodID(goodID)
 }
 
-func (ns *NotificationService) PublishStockAlert(alert portout.StockAlertEvent) error {
+func (ns *Business) PublishStockAlert(alert portout.StockAlertEvent) error {
 	return ns.alertPublisher.PublishStockAlert(alert)
 }

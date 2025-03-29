@@ -1,8 +1,8 @@
-package service
+package business
 
 import (
-	"github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	"github.com/alimitedgroup/MVP/srv/notification/service/response"
+	"github.com/alimitedgroup/MVP/srv/notification/business/cmd"
+	"github.com/alimitedgroup/MVP/srv/notification/business/response"
 )
 
 type IService interface {

@@ -1,8 +1,8 @@
 package portin
 
 import (
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
+	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
+	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/business/response"
 )
 
 type QueryRules interface {

@@ -1,7 +1,7 @@
 package portout
 
 import (
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
+	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/business/response"
 )
 
 type IRuleQueryRepository interface {

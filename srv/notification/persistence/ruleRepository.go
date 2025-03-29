@@ -3,7 +3,7 @@ package persistence
 import (
 	"sync"
 
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
+	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
 )
 
 type RuleRepository struct {

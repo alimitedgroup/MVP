@@ -4,8 +4,8 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/srv/notification/adapterin"
 	"github.com/alimitedgroup/MVP/srv/notification/adapterout"
+	"github.com/alimitedgroup/MVP/srv/notification/business"
 	"github.com/alimitedgroup/MVP/srv/notification/persistence"
-	"github.com/alimitedgroup/MVP/srv/notification/service"
 	"go.uber.org/fx"
 )
 
@@ -14,7 +14,7 @@ func main() {
 		lib.Module,
 		adapterin.Module,
 		adapterout.Module,
-		service.Module,
+		business.Module,
 		persistence.Module,
 	)
 

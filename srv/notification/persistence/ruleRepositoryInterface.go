@@ -1,6 +1,6 @@
 package persistence
 
-import servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
+import servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
 
 type IRuleRepository interface {
 	AddRule(cmd *servicecmd.AddQueryRuleCmd) error

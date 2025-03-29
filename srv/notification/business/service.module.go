@@ -1,4 +1,4 @@
-package service
+package business
 
 import (
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
@@ -7,7 +7,7 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		fx.Annotate(NewNotificationService,
+		fx.Annotate(NewBusiness,
 			fx.As(new(portin.QueryRules)),
 			fx.As(new(portin.StockUpdates)),
 			fx.As(new(IService)),

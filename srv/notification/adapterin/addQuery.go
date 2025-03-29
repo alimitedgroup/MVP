@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/stream"
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
+	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
 	"github.com/nats-io/nats.go/jetstream"
 )
 

@@ -9,8 +9,8 @@ import (
 	"log"
 	"time"
 
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/service/cmd"
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/service/response"
+	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
+	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/business/response"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
 
