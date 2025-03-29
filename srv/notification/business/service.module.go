@@ -10,7 +10,6 @@ var Module = fx.Options(
 		fx.Annotate(NewBusiness,
 			fx.As(new(portin.QueryRules)),
 			fx.As(new(portin.StockUpdates)),
-			fx.As(new(Business)),
 		),
 		NewRuleChecker,
 	),
