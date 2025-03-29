@@ -1,24 +1,21 @@
 volumes:
   nats_data:
-
-networks:
-  warehouse:
-    driver: bridge
+  grafana_data:
+  influxdb_data:
 
 services:
   nats:
-    image: nats:2.10-alpine3.21
+    image: nats:alpine
     ports:
       - "4222:4222"
     command:
       - "--jetstream"
       - "--store_dir=/data/jetstream"
+      - "--http_port=8222"
     volumes:
       - nats_data:/data/jetstream
-    networks:
-      - warehouse
     healthcheck:
-      test: ["CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -"]
+      test: [ "CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -" ]
       interval: 1s
       timeout: 5s
       retries: 5
@@ -30,10 +27,11 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_API_PORT=8080
+      - OTLP_URL=collector:4317
+      - HTTP_HOST=0.0.0.0
+      - HTTP_PORT=8080
     volumes:
       - ./config.yml:/data/config.yml:ro
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -42,10 +40,9 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=1
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -54,10 +51,9 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=2
+      - OTLP_URL=collector:4317
     volumes:
-      - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
+      - ./config.yml:/data/config.yml:ro
     depends_on:
       - nats
 
@@ -65,10 +61,9 @@ services:
     build: { args: { SERVICE: catalog } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
-      - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
+      - ./config.yml:/data/config.yml:ro
     depends_on:
       - nats
 
@@ -76,10 +71,9 @@ services:
     build: { args: { SERVICE: order } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -87,12 +81,37 @@ services:
     build: { args: { SERVICE: authenticator } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin1234
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=stockdb
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-token
+
+  notification:
+    build: { args: { SERVICE: notification } }
+    environment:
+      - INFLUXDB_TOKEN=my-token
+      - INFLUXDB_ORG=my-org
+      - ENV_BROKER_URL=nats://nats:4222
+    volumes:
+      - ./config.yml:/data/config.yml
+    depends_on:
+      - nats
+      - influxdb
 
   collector:
     image: otel/opentelemetry-collector-contrib
@@ -114,3 +133,6 @@ services:
     image: grafana/grafana
     ports:
       - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./containers:/etc/grafana/provisioning
