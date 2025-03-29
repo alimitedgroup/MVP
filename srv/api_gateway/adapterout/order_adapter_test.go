@@ -7,7 +7,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestGetTransfers(t *testing.T) {
@@ -23,8 +22,7 @@ func TestGetTransfers(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	order := NewOrderAdapter(brk)
 
 	info, err := order.GetAllTransfers()
@@ -45,8 +43,7 @@ func TestGetOrders(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	order := NewOrderAdapter(brk)
 
 	info, err := order.GetAllOrders()
@@ -67,8 +64,7 @@ func TestCreateOrder(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	order := NewOrderAdapter(brk)
 
 	dto := request.CreateOrderRequestDTO{
@@ -100,8 +96,7 @@ func TestCreateTransfer(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	brk, err := broker.NewNatsMessageBroker(nc, zaptest.NewLogger(t))
-	require.NoError(t, err)
+	brk := broker.NewTest(t, nc)
 	order := NewOrderAdapter(brk)
 
 	dto := request.CreateTransferRequestDTO{

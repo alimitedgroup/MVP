@@ -2,6 +2,7 @@ package sender
 
 import (
 	"context"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -12,7 +13,6 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestReservationEventAdapter(t *testing.T) {
@@ -34,10 +34,8 @@ func TestReservationEventAdapter(t *testing.T) {
 	}
 
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(cfg),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
+		lib.ModuleTest,
+		fx.Supply(ns, t, cfg),
 		fx.Provide(NewPublishReservationEventAdapter),
 		fx.Invoke(func(lc fx.Lifecycle, a *PublishReservationEventAdapter) {
 			lc.Append(fx.Hook{
@@ -90,10 +88,7 @@ func TestReservationEventAdapterNetworkErr(t *testing.T) {
 
 	ns, _ := broker.NewInProcessNATSServer(t)
 
-	logger := zaptest.NewLogger(t)
-
-	broker, err := broker.NewNatsMessageBroker(ns, logger)
-	require.NoError(t, err)
+	broker := broker.NewTest(t, ns)
 
 	ns.Close()
 
@@ -109,6 +104,6 @@ func TestReservationEventAdapterNetworkErr(t *testing.T) {
 		},
 	}
 
-	err = a.StoreReservationEvent(ctx, cmd)
+	err := a.StoreReservationEvent(ctx, cmd)
 	require.Error(t, err)
 }

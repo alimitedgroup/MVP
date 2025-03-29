@@ -5,13 +5,10 @@ import (
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/lib"
-	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/adapter"
 	"github.com/alimitedgroup/MVP/srv/order/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/order/adapter/listener"
 	"github.com/alimitedgroup/MVP/srv/order/business"
-	"github.com/alimitedgroup/MVP/srv/order/config"
 	"go.uber.org/fx"
 )
 
@@ -54,17 +51,8 @@ var Modules = fx.Options(
 func main() {
 	ctx := context.Background()
 
-	config := config.LoadConfig()
-
-	opts := fx.Options(
-		config,
-		Modules,
-	)
-
 	app := fx.New(
-		opts,
-		fx.Provide(observability.New),
-		fx.Provide(broker.NewNatsConn),
+		Modules,
 		fx.Invoke(RunLifeCycle),
 	)
 

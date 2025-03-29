@@ -1,9 +1,7 @@
 volumes:
   nats_data:
+  grafana_data:
 
-networks:
-  warehouse:
-    driver: bridge
 
 services:
   nats:
@@ -15,10 +13,8 @@ services:
       - "--store_dir=/data/jetstream"
     volumes:
       - nats_data:/data/jetstream
-    networks:
-      - warehouse
     healthcheck:
-      test: ["CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -"]
+      test: [ "CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -" ]
       interval: 1s
       timeout: 5s
       retries: 5
@@ -29,11 +25,10 @@ services:
       - "8080:8080"
     environment:
       - ENV_BROKER_URL=nats://nats:4222
-      - ENV_API_PORT=8080
-    volumes:
-      - ./config.yml:/data/config.yml:ro
-    networks:
-      - warehouse
+      - OTLP_URL=collector:4317
+      - HTTP_HOST=0.0.0.0
+      - HTTP_PORT=8080
+      - ENV_SERVICE_ID=1
     depends_on:
       - nats
 
@@ -41,11 +36,10 @@ services:
     build: { args: { SERVICE: warehouse } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
-      - ENV_WAREHOUSE_ID=1
+      - ENV_SERVICE_ID=1
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -53,11 +47,10 @@ services:
     build: { args: { SERVICE: warehouse } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
-      - ENV_WAREHOUSE_ID=2
+      - ENV_SERVICE_ID=2
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -65,10 +58,10 @@ services:
     build: { args: { SERVICE: catalog } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - ENV_SERVICE_ID=1
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -76,10 +69,10 @@ services:
     build: { args: { SERVICE: order } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - ENV_SERVICE_ID=1
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -87,10 +80,10 @@ services:
     build: { args: { SERVICE: authenticator } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
+      - ENV_SERVICE_ID=1
     volumes:
       - ./config.yml:/data/config.yml
-    networks:
-      - warehouse
     depends_on:
       - nats
 
@@ -103,7 +96,7 @@ services:
   loki:
     image: grafana/loki:3.4.2
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v3.2.1
     ports:
       - "9090:9090"
     command:
@@ -114,3 +107,6 @@ services:
     image: grafana/grafana
     ports:
       - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./containers:/etc/grafana/provisioning
