@@ -12,7 +12,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter"
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
@@ -29,8 +28,6 @@ var modules = fx.Options(
 	lib.ModuleTest,
 	adapter.Module,
 	business.Module,
-	fx.Provide(observability.TestLogger),
-	fx.Provide(observability.TestMeter),
 )
 
 type TestParams struct {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
@@ -40,7 +39,6 @@ func start(t *testing.T) startResult {
 	app := fx.New(
 		ModuleTest,
 		lib.ModuleTest,
-		fx.Provide(observability.TestLogger, observability.TestMeter),
 		fx.Supply(
 			fx.Annotate(mock, fx.As(new(portin.Auth))),
 			fx.Annotate(wMock, fx.As(new(portin.Warehouses))),

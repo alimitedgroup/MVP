@@ -8,11 +8,9 @@ import (
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/dto"
-	"github.com/alimitedgroup/MVP/common/lib"
-
 	"github.com/alimitedgroup/MVP/common/dto/request"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 	servicecmd "github.com/alimitedgroup/MVP/srv/catalog/service/cmd"

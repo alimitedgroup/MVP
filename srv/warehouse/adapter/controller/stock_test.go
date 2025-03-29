@@ -7,12 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alimitedgroup/MVP/common/lib"
-
 	"github.com/alimitedgroup/MVP/common/dto/request"
 	"github.com/alimitedgroup/MVP/common/dto/response"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/stretchr/testify/require"
@@ -37,8 +35,6 @@ func TestStockController(t *testing.T) {
 		lib.ModuleTest,
 		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewStockController),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(observability.TestLogger),
 		fx.Provide(NewStockRouter),
 		fx.Supply(fx.Annotate(addStockMock, fx.As(new(port.IAddStockUseCase)))),
 		fx.Supply(fx.Annotate(removeStockMock, fx.As(new(port.IRemoveStockUseCase)))),
@@ -116,8 +112,6 @@ func TestStockControllerAddStockErr(t *testing.T) {
 		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(observability.TestLogger),
 		fx.Supply(fx.Annotate(addStockMock, fx.As(new(port.IAddStockUseCase)))),
 		fx.Supply(fx.Annotate(removeStockMock, fx.As(new(port.IRemoveStockUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockRouter) {
@@ -180,8 +174,6 @@ func TestStockControllerRemStockErr(t *testing.T) {
 		fx.Supply(ns, t, &cfg),
 		fx.Provide(NewStockController),
 		fx.Provide(NewStockRouter),
-		fx.Provide(observability.TestMeter),
-		fx.Provide(observability.TestLogger),
 		fx.Supply(fx.Annotate(addStockMock, fx.As(new(port.IAddStockUseCase)))),
 		fx.Supply(fx.Annotate(removeStockMock, fx.As(new(port.IRemoveStockUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *StockRouter) {

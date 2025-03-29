@@ -6,10 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alimitedgroup/MVP/common/lib"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
-
 	commonobj "github.com/alimitedgroup/MVP/common"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	common "github.com/alimitedgroup/MVP/srv/authenticator/authCommon"
 	servicecmd "github.com/alimitedgroup/MVP/srv/authenticator/service/cmd"
@@ -38,7 +36,6 @@ func (fs *fakeService) GetToken(cmd *servicecmd.GetTokenCmd) *serviceresponse.Ge
 
 var modules = fx.Options(
 	lib.ModuleTest,
-	observability.ModuleTest,
 	fx.Provide(fx.Annotate(NewFakeService, fx.As(new(serviceportin.IGetTokenUseCase)))),
 	fx.Provide(NewAuthController, NewAuthRouter, NewAuthRouterMessageBroker, NewControllerRouter),
 )

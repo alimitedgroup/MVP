@@ -7,7 +7,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib"
 
 	"github.com/alimitedgroup/MVP/common/lib/broker"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
