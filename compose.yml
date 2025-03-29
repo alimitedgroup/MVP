@@ -14,7 +14,7 @@ services:
     volumes:
       - nats_data:/data/jetstream
     healthcheck:
-      test: ["CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -"]
+      test: [ "CMD-SHELL", "wget http://localhost:8222/healthz -q -S -O -" ]
       interval: 1s
       timeout: 5s
       retries: 5
@@ -22,11 +22,13 @@ services:
   api-gateway:
     build: { args: { SERVICE: api_gateway } }
     ports:
-      - "80:8080"
+      - "8080:8080"
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_API_PORT=8080
       - OTLP_URL=collector:4317
+      - HTTP_HOST=0.0.0.0
+      - HTTP_PORT=8080
     volumes:
       - ./config.yml:/data/config.yml:ro
     depends_on:
@@ -37,6 +39,7 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=1
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:
@@ -47,6 +50,7 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=2
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml:ro
     depends_on:
@@ -56,6 +60,7 @@ services:
     build: { args: { SERVICE: catalog } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml:ro
     depends_on:
@@ -65,6 +70,7 @@ services:
     build: { args: { SERVICE: order } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:
@@ -74,11 +80,11 @@ services:
     build: { args: { SERVICE: authenticator } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
     volumes:
       - ./config.yml:/data/config.yml
     depends_on:
       - nats
-
   influxdb:
     image: influxdb:2.7-alpine
     container_name: influxdb

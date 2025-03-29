@@ -7,7 +7,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
-	"github.com/alimitedgroup/MVP/common/lib/observability"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"log"
 	"sync"
 	"testing"
@@ -71,12 +71,9 @@ func TestPublishing(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(observability.TestMeter()),
-		fx.Supply(observability.TestLogger(t)),
+		lib.ModuleTest,
+		fx.Supply(ns, t),
 		fx.Provide(NewPublisher),
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Invoke(func(lc fx.Lifecycle, rsc *broker.RestoreStreamControl, pb *AuthPublisher) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
@@ -119,12 +116,9 @@ func TestPublishingWrongKey(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 	ctx := context.Background()
 	app := fx.New(
-		fx.Supply(ns),
+		lib.ModuleTest,
+		fx.Supply(ns, t),
 		fx.Provide(NewPublisher),
-		fx.Supply(observability.TestMeter()),
-		fx.Supply(observability.TestLogger(t)),
-		fx.Provide(broker.NewRestoreStreamControl),
-		fx.Provide(broker.NewNatsMessageBroker),
 		fx.Invoke(func(lc fx.Lifecycle, rsc *broker.RestoreStreamControl, pb *AuthPublisher) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"github.com/alimitedgroup/MVP/common/lib"
 	"testing"
 	"time"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestHealthCheckController(t *testing.T) {
@@ -19,9 +19,8 @@ func TestHealthCheckController(t *testing.T) {
 	ns, _ := broker.NewInProcessNATSServer(t)
 
 	app := fx.New(
-		fx.Supply(ns),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
+		lib.ModuleTest,
+		fx.Supply(ns, t),
 		fx.Provide(NewHealthCheckController),
 		fx.Provide(NewHealthCheckRouter),
 		fx.Invoke(func(lc fx.Lifecycle, r *HealthCheckRouter) {

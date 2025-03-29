@@ -15,6 +15,8 @@ import (
 	"go.uber.org/zap"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,17 +26,53 @@ var (
 	Authentications metric.Int64Counter
 )
 
+type HttpConfig struct {
+	Host string
+	Port int
+}
+
+func ConfigFromEnv(l *zap.Logger) (*HttpConfig, error) {
+	config := &HttpConfig{}
+
+	var (
+		ok  bool
+		err error
+	)
+
+	config.Host, ok = os.LookupEnv("HTTP_HOST")
+	if !ok {
+		return nil, fmt.Errorf("HTTP_HOST environment variable not set")
+	}
+
+	port, ok := os.LookupEnv("HTTP_PORT")
+	if !ok {
+		return nil, fmt.Errorf("HTTP_PORT environment variable not set")
+	}
+	config.Port, err = strconv.Atoi(port)
+	if err != nil {
+		return nil, fmt.Errorf("HTTP_PORT environment variable should be a number")
+	}
+
+	return config, nil
+}
+
 type HTTPHandler struct {
 	Engine             *gin.Engine
 	ApiGroup           *gin.RouterGroup
 	AuthenticatedGroup *gin.RouterGroup
 }
 
-type HttpConfig struct {
-	Port uint16
-}
+func NewListener(lc fx.Lifecycle, cfg *HttpConfig, logger *zap.Logger) (*net.TCPListener, error) {
+	addrStr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	addr, err := net.ResolveTCPAddr("tcp", addrStr)
+	if err != nil {
+		logger.Fatal(
+			"Failed to bind to TCP address",
+			zap.Error(err),
+			zap.String("addr", addrStr),
+		)
+	}
 
-func NewListener(lc fx.Lifecycle, addr *net.TCPAddr, logger *zap.Logger) (*net.TCPListener, error) {
 	ln, err := net.ListenTCP(addr.Network(), addr)
 	if err != nil {
 		logger.Error("Failed to listen for HTTP server", zap.String("address", addr.String()), zap.Error(err))

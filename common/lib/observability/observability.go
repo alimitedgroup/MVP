@@ -3,8 +3,16 @@ package observability
 import (
 	"context"
 	"fmt"
+	"os"
+	"regexp"
+	"runtime/debug"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
-	"github.com/thessem/zap-prettyconsole"
+	prettyconsole "github.com/thessem/zap-prettyconsole"
 	"go.opentelemetry.io/contrib/bridges/otelzap"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
@@ -21,13 +29,6 @@ import (
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"os"
-	"regexp"
-	"runtime/debug"
-	"strings"
-	"sync"
-	"testing"
-	"time"
 )
 
 func getBuildInfo() (string, string) {
@@ -196,15 +197,23 @@ func New(lc fx.Lifecycle) (*zap.Logger, metric.Meter) {
 	return logger, otel.Meter(name)
 }
 
+func CounterSetup(meter *metric.Meter, logger *zap.Logger, counter *metric.Int64Counter, counterMap *sync.Map, name string, options ...metric.Int64CounterOption) {
+	ctr, err := (*meter).Int64Counter(name, options...)
+	if err != nil {
+		logger.Fatal("Failed to setup OpenTelemetry counter", zap.String("name", name), zap.Error(err))
+	}
+	_, loaded := counterMap.LoadOrStore(name, ctr)
+	if !loaded {
+		*counter = ctr
+	}
+}
+
 var Module = fx.Options(
 	fx.NopLogger,
-	// fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
-	//     logger := &fxevent.ZapLogger{Logger: log.Named("fx")}
-	//     logger.UseLogLevel(zap.DebugLevel)
-	//     return logger
-	// }),
 	fx.Provide(New),
 )
+
+var ModuleTest = fx.Provide(TestLogger, TestMeter)
 
 func TestLogger(t *testing.T) *zap.Logger {
 	return zaptest.NewLogger(t)

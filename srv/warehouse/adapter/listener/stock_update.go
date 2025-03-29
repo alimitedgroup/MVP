@@ -4,23 +4,47 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/common/stream"
+	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/controller"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/zap"
+)
+
+var (
+	StockUpdateCounter metric.Int64Counter
 )
 
 type StockUpdateListener struct {
 	applyStockUpdateUseCase port.IApplyStockUpdateUseCase
 }
 
-func NewStockUpdateListener(applyStockUpdateUseCase port.IApplyStockUpdateUseCase) *StockUpdateListener {
+func NewStockUpdateListener(applyStockUpdateUseCase port.IApplyStockUpdateUseCase, mp MetricParams) *StockUpdateListener {
+	observability.CounterSetup(&mp.Meter, mp.Logger, &StockUpdateCounter, &controller.MetricMap, "num_update_stock_requests")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &controller.TotalRequestsCounter, &controller.MetricMap, "num_warehouse_requests")
+	Logger = mp.Logger
 	return &StockUpdateListener{applyStockUpdateUseCase}
 }
 
 func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstream.Msg) error {
+
+	Logger.Info("Received stock update request")
+	verdict := "success"
+
+	defer func() {
+		Logger.Info("Stock update request terminated")
+		StockUpdateCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		controller.TotalRequestsCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	var event stream.StockUpdate
 	err := json.Unmarshal(msg.Data(), &event)
 	if err != nil {
+		verdict = "bad request"
+		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
 	cmd := stockUpdateEventToApplyStockUpdateCmd(event)

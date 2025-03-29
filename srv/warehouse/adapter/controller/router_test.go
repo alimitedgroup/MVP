@@ -4,13 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/alimitedgroup/MVP/common/lib"
+
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap/zaptest"
 )
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination mock_controller.go -package controller github.com/alimitedgroup/MVP/srv/warehouse/business/port IAddStockUseCase,IRemoveStockUseCase,ICreateReservationUseCase
@@ -24,15 +25,11 @@ func TestRouter(t *testing.T) {
 
 	app := fx.New(
 		Module,
-		fx.Supply(&cfg),
-		fx.Supply(ns),
-		fx.Supply(ctrl),
+		lib.ModuleTest,
+		fx.Supply(ns, t, &cfg, ctrl),
 		fx.Provide(fx.Annotate(NewMockIAddStockUseCase, fx.As(new(port.IAddStockUseCase)))),
 		fx.Provide(fx.Annotate(NewMockIRemoveStockUseCase, fx.As(new(port.IRemoveStockUseCase)))),
 		fx.Provide(fx.Annotate(NewMockICreateReservationUseCase, fx.As(new(port.ICreateReservationUseCase)))),
-		fx.Supply(zaptest.NewLogger(t)),
-		fx.Provide(broker.NewNatsMessageBroker),
-		fx.Provide(fx.Annotate(broker.NewRestoreStreamControlFactory, fx.As(new(broker.IRestoreStreamControlFactory)))),
 		fx.Invoke(func(lc fx.Lifecycle, r *BrokerRoutes) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
