@@ -1,10 +1,9 @@
 package portin
 
 import (
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/business/response"
+	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/types"
 )
 
 type StockUpdates interface {
-	AddStockUpdate(cmd *servicecmd.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error)
+	AddStockUpdate(cmd *serviceresponse.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error)
 }

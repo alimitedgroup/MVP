@@ -1,8 +1,10 @@
 package portout
 
-import servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
+import (
+	"github.com/alimitedgroup/MVP/srv/notification/types"
+)
 
 type IRuleRepository interface {
-	AddRule(cmd *servicecmd.AddQueryRuleCmd) error
-	GetAllRules() []servicecmd.AddQueryRuleCmd
+	AddRule(cmd *types.AddQueryRuleCmd) error
+	GetAllRules() []types.AddQueryRuleCmd
 }

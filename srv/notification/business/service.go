@@ -1,10 +1,9 @@
 package business
 
 import (
-	"github.com/alimitedgroup/MVP/srv/notification/business/cmd"
-	"github.com/alimitedgroup/MVP/srv/notification/business/response"
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
 )
 
 type Business struct {
@@ -32,25 +31,25 @@ func NewBusiness(
 var _ portin.QueryRules = (*Business)(nil)
 var _ portin.StockUpdates = (*Business)(nil)
 
-func (ns *Business) AddQueryRule(cmd *servicecmd.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse {
+func (ns *Business) AddQueryRule(cmd *types.AddQueryRuleCmd) *types.AddQueryRuleResponse {
 	err := ns.ruleRepo.AddRule(cmd)
-	return serviceresponse.NewAddQueryRuleResponse(err)
+	return types.NewAddQueryRuleResponse(err)
 }
 
-func (ns *Business) AddStockUpdate(cmd *servicecmd.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error) {
+func (ns *Business) AddStockUpdate(cmd *types.AddStockUpdateCmd) (*types.AddStockUpdateResponse, error) {
 	return ns.stockRepo.SaveStockUpdate(cmd), nil
 }
 
 // ========== Utility per RuleChecker ==========
 
-func (ns *Business) GetAllQueryRules() []servicecmd.AddQueryRuleCmd {
+func (ns *Business) GetAllQueryRules() []types.AddQueryRuleCmd {
 	return ns.ruleRepo.GetAllRules()
 }
 
-func (ns *Business) GetCurrentQuantityByGoodID(goodID string) *serviceresponse.GetRuleResultResponse {
+func (ns *Business) GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse {
 	return ns.quantityReader.GetCurrentQuantityByGoodID(goodID)
 }
 
-func (ns *Business) PublishStockAlert(alert portout.StockAlertEvent) error {
+func (ns *Business) PublishStockAlert(alert types.StockAlertEvent) error {
 	return ns.alertPublisher.PublishStockAlert(alert)
 }

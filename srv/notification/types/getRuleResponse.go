@@ -1,4 +1,4 @@
-package serviceresponse
+package types
 
 type GetRuleResultResponse struct {
 	GoodID          string

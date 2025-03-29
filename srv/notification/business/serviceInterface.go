@@ -1,13 +1,12 @@
 package business
 
 import (
-	"github.com/alimitedgroup/MVP/srv/notification/business/cmd"
-	"github.com/alimitedgroup/MVP/srv/notification/business/response"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
 )
 
 type IService interface {
-	AddQueryRule(cmd *servicecmd.AddQueryRuleCmd) *serviceresponse.AddQueryRuleResponse
-	AddStockUpdate(cmd *servicecmd.AddStockUpdateCmd) (*serviceresponse.AddStockUpdateResponse, error)
-	GetAllQueryRules() []servicecmd.AddQueryRuleCmd
-	GetCurrentQuantityByGoodID(goodID string) *serviceresponse.GetRuleResultResponse
+	AddQueryRule(cmd *types.AddQueryRuleCmd) *types.AddQueryRuleResponse
+	AddStockUpdate(cmd *types.AddStockUpdateCmd) (*types.AddStockUpdateResponse, error)
+	GetAllQueryRules() []types.AddQueryRuleCmd
+	GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse
 }

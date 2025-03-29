@@ -1,4 +1,4 @@
-package servicecmd
+package types
 
 type AddStockUpdateCmd struct {
 	WarehouseID string

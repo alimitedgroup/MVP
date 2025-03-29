@@ -1,9 +1,9 @@
 package portout
 
 import (
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/business/response"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
 )
 
 type IRuleQueryRepository interface {
-	GetCurrentQuantityByGoodID(goodID string) *serviceresponse.GetRuleResultResponse
+	GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse
 }

@@ -6,11 +6,10 @@ import (
 	"errors"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	serviceportout2 "github.com/alimitedgroup/MVP/srv/notification/portout"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
 	"log"
 	"time"
 
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/business/response"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
 
@@ -32,10 +31,10 @@ func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessa
 	}
 }
 
-func (na *NotificationAdapter) SaveStockUpdate(cmd *servicecmd.AddStockUpdateCmd) *serviceresponse.AddStockUpdateResponse {
+func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) *types.AddStockUpdateResponse {
 	writeAPI := na.influxClient.WriteAPIBlocking(na.influxOrg, na.influxBucket)
 	if len(cmd.Goods) == 0 {
-		return serviceresponse.NewAddStockUpdateResponse(errors.New("no goods provided"))
+		return types.NewAddStockUpdateResponse(errors.New("no goods provided"))
 	}
 	good := cmd.Goods[0]
 	p := influxdb2.NewPoint(
@@ -46,12 +45,12 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *servicecmd.AddStockUpdateCmd
 	)
 	if err := writeAPI.WritePoint(context.Background(), p); err != nil {
 		log.Printf("Error saving to InfluxDB: %v", err)
-		return serviceresponse.NewAddStockUpdateResponse(err)
+		return types.NewAddStockUpdateResponse(err)
 	}
-	return serviceresponse.NewAddStockUpdateResponse(nil)
+	return types.NewAddStockUpdateResponse(nil)
 }
 
-func (na *NotificationAdapter) PublishStockAlert(alert serviceportout2.StockAlertEvent) error {
+func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
 	data, err := json.Marshal(alert)
 	if err != nil {
 		log.Printf("Error marshalling alert: %v", err)
@@ -64,7 +63,7 @@ func (na *NotificationAdapter) PublishStockAlert(alert serviceportout2.StockAler
 	return nil
 }
 
-func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *serviceresponse.GetRuleResultResponse {
+func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse {
 	queryAPI := na.influxClient.QueryAPI(na.influxOrg)
 	fluxQuery := `
 		from(bucket:"stockdb")
@@ -75,25 +74,25 @@ func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *servic
 			|> last()`
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
-		return serviceresponse.NewGetRuleResultResponse(goodID, 0, err)
+		return types.NewGetRuleResultResponse(goodID, 0, err)
 	}
 	for result.Next() {
 		val, ok := result.Record().Value().(int64)
 		if !ok {
 			continue
 		}
-		return serviceresponse.NewGetRuleResultResponse(goodID, int(val), nil)
+		return types.NewGetRuleResultResponse(goodID, int(val), nil)
 	}
 	if result.Err() != nil {
-		return serviceresponse.NewGetRuleResultResponse(goodID, 0, result.Err())
+		return types.NewGetRuleResultResponse(goodID, 0, result.Err())
 	}
-	return serviceresponse.NewGetRuleResultResponse(goodID, 0, nil)
+	return types.NewGetRuleResultResponse(goodID, 0, nil)
 }
 
-func (na *NotificationAdapter) AddRule(cmd *servicecmd.AddQueryRuleCmd) error {
+func (na *NotificationAdapter) AddRule(cmd *types.AddQueryRuleCmd) error {
 	return na.ruleRepo.AddRule(cmd)
 }
 
-func (na *NotificationAdapter) GetAllRules() []servicecmd.AddQueryRuleCmd {
+func (na *NotificationAdapter) GetAllRules() []types.AddQueryRuleCmd {
 	return na.ruleRepo.GetAllRules()
 }

@@ -1,4 +1,4 @@
-package serviceresponse
+package types
 
 type AddStockUpdateResponse struct {
 	result error

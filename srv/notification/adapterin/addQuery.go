@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
+	servicecmd "github.com/alimitedgroup/MVP/srv/notification/types"
 	"log"
 
 	"github.com/alimitedgroup/MVP/common/stream"
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
 	"github.com/nats-io/nats.go/jetstream"
 )
 

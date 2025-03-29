@@ -1,10 +1,9 @@
 package portout
 
 import (
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/business/cmd"
-	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/business/response"
+	serviceresponse "github.com/alimitedgroup/MVP/srv/notification/types"
 )
 
 type IStockRepository interface {
-	SaveStockUpdate(cmd *servicecmd.AddStockUpdateCmd) *serviceresponse.AddStockUpdateResponse
+	SaveStockUpdate(cmd *serviceresponse.AddStockUpdateCmd) *serviceresponse.AddStockUpdateResponse
 }
