@@ -40,7 +40,7 @@ func (s StockUpdateReceiver) Handle(_ context.Context, msg jetstream.Msg) error 
 	}
 
 	cmd := servicecmd.NewAddStockUpdateCmd(request.WarehouseID, string(request.Type), request.OrderID, request.TransferID, goods, time.Now().Unix())
-	return s.addStockUpdateUseCase.AddStockUpdate(cmd)
+	return s.addStockUpdateUseCase.RecordStockUpdate(cmd)
 }
 
 func (s StockUpdateReceiver) Stream() jetstream.StreamConfig {

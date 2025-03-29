@@ -36,5 +36,11 @@ func (c *AddQueryController) Handle(_ context.Context, msg jetstream.Msg) error 
 	}
 
 	cmd := servicecmd.QueryRule{GoodId: request.GoodID, Operator: request.Operator, Threshold: request.Threshold}
-	return c.addQueryRuleUseCase.AddQueryRule(&cmd)
+	// TODO: respond with id
+	_, err = c.addQueryRuleUseCase.AddQueryRule(cmd)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

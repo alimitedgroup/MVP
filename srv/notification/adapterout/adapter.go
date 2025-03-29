@@ -7,6 +7,7 @@ import (
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	serviceportout2 "github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
+	"github.com/google/uuid"
 	"log"
 	"time"
 
@@ -18,10 +19,10 @@ type NotificationAdapter struct {
 	influxOrg    string
 	influxBucket string
 	brk          *broker.NatsMessageBroker
-	ruleRepo     serviceportout2.IRuleRepository
+	ruleRepo     serviceportout2.RuleRepository
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo serviceportout2.IRuleRepository) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo serviceportout2.RuleRepository) *NotificationAdapter {
 	return &NotificationAdapter{
 		influxClient: influxClient,
 		influxOrg:    "my-org",
@@ -89,10 +90,10 @@ func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *types.
 	return types.NewGetRuleResultResponse(goodID, 0, nil)
 }
 
-func (na *NotificationAdapter) AddRule(cmd *types.QueryRule) error {
+func (na *NotificationAdapter) AddRule(cmd types.QueryRule) (uuid.UUID, error) {
 	return na.ruleRepo.AddRule(cmd)
 }
 
-func (na *NotificationAdapter) GetAllRules() []types.QueryRule {
-	return na.ruleRepo.GetAllRules()
+func (na *NotificationAdapter) ListRules() ([]types.QueryRuleWithId, error) {
+	return na.ruleRepo.ListRules()
 }

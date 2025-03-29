@@ -1,10 +1,11 @@
 package persistence
 
 import (
-	servicecmd "github.com/alimitedgroup/MVP/srv/notification/types"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
+	"github.com/google/uuid"
 )
 
 type IRuleRepository interface {
-	AddRule(cmd *servicecmd.QueryRule) error
-	GetAllRules() []servicecmd.QueryRule
+	AddRule(cmd types.QueryRule) (uuid.UUID, error)
+	ListRules() ([]types.QueryRuleWithId, error)
 }

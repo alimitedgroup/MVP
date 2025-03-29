@@ -10,12 +10,12 @@ import (
 
 type RuleChecker struct {
 	ticker  *time.Ticker
-	service IService
+	service Business
 	ctx     context.Context
 	cancel  context.CancelFunc
 }
 
-func NewRuleChecker(lc fx.Lifecycle, service IService) *RuleChecker {
+func NewRuleChecker(lc fx.Lifecycle, service Business) *RuleChecker {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	rc := &RuleChecker{
@@ -55,7 +55,10 @@ func (rc *RuleChecker) run() {
 func (rc *RuleChecker) checkAllRules() {
 	log.Println("[RuleChecker] Controllo periodico delle regole avviato.")
 
-	rules := rc.service.GetAllQueryRules() // recupera tutte le regole dal repository in memoria
+	rules, err := rc.service.ListQueryRules() // recupera tutte le regole dal repository in memoria
+	if err != nil {
+		log.Println(err)
+	}
 
 	if len(rules) == 0 {
 		log.Println("[RuleChecker] Nessuna regola trovata.")

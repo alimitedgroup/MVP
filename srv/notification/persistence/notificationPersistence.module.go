@@ -8,7 +8,7 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(NewRuleRepository,
-			fx.As(new(portout.IRuleRepository)),
+			fx.As(new(portout.RuleRepository)),
 		),
 	),
 )
