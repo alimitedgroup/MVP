@@ -2,27 +2,31 @@ package business
 
 import (
 	"context"
-	"github.com/alimitedgroup/MVP/srv/notification/portin"
-	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"log"
 	"time"
+
+	"github.com/alimitedgroup/MVP/srv/notification/portin"
+	"github.com/alimitedgroup/MVP/srv/notification/portout"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
 
 	"go.uber.org/fx"
 )
 
 type RuleChecker struct {
-	rulePort  portin.QueryRules
-	queryPort portout.RuleQueryRepository
+	rulePort    portin.QueryRules
+	queryPort   portout.RuleQueryRepository
+	publishPort portout.StockEventPublisher
 	// stop è un canale su cui verranno mandati al massimo due messaggi.
 	// Per la logica che ci sta dietro, fare riferimento al commento all'interno di NewRuleChecker.
 	stop chan bool
 }
 
-func NewRuleChecker(lc fx.Lifecycle, rules portin.QueryRules, queries portout.RuleQueryRepository) *RuleChecker {
+func NewRuleChecker(lc fx.Lifecycle, rules portin.QueryRules, queries portout.RuleQueryRepository, publish portout.StockEventPublisher) *RuleChecker {
 	rc := &RuleChecker{
-		rulePort:  rules,
-		queryPort: queries,
-		stop:      make(chan bool, 1),
+		rulePort:    rules,
+		queryPort:   queries,
+		publishPort: publish,
+		stop:        make(chan bool, 1),
 	}
 
 	lc.Append(fx.Hook{
@@ -113,6 +117,16 @@ func (rc *RuleChecker) checkAllRules() {
 			log.Printf("[ALERT] good_id=%s quantity=%d %s %d",
 				goodID, currentQuantity, operator, threshold)
 			// INVIO DELLA NOTIFICA
+			err := rc.publishPort.PublishStockAlert(types.StockAlertEvent{
+				GoodID:          goodID,
+				CurrentQuantity: currentQuantity,
+				Operator:        operator,
+				Threshold:       threshold,
+				Timestamp:       time.Now().UnixMilli(),
+			})
+			if err != nil {
+				log.Printf("[RuleChecker] Errore nell'invio della notifica: %v", err)
+			}
 
 		} else {
 			log.Printf("Nessun alert: good_id=%s (quantity=%d, threshold=%d %s)",
