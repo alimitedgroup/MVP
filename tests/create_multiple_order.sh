@@ -37,9 +37,9 @@ echo "Create 3 orders"
 curl "${PARAMS[@]}" -X POST "$BASE/orders" \
   -d '{"name": "test-order-1", "full_name": "Mario Rossi", "address": "via roma 12 35012", "goods": {"hat-1": 13, "hat-2": 11}}' | jq
 curl "${PARAMS[@]}" -X POST "$BASE/orders" \
-  -d '{"name": "test-order-1", "full_name": "Mario Rossi", "address": "via roma 12 35012", "goods": {"hat-1": 13, "hat-2": 11}}' | jq
+  -d '{"name": "test-order-2", "full_name": "Mario Rossi", "address": "via roma 12 35012", "goods": {"hat-1": 13, "hat-2": 11}}' | jq
 curl "${PARAMS[@]}" -X POST "$BASE/orders" \
-  -d '{"name": "test-order-1", "full_name": "Mario Rossi", "address": "via roma 12 35012", "goods": {"hat-1": 13, "hat-2": 11}}' | jq
+  -d '{"name": "test-order-3", "full_name": "Mario Rossi", "address": "via roma 12 35012", "goods": {"hat-1": 13, "hat-2": 11}}' | jq
 
 echo "Get orders and goods status"
 

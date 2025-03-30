@@ -23,7 +23,7 @@ echo "Get goods status"
 
 curl "${PARAMS[@]}" -X GET "$BASE/goods" | jq
 
-echo "Create transfer"
+echo "Create order"
 
 curl "${PARAMS[@]}" -X POST "$BASE/orders" \
   -d '{"name": "order-1", "full_name": "John Doe", "address": "via roma 12 35012", "goods": {"hat-1": 7}}' | jq
