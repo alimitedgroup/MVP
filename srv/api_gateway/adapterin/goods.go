@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -40,6 +41,10 @@ func (c *GetGoodsController) Method() string {
 
 func (c *GetGoodsController) RequiresAuth() bool {
 	return true
+}
+
+func (c *GetGoodsController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleNone}
 }
 
 var _ Controller = (*GetGoodsController)(nil)

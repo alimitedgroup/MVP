@@ -19,7 +19,7 @@ func TestCreateOrder(t *testing.T) {
 
 	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
 		Username: "test",
-		Role:     types.RoleGlobalAdmin,
+		Role:     types.RoleClient,
 	}, nil)
 	s.order.EXPECT().CreateOrder(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("1", nil)
 

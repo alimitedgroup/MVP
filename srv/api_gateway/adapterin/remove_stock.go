@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -51,6 +52,10 @@ func (c *RemoveStockController) Method() string {
 
 func (c *RemoveStockController) RequiresAuth() bool {
 	return true
+}
+
+func (c *RemoveStockController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleLocalAdmin}
 }
 
 var _ Controller = (*RemoveStockController)(nil)
