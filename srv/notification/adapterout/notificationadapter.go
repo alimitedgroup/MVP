@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+	"time"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
-	"github.com/influxdata/influxdb-client-go/v2"
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/nats-io/nats.go"
-	"log"
-	"time"
 )
 
 type NotificationAdapter struct {
@@ -64,12 +66,16 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 // =========== StockEventPublisher port-out ===========
 
 func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
+	service_id, exist := os.LookupEnv("ENV_SERVICE_ID")
+	if !exist {
+		service_id = "DEFAULT"
+	}
 	data, err := json.Marshal(alert)
 	if err != nil {
 		log.Printf("Error marshalling alert: %v", err)
 		return err
 	}
-	if err := na.brk.Nats.Publish("stock.alert", data); err != nil {
+	if err := na.brk.Nats.Publish(fmt.Sprintf("stock.alert.%s", service_id), data); err != nil {
 		log.Printf("Error publishing alert to NATS: %v", err)
 		return err
 	}
