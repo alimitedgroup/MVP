@@ -15,6 +15,14 @@ var ModuleTest = fx.Module(
 	fx.Provide(AsController(NewAuthHealthCheckController)),
 	fx.Provide(AsController(NewListWarehousesController)),
 	fx.Provide(AsController(NewGetGoodsController)),
+	fx.Provide(AsController(NewCreateGoodController)),
+	fx.Provide(AsController(NewUpdateGoodController)),
+	fx.Provide(AsController(NewGetOrdersController)),
+	fx.Provide(AsController(NewCreateOrderController)),
+	fx.Provide(AsController(NewGetTransfersController)),
+	fx.Provide(AsController(NewCreateTransferController)),
+	fx.Provide(AsController(NewAddStockController)),
+	fx.Provide(AsController(NewRemoveStockController)),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
 )
 
@@ -27,6 +35,14 @@ var Module = fx.Module(
 	fx.Provide(AsController(NewAuthHealthCheckController)),
 	fx.Provide(AsController(NewListWarehousesController)),
 	fx.Provide(AsController(NewGetGoodsController)),
+	fx.Provide(AsController(NewCreateGoodController)),
+	fx.Provide(AsController(NewUpdateGoodController)),
+	fx.Provide(AsController(NewGetOrdersController)),
+	fx.Provide(AsController(NewCreateOrderController)),
+	fx.Provide(AsController(NewGetTransfersController)),
+	fx.Provide(AsController(NewCreateTransferController)),
+	fx.Provide(AsController(NewAddStockController)),
+	fx.Provide(AsController(NewRemoveStockController)),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
 )
 

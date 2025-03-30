@@ -37,7 +37,7 @@ func (fs *fakeService) GetToken(cmd *servicecmd.GetTokenCmd) *serviceresponse.Ge
 var modules = fx.Options(
 	lib.ModuleTest,
 	fx.Provide(fx.Annotate(NewFakeService, fx.As(new(serviceportin.IGetTokenUseCase)))),
-	fx.Provide(NewAuthController, NewAuthRouter, NewAuthRouterMessageBroker, NewControllerRouter),
+	fx.Provide(NewAuthController, NewAuthRouter, NewControllerRouter),
 )
 
 // FINE MOCK SERVICE

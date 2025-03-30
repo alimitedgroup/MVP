@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"testing"
 	"time"
 
@@ -18,9 +17,9 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/adapter/listener"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
-	"github.com/magiconair/properties/assert"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 )
 
@@ -42,9 +41,7 @@ func IntegrationTest(t *testing.T, testFunc any) {
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	js, err := jetstream.New(ns)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	p := TestParams{
 		Ns: ns,
@@ -57,66 +54,46 @@ func IntegrationTest(t *testing.T, testFunc any) {
 		fx.Invoke(testFunc),
 	)
 	err = app.Start(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	defer func() {
-		err = app.Stop(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
+		err := app.Stop(ctx)
+		require.NoError(t, err)
 	}()
 }
 
 func NatsSendRequest[RequestDTO any, ResponseDTO any](t *testing.T, p *TestParams, subject string, dto RequestDTO) ResponseDTO {
 	payload, err := json.Marshal(dto)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	msg, err := p.Ns.Request(subject, payload, 1*time.Second)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	var respDto ResponseDTO
 	err = json.Unmarshal(msg.Data, &respDto)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	return respDto
 }
 
 func NatsPublishToStream[RequestDTO any](ctx context.Context, t *testing.T, p *TestParams, stream jetstream.StreamConfig, subject string, event RequestDTO) {
 	s, err := p.Js.CreateStream(ctx, stream)
-	if err != nil {
-		t.Errorf("failed to create stream: %v", err)
-	}
+	require.NoError(t, err)
 
 	beforeInfo, err := s.Info(ctx)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	payload, err := json.Marshal(event)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	ack, err := p.Js.Publish(ctx, subject, payload)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	info, err := s.Info(ctx)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
-	assert.Equal(t, info.State.LastSeq, beforeInfo.State.LastSeq+1)
-	assert.Equal(t, ack.Stream, stream.Name)
+	require.Equal(t, info.State.LastSeq, beforeInfo.State.LastSeq+1)
+	require.Equal(t, ack.Stream, stream.Name)
 }
 
 func TestAddAndRemoveWarehouseStock(t *testing.T) {
@@ -126,9 +103,8 @@ func TestAddAndRemoveWarehouseStock(t *testing.T) {
 		lc.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
 				for _, v := range []lib.BrokerRoute{catalogListenerRouter, stockListenerRouter, stockControllerRouter} {
-					if err := v.Setup(ctx); err != nil {
-						t.Error(err)
-					}
+					err := v.Setup(ctx)
+					require.NoError(t, err)
 				}
 
 				{
@@ -148,8 +124,8 @@ func TestAddAndRemoveWarehouseStock(t *testing.T) {
 						t, p, fmt.Sprintf("warehouse.%s.stock.add", cfg.ID), dto,
 					)
 
-					assert.Equal(t, resp.Error, "")
-					assert.Equal(t, resp.Message, "ok")
+					require.Empty(t, resp.Error)
+					require.Equal(t, resp.Message, "ok")
 				}
 
 				time.Sleep(10 * time.Millisecond)
@@ -160,32 +136,27 @@ func TestAddAndRemoveWarehouseStock(t *testing.T) {
 						t, p, fmt.Sprintf("warehouse.%s.stock.remove", cfg.ID), dto,
 					)
 
-					assert.Equal(t, resp.Error, "")
-					assert.Equal(t, resp.Message, "ok")
+					require.Empty(t, resp.Error)
+					require.Equal(t, resp.Message, "ok")
 				}
 
 				time.Sleep(10 * time.Millisecond)
 
 				{
 					s, err := p.Js.Stream(ctx, stream.StockUpdateStreamConfig.Name)
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
 					msg, err := s.GetLastMsgForSubject(ctx, fmt.Sprintf("stock.update.%s", cfg.ID))
-					if err != nil {
-						t.Error(err)
-					}
+					require.NoError(t, err)
 
 					var event stream.StockUpdate
-					if err = json.Unmarshal(msg.Data, &event); err != nil {
-						t.Error(err)
-					}
+					err = json.Unmarshal(msg.Data, &event)
+					require.NoError(t, err)
 
-					assert.Equal(t, event.Goods[0].GoodID, "1")
-					assert.Equal(t, event.Goods[0].Quantity, int64(5))
-					assert.Equal(t, event.WarehouseID, cfg.ID)
-					assert.Equal(t, event.Type, stream.StockUpdateTypeRemove)
+					require.Equal(t, event.Goods[0].GoodID, "1")
+					require.Equal(t, event.Goods[0].Quantity, int64(5))
+					require.Equal(t, event.WarehouseID, cfg.ID)
+					require.Equal(t, event.Type, stream.StockUpdateTypeRemove)
 				}
 
 				return nil

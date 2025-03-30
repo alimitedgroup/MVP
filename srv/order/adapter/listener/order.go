@@ -79,7 +79,7 @@ func (l *OrderListener) ListenTransferUpdate(ctx context.Context, msg jetstream.
 
 	defer func() {
 		Logger.Info("Transfer update request terminated")
-		OrderUpdateRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		TransferUpdateRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		controller.TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
 

@@ -14,7 +14,7 @@ type SimpleAuthAlg struct {
 
 func NewSimpleAuthAlg() *SimpleAuthAlg {
 	roles := make(map[string]string)
-	roles["admin"] = "admin"
+	roles["global_admin"] = "global_admin"
 	roles["local_admin"] = "local_admin"
 	roles["client"] = "client"
 	return &SimpleAuthAlg{usernameRoles: roles}

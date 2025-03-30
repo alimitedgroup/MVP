@@ -30,6 +30,7 @@ services:
       - OTLP_URL=collector:4317
       - HTTP_HOST=0.0.0.0
       - HTTP_PORT=8080
+      - ENV_SERVICE_ID=1
     depends_on:
       - nats
 
@@ -37,7 +38,7 @@ services:
     build: { args: { SERVICE: warehouse } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
-      - ENV_WAREHOUSE_ID=1
+      - ENV_SERVICE_ID=1
       - OTLP_URL=collector:4317
     depends_on:
       - nats
@@ -46,7 +47,7 @@ services:
     build: { args: { SERVICE: warehouse } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
-      - ENV_WAREHOUSE_ID=2
+      - ENV_SERVICE_ID=2
       - OTLP_URL=collector:4317
     depends_on:
       - nats
@@ -55,6 +56,7 @@ services:
     build: { args: { SERVICE: catalog } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - ENV_SERVICE_ID=1
       - OTLP_URL=collector:4317
     depends_on:
       - nats
@@ -63,6 +65,7 @@ services:
     build: { args: { SERVICE: order } }
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - ENV_SERVICE_ID=1
       - OTLP_URL=collector:4317
     depends_on:
       - nats
@@ -72,6 +75,7 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - OTLP_URL=collector:4317
+      - ENV_SERVICE_ID=1
     depends_on:
       - nats
 

@@ -38,7 +38,18 @@ func getBuildInfo() (string, string) {
 		return "unknown", "unknown"
 	}
 
-	name := bi.Path
+	logger := setupZap(zapcore.DebugLevel)
+
+	id, err := os.LookupEnv("ENV_SERVICE_ID")
+
+	if !err {
+		logger.Error("ENV_SERVICE_ID environment variable not set, generating a unique UUID. PLEASE TAKE NOTE OF THE GENERATED UUID, IT WILL BE RESET AT THE FIRST SERVER SHUTDOWN. Please refer to the User Manual.")
+		id = uuid.NewString()
+	} else {
+		logger.Debug("Found id " + id + " for " + bi.Path + " service")
+	}
+
+	name := bi.Path + id
 
 	version := "unknown"
 
