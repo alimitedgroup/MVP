@@ -3,6 +3,7 @@ volumes:
   grafana_data:
   influxdb_data:
 
+
 services:
   nats:
     image: nats:alpine
@@ -112,7 +113,7 @@ services:
   loki:
     image: grafana/loki:3.4.2
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v3.2.1
     ports:
       - "9090:9090"
     command:

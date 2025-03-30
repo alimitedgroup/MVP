@@ -4,7 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	ginzap "github.com/gin-contrib/zap"
@@ -13,17 +22,12 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"net"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var (
 	NumRequests     metric.Int64Counter
 	Authentications metric.Int64Counter
+	CounterMap      sync.Map
 )
 
 type HttpConfig struct {
@@ -97,14 +101,6 @@ type HttpParams struct {
 	Meter     metric.Meter
 }
 
-func counter(p HttpParams, name string, options ...metric.Int64CounterOption) metric.Int64Counter {
-	ctr, err := p.Meter.Int64Counter(name, options...)
-	if err != nil {
-		p.Logger.Fatal("Failed to setup OpenTelemetry counter", zap.String("name", name), zap.Error(err))
-	}
-	return ctr
-}
-
 func NewHTTPHandler(p HttpParams) *HTTPHandler {
 	logger := p.Logger.Named("gin")
 	gin.DebugPrintFunc = func(format string, values ...interface{}) {
@@ -118,6 +114,9 @@ func NewHTTPHandler(p HttpParams) *HTTPHandler {
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
 		logger.Info(fmt.Sprintf("%s %s -> %s", httpMethod, absolutePath, handlerName))
 	}
+
+	observability.CounterSetup(&p.Meter, p.Logger, &Authentications, &CounterMap, "num_api_gateway_authentications")
+	observability.CounterSetup(&p.Meter, p.Logger, &NumRequests, &CounterMap, "num_api_gateway_total_requests")
 
 	r := gin.New()
 	_ = r.SetTrustedProxies(nil)
@@ -156,9 +155,6 @@ func NewHTTPHandler(p HttpParams) *HTTPHandler {
 			return nil
 		},
 	})
-
-	Authentications = counter(p, "authentications")
-	NumRequests = counter(p, "num_requests")
 
 	return &HTTPHandler{r, api, authenticated}
 }

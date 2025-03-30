@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -4088,7 +4088,7 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
         "tooltip": {
           "hideZeros": false,
@@ -4102,7 +4102,7 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "rate(http_requests_total[$__rate_interval])",
+          "expr": "rate(num_api_gateway_requests_total{job=\"github.com/alimitedgroup/MVP/srv/api_gateway1\"}[$__rate_interval])",
           "format": "heatmap",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -4189,7 +4189,7 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
         "tooltip": {
           "hideZeros": false,
@@ -4203,7 +4203,7 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "rate(http_requests_total[$__rate_interval])",
+          "expr": "rate(num_api_gateway_authentications_total{job=\"github.com/alimitedgroup/MVP/srv/api_gateway1\"}[$__rate_interval])",
           "format": "heatmap",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -4233,5 +4233,5 @@
   "timezone": "browser",
   "title": "Overview Copy",
   "uid": "beh982884gkjkb",
-  "version": 1
+  "version": 2
 }
