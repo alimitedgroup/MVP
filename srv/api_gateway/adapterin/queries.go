@@ -39,7 +39,7 @@ func (c *GetQueriesController) Method() string {
 }
 
 func (c *GetQueriesController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*GetQueriesController)(nil)
