@@ -39,7 +39,7 @@ func (c *GetGoodsController) Method() string {
 }
 
 func (c *GetGoodsController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*GetGoodsController)(nil)

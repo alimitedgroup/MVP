@@ -50,7 +50,7 @@ func (c *ListWarehousesController) Method() string {
 }
 
 func (c *ListWarehousesController) RequiresAuth() bool {
-	return false
+	return true
 }
 
 var _ Controller = (*ListWarehousesController)(nil)
