@@ -30,8 +30,6 @@ services:
       - OTLP_URL=collector:4317
       - HTTP_HOST=0.0.0.0
       - HTTP_PORT=8080
-    volumes:
-      - ./config.yml:/data/config.yml:ro
     depends_on:
       - nats
 
@@ -41,8 +39,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=1
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
 
@@ -52,8 +48,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_WAREHOUSE_ID=2
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml:ro
     depends_on:
       - nats
 
@@ -62,8 +56,6 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml:ro
     depends_on:
       - nats
 
@@ -72,8 +64,6 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
 
@@ -82,8 +72,6 @@ services:
     environment:
       - ENV_BROKER_URL=nats://nats:4222
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
   influxdb:
@@ -107,8 +95,6 @@ services:
       - INFLUXDB_TOKEN=my-token
       - INFLUXDB_ORG=my-org
       - ENV_BROKER_URL=nats://nats:4222
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
       - influxdb
