@@ -23,6 +23,8 @@ var ModuleTest = fx.Module(
 	fx.Provide(AsController(NewCreateTransferController)),
 	fx.Provide(AsController(NewAddStockController)),
 	fx.Provide(AsController(NewRemoveStockController)),
+	fx.Provide(AsController(NewCreateQueryController)),
+	fx.Provide(AsController(NewGetQueriesController)),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
 )
 
@@ -43,6 +45,8 @@ var Module = fx.Module(
 	fx.Provide(AsController(NewCreateTransferController)),
 	fx.Provide(AsController(NewAddStockController)),
 	fx.Provide(AsController(NewRemoveStockController)),
+	fx.Provide(AsController(NewCreateQueryController)),
+	fx.Provide(AsController(NewGetQueriesController)),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
 )
 

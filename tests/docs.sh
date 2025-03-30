@@ -37,3 +37,10 @@ curl -Ss -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -
 
 # get all transfers
 curl -Ss -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -X GET localhost:8080/api/v1/transfers | jq
+
+# create a notification query (return the query id)
+curl -Ss -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -X POST localhost:8080/api/v1/notifications/queries \
+  -d '{"good_id": "hat-1", "operator": "<", "threshold": "10"}' | jq
+
+# get all notification queries
+curl -Ss -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -X GET localhost:8080/api/v1/notifications/queries | jq

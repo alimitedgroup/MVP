@@ -113,6 +113,27 @@ type CreateTransferRequest struct {
 	Goods      map[string]int64 `json:"goods"`
 }
 
+type CreateQueryRequest struct {
+	GoodID    string `json:"good_id"`
+	Operator  string `json:"operator"`
+	Threshold int    `json:"threshold"`
+}
+
+type CreateQueryResponse struct {
+	QueryID string `json:"query_id"`
+}
+
+type GetQueriesResponse struct {
+	Queries []Query `json:"queries"`
+}
+
+type Query struct {
+	QueryID   string `json:"query_id"`
+	GoodID    string `json:"good_id"`
+	Operator  string `json:"operator"`
+	Threshold int    `json:"threshold"`
+}
+
 func FieldIsRequired(fieldName string) response.ResponseDTO[MissingRequiredFieldError] {
 	return response.ResponseDTO[MissingRequiredFieldError]{
 		Error: "missing_field",
