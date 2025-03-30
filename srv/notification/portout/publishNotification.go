@@ -2,6 +2,6 @@ package portout
 
 import "github.com/alimitedgroup/MVP/srv/notification/types"
 
-type IStockEventPublisher interface {
+type StockEventPublisher interface {
 	PublishStockAlert(alert types.StockAlertEvent) error
 }

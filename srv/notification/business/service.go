@@ -9,9 +9,9 @@ import (
 
 func NewBusiness(
 	ruleRepo portout.RuleRepository,
-	alertPublisher portout.IStockEventPublisher,
-	quantityReader portout.IRuleQueryRepository,
-	stockRepo portout.IStockRepository,
+	alertPublisher portout.StockEventPublisher,
+	quantityReader portout.RuleQueryRepository,
+	stockRepo portout.StockRepository,
 ) *Business {
 	return &Business{
 		ruleRepo:       ruleRepo,
@@ -23,9 +23,9 @@ func NewBusiness(
 
 type Business struct {
 	ruleRepo       portout.RuleRepository
-	alertPublisher portout.IStockEventPublisher
-	quantityReader portout.IRuleQueryRepository
-	stockRepo      portout.IStockRepository
+	alertPublisher portout.StockEventPublisher
+	quantityReader portout.RuleQueryRepository
+	stockRepo      portout.StockRepository
 }
 
 // =========== QueryRules port-in ===========

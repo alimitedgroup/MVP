@@ -4,6 +4,6 @@ import (
 	"github.com/alimitedgroup/MVP/srv/notification/types"
 )
 
-type IRuleQueryRepository interface {
+type RuleQueryRepository interface {
 	GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse
 }

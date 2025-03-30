@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/alimitedgroup/MVP/common/lib/broker"
-	serviceportout2 "github.com/alimitedgroup/MVP/srv/notification/portout"
-	"github.com/alimitedgroup/MVP/srv/notification/types"
-	"github.com/google/uuid"
 	"log"
 	"time"
 
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/srv/notification/portout"
+	"github.com/alimitedgroup/MVP/srv/notification/types"
+	"github.com/influxdata/influxdb-client-go/v2"
 )
 
 type NotificationAdapter struct {
@@ -19,10 +18,10 @@ type NotificationAdapter struct {
 	influxOrg    string
 	influxBucket string
 	brk          *broker.NatsMessageBroker
-	ruleRepo     serviceportout2.RuleRepository
+	ruleRepo     portout.RuleRepository
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo serviceportout2.RuleRepository) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository) *NotificationAdapter {
 	return &NotificationAdapter{
 		influxClient: influxClient,
 		influxOrg:    "my-org",
@@ -31,6 +30,8 @@ func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessa
 		ruleRepo:     ruleRepo,
 	}
 }
+
+// =========== StockRepository port-out ===========
 
 func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) error {
 	writeAPI := na.influxClient.WriteAPIBlocking(na.influxOrg, na.influxBucket)
@@ -51,6 +52,8 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 	return nil
 }
 
+// =========== StockEventPublisher port-out ===========
+
 func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
 	data, err := json.Marshal(alert)
 	if err != nil {
@@ -64,15 +67,16 @@ func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) er
 	return nil
 }
 
+// =========== RuleQueryRepository port-out ===========
+
 func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse {
 	queryAPI := na.influxClient.QueryAPI(na.influxOrg)
-	fluxQuery := `
-		from(bucket:"stockdb")
-			|> range(start:-7d)
-			|> filter(fn:(r)=> r["_measurement"]=="stock_measurement")
-			|> filter(fn:(r)=> r["good_id"]=="` + goodID + `")
-			|> filter(fn:(r)=> r["_field"]=="quantity")
-			|> last()`
+	fluxQuery := `from(bucket:"stockdb")
+		|> range(start:-7d)
+		|> filter(fn:(r)=> r["_measurement"]=="stock_measurement")
+		|> filter(fn:(r)=> r["good_id"]=="` + goodID + `")
+		|> filter(fn:(r)=> r["_field"]=="quantity")
+		|> last()`
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
 		return types.NewGetRuleResultResponse(goodID, 0, err)
@@ -88,12 +92,4 @@ func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *types.
 		return types.NewGetRuleResultResponse(goodID, 0, result.Err())
 	}
 	return types.NewGetRuleResultResponse(goodID, 0, nil)
-}
-
-func (na *NotificationAdapter) AddRule(cmd types.QueryRule) (uuid.UUID, error) {
-	return na.ruleRepo.AddRule(cmd)
-}
-
-func (na *NotificationAdapter) ListRules() ([]types.QueryRuleWithId, error) {
-	return na.ruleRepo.ListRules()
 }

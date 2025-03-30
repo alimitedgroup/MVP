@@ -12,13 +12,13 @@ import (
 
 type RuleChecker struct {
 	rulePort  portin.QueryRules
-	queryPort portout.IRuleQueryRepository
+	queryPort portout.RuleQueryRepository
 	// stop è un canale su cui verranno mandati al massimo due messaggi.
 	// Per la logica che ci sta dietro, fare riferimento al commento all'interno di NewRuleChecker.
 	stop chan bool
 }
 
-func NewRuleChecker(lc fx.Lifecycle, rules portin.QueryRules, queries portout.IRuleQueryRepository) *RuleChecker {
+func NewRuleChecker(lc fx.Lifecycle, rules portin.QueryRules, queries portout.RuleQueryRepository) *RuleChecker {
 	rc := &RuleChecker{
 		rulePort:  rules,
 		queryPort: queries,
