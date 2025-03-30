@@ -8,6 +8,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
+	"github.com/google/uuid"
 
 	"go.uber.org/fx"
 )
@@ -118,6 +119,8 @@ func (rc *RuleChecker) checkAllRules() {
 				goodID, currentQuantity, operator, threshold)
 			// INVIO DELLA NOTIFICA
 			err := rc.publishPort.PublishStockAlert(types.StockAlertEvent{
+				Id:              uuid.NewString(),
+				Status:          "Pending",
 				GoodID:          goodID,
 				CurrentQuantity: currentQuantity,
 				Operator:        operator,
