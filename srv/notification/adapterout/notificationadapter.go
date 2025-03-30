@@ -3,52 +3,61 @@ package adapterout
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"log"
-	"time"
-
+	"fmt"
+	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
 	"github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/nats-io/nats.go"
+	"log"
+	"time"
 )
 
 type NotificationAdapter struct {
 	influxClient influxdb2.Client
-	influxOrg    string
-	influxBucket string
 	brk          *broker.NatsMessageBroker
 	ruleRepo     portout.RuleRepository
+	writeApi     api.WriteAPI
+	queryApi     api.QueryAPI
 }
 
 func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository) *NotificationAdapter {
 	return &NotificationAdapter{
 		influxClient: influxClient,
-		influxOrg:    "my-org",
-		influxBucket: "stockdb",
 		brk:          brk,
 		ruleRepo:     ruleRepo,
+		writeApi:     influxClient.WriteAPI("my-org", "stockdb"),
+		queryApi:     influxClient.QueryAPI("my-org"),
 	}
 }
 
 // =========== StockRepository port-out ===========
 
 func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) error {
-	writeAPI := na.influxClient.WriteAPIBlocking(na.influxOrg, na.influxBucket)
-	if len(cmd.Goods) == 0 {
-		return errors.New("no goods provided")
-	}
-	good := cmd.Goods[0]
-	p := influxdb2.NewPoint(
-		"stock_measurement",
-		map[string]string{"warehouse_id": cmd.WarehouseID, "good_id": good.ID},
-		map[string]interface{}{"quantity": good.Quantity, "delta": good.Delta, "type": cmd.Type},
-		time.Now(),
-	)
-	if err := writeAPI.WritePoint(context.Background(), p); err != nil {
-		log.Printf("Error saving to InfluxDB: %v", err)
+	respmsg, err := na.brk.Nats.Request("catalog.getGoodsGlobalQuantity", []byte("{}"), nats.DefaultTimeout)
+	if err != nil {
+		fmt.Println("Error querying catalog.getGoodsGlobalQuantity:", err)
 		return err
 	}
+
+	var resp dto.GetGoodsQuantityResponseDTO
+	err = json.Unmarshal(respmsg.Data, &resp)
+	if err != nil {
+		fmt.Println("Error querying catalog.getGoodsGlobalQuantity:", err)
+		return err
+	}
+
+	for _, good := range cmd.Goods {
+		na.writeApi.WritePoint(influxdb2.NewPoint(
+			"stock_measurement",
+			map[string]string{"warehouse_id": cmd.WarehouseID, "good_id": good.ID},
+			map[string]interface{}{"quantity": int64(good.Delta) + resp.GoodMap[good.ID]},
+			time.Now(),
+		))
+	}
+
 	return nil
 }
 
@@ -70,14 +79,13 @@ func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) er
 // =========== RuleQueryRepository port-out ===========
 
 func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *types.GetRuleResultResponse {
-	queryAPI := na.influxClient.QueryAPI(na.influxOrg)
 	fluxQuery := `from(bucket:"stockdb")
 		|> range(start:-7d)
 		|> filter(fn:(r)=> r["_measurement"]=="stock_measurement")
 		|> filter(fn:(r)=> r["good_id"]=="` + goodID + `")
 		|> filter(fn:(r)=> r["_field"]=="quantity")
 		|> last()`
-	result, err := queryAPI.Query(context.Background(), fluxQuery)
+	result, err := na.queryApi.Query(context.Background(), fluxQuery)
 	if err != nil {
 		return types.NewGetRuleResultResponse(goodID, 0, err)
 	}
