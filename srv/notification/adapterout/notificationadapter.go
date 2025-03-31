@@ -28,10 +28,17 @@ type NotificationAdapter struct {
 	influx influxdb2.Client
 	brk    *broker.NatsMessageBroker
 	cfg    *config.NotificationConfig
+	str    jetstream.Stream
 	*zap.Logger
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository, logger *zap.Logger, cfg *config.NotificationConfig) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository, logger *zap.Logger, cfg *config.NotificationConfig) (*NotificationAdapter, error) {
+	str, err := brk.Js.CreateStream(context.Background(), stream.AlertConfig)
+	if err != nil {
+		logger.Error("Error creating stream", zap.String("stream", stream.AlertConfig.Name), zap.Error(err))
+		return nil, err
+	}
+
 	return &NotificationAdapter{
 		influx:   influxClient,
 		brk:      brk,
@@ -40,7 +47,8 @@ func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessa
 		queryApi: influxClient.QueryAPI(cfg.InfluxOrg),
 		cfg:      cfg,
 		Logger:   logger,
-	}
+		str:      str,
+	}, nil
 }
 
 // =========== StockRepository port-out ===========
@@ -74,16 +82,11 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 // =========== StockEventPublisher port-out ===========
 
 func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
-	s, err := na.brk.Js.CreateStream(context.Background(), stream.AlertConfig)
-	if err != nil {
-		na.Error("Error creating stream", zap.Error(err))
-	}
-
 	for {
 		var opts []jetstream.PublishOpt
 
 		var apiErr *jetstream.APIError
-		msg, err := s.GetLastMsgForSubject(context.Background(), fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.RuleId))
+		msg, err := na.str.GetLastMsgForSubject(context.Background(), fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.RuleId))
 		if errors.As(err, &apiErr) && apiErr.ErrorCode == jetstream.JSErrCodeMessageNotFound {
 		} else if err != nil {
 			na.Error("Error fetching stock alert", zap.Error(err))
