@@ -404,6 +404,7 @@ func contactCmdAndConfirmedToSendOrderUpdateCmd(cmd port.ContactWarehousesCmd, c
 		Name:         cmd.Order.Name,
 		FullName:     cmd.Order.FullName,
 		CreationTime: cmd.Order.CreationTime,
+		UpdateTime:   cmd.Order.UpdateTime,
 		Goods:        goods,
 		Reservations: reservations,
 	}
@@ -423,6 +424,7 @@ func contactCmdToSendOrderUpdateCmdForCancel(cmd port.ContactWarehousesCmd) port
 		Name:         cmd.Order.Name,
 		FullName:     cmd.Order.FullName,
 		CreationTime: cmd.Order.CreationTime,
+		UpdateTime:   cmd.Order.UpdateTime,
 		Goods:        goods,
 		Reservations: cmd.Order.Reservations,
 	}
@@ -438,6 +440,7 @@ func contactCmdToSendTransferUpdateCmdForCancel(cmd port.ContactWarehousesCmd) p
 		Status:        "Cancelled",
 		ID:            cmd.Transfer.ID,
 		CreationTime:  cmd.Transfer.CreationTime,
+		UpdateTime:    cmd.Transfer.UpdateTime,
 		SenderID:      cmd.Transfer.SenderID,
 		ReceiverID:    cmd.Transfer.ReceiverID,
 		Goods:         goods,

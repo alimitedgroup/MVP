@@ -149,6 +149,8 @@ func (b *Business) GetOrders() ([]dto.Order, error) {
 
 		resp = append(resp, dto.Order{
 			Status:       order.Status,
+			CreationTime: order.CreationTime,
+			UpdateTime:   order.UpdateTime,
 			OrderID:      order.OrderID,
 			Name:         order.Name,
 			FullName:     order.FullName,
@@ -196,11 +198,13 @@ func (b *Business) GetTransfers() ([]dto.Transfer, error) {
 		}
 
 		resp = append(resp, dto.Transfer{
-			Status:     transfer.Status,
-			TransferID: transfer.TransferID,
-			SenderID:   transfer.SenderID,
-			ReceiverID: transfer.ReceiverID,
-			Goods:      goods,
+			Status:       transfer.Status,
+			CreationTime: transfer.CreationTime,
+			UpdateTime:   transfer.UpdateTime,
+			TransferID:   transfer.TransferID,
+			SenderID:     transfer.SenderID,
+			ReceiverID:   transfer.ReceiverID,
+			Goods:        goods,
 		})
 	}
 

@@ -170,10 +170,12 @@ func modelTransferToTransferInfoDTO(transfer model.Transfer) response.TransferIn
 		})
 	}
 	return response.TransferInfo{
-		Status:     transfer.Status,
-		TransferID: transfer.ID,
-		SenderID:   transfer.SenderID,
-		ReceiverID: transfer.ReceiverID,
-		Goods:      goods,
+		Status:       transfer.Status,
+		TransferID:   transfer.ID,
+		SenderID:     transfer.SenderID,
+		ReceiverID:   transfer.ReceiverID,
+		CreationTime: transfer.CreationTime,
+		UpdateTime:   transfer.UpdateTime,
+		Goods:        goods,
 	}
 }
