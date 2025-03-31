@@ -1,33 +1,33 @@
 package adapterin
 
 import (
-	"log/slog"
-
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
-func NewCreateQueryController(notifications portin.Notifications) *CreateQueryController {
-	return &CreateQueryController{notifications: notifications}
+func NewCreateQueryController(notifications portin.Notifications, logger *zap.Logger) *CreateQueryController {
+	return &CreateQueryController{notifications: notifications, Logger: logger}
 }
 
 type CreateQueryController struct {
 	notifications portin.Notifications
+	*zap.Logger
 }
 
 func (c *CreateQueryController) Handler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req dto.CreateQueryRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			slog.Error("invalid request body", "error", err)
+			c.Error("invalid request body", zap.Error(err))
 			ctx.JSON(400, dto.InternalError())
 			return
 		}
 
 		queryId, err := c.notifications.CreateQuery(req.GoodID, req.Operator, req.Threshold)
 		if err != nil {
-			slog.Error("error while handling request to /api/v1/notifications/queries", "error", err)
+			c.Error("error while creating notification query", zap.Error(err))
 			ctx.JSON(500, dto.InternalError())
 			return
 		}
