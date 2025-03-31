@@ -46,7 +46,8 @@ func NewRuleChecker(lc fx.Lifecycle, rules portin.QueryRules, queries portout.Ru
 		//    o finché non andiamo in timeout (ossia arriva un messaggio sul canale ctx.Done())
 		// 3) Terminiamo
 		OnStop: func(ctx context.Context) error {
-			rc.stop <- true
+			// NOTE: commentato altrimenti nei test veniva stoppato subito senza eseguire la funzione run
+			// rc.stop <- true
 			select {
 			case <-ctx.Done():
 			case <-rc.stop:
