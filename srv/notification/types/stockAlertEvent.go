@@ -16,4 +16,5 @@ type StockStatus string
 var (
 	StockPending      StockStatus = "Pending"
 	StockAcknowledged StockStatus = "Acknowledged"
+	StockRevoked      StockStatus = "Revoked"
 )

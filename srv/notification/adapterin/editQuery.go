@@ -3,6 +3,8 @@ package adapterin
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"github.com/nats-io/nats.go/jetstream"
 
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -56,7 +58,10 @@ func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 
 	cmd := types.EditRule{GoodId: request.GoodId, Operator: request.Operator, Threshold: request.Threshold}
 	err = c.rulesPort.EditQueryRule(request.RuleId, cmd)
-	if err != nil {
+	if errors.Is(err, jetstream.ErrKeyNotFound) {
+		verdict = "not found"
+		_ = broker.RespondToMsg(msg, dto.RuleNotFound())
+	} else if err != nil {
 		verdict = "cannot handle request"
 		Logger.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())

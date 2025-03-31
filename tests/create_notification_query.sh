@@ -32,10 +32,10 @@ curl "${GA_PARAMS[@]}" -X GET "$BASE/goods" | jq
 echo "Create notification query"
 
 curl "${GA_PARAMS[@]}" -X POST localhost:8080/api/v1/notifications/queries \
-  -d '{"good_id": "hat-1", "operator": "<", "threshold": 10}' | jq
+  -d '{"good_id": "hat-1", "operator": "<", "threshold": 100}' | jq
 
 echo "Get notification queries"
 
 curl "${GA_PARAMS[@]}" -X GET localhost:8080/api/v1/notifications/queries | jq
 
-nats sub "alerts" 
+nats sub "stock.alert.>"

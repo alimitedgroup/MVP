@@ -59,6 +59,9 @@ func (r RuleRepositoryImpl) GetRule(id uuid.UUID) (types.QueryRule, error) {
 
 func (r RuleRepositoryImpl) ListRules() ([]types.QueryRuleWithId, error) {
 	keys, err := r.kv.Keys(context.Background())
+	if errors.Is(err, jetstream.ErrNoKeysFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

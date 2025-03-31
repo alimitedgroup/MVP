@@ -74,24 +74,18 @@ func (rc *RuleChecker) run() {
 }
 
 func (rc *RuleChecker) checkAllRules() {
-	rc.Debug("Controllo periodico delle regole avviato")
-
 	rules, err := rc.rulePort.ListQueryRules() // recupera tutte le regole dal repository in memoria
 	if err != nil {
 		rc.Error("Error while listing rules", zap.Error(err))
 	}
 
+	rc.Debug("Controllo periodico delle regole avviato", zap.Int("rulesAmount", len(rules)))
 	if len(rules) == 0 {
-		rc.Debug("Nessuna regola trovata")
 		return
-	} else {
-		rc.Debug("Numero regole", zap.Int("numero", len(rules)))
 	}
 
 	// Per ogni regola, interroga Influx e confronta la quantity con la threshold
 	for _, rule := range rules {
-		rc.Debug("Controllo regola", zap.String("rule", rule.RuleId.String()))
-
 		// Esempio: se rule è un AddQueryRuleCmd con metodi GetGoodID, GetOperator e GetThreshold
 		goodID := rule.GoodId
 		operator := rule.Operator
@@ -122,19 +116,38 @@ func (rc *RuleChecker) checkAllRules() {
 			continue
 		}
 
+		alert := types.StockAlertEvent{
+			Id:              uuid.NewString(),
+			GoodID:          goodID,
+			CurrentQuantity: currentQuantity,
+			Operator:        operator,
+			Threshold:       threshold,
+			Timestamp:       time.Now().UnixMilli(),
+			RuleId:          rule.RuleId.String(),
+		}
+
 		if condTrue {
-			err := rc.publishPort.PublishStockAlert(types.StockAlertEvent{
-				Id:              uuid.NewString(),
-				Status:          types.StockPending,
-				GoodID:          goodID,
-				CurrentQuantity: currentQuantity,
-				Operator:        operator,
-				Threshold:       threshold,
-				Timestamp:       time.Now().UnixMilli(),
-			})
-			if err != nil {
-				rc.Error("Errore nell'invio della notifica", zap.String("goodId", goodID), zap.Error(err))
-			}
+			alert.Status = types.StockPending
+			err = rc.publishPort.PublishStockAlert(alert)
+		} else {
+			alert.Status = types.StockRevoked
+			err = rc.publishPort.RevokeStockAlert(alert)
+		}
+		if err != nil {
+			rc.Error(
+				"Errore nell'aggiornamento di stato di una notifica",
+				zap.String("goodId", goodID),
+				zap.String("ruleId", rule.RuleId.String()),
+				zap.String("newStatus", string(alert.Status)),
+				zap.Error(err),
+			)
+		} else {
+			rc.Debug(
+				"Inviata notifica (oppure saltata)",
+				zap.String("goodId", goodID),
+				zap.String("ruleId", rule.RuleId.String()),
+				zap.String("newStatus", string(alert.Status)),
+			)
 		}
 	}
 }

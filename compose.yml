@@ -107,6 +107,7 @@ services:
     depends_on:
       - nats
       - influxdb
+      - catalog
 
   collector:
     image: otel/opentelemetry-collector-contrib

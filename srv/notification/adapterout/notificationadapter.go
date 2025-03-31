@@ -82,14 +82,17 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 // =========== StockEventPublisher port-out ===========
 
 func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
+	subj := fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.RuleId)
+
 	for {
 		var opts []jetstream.PublishOpt
 
 		var apiErr *jetstream.APIError
-		msg, err := na.str.GetLastMsgForSubject(context.Background(), fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.RuleId))
+		msg, err := na.str.GetLastMsgForSubject(context.Background(), subj)
 		if errors.As(err, &apiErr) && apiErr.ErrorCode == jetstream.JSErrCodeMessageNotFound {
+			na.Debug("No previous alert", zap.String("ruleId", alert.RuleId), zap.Error(err))
 		} else if err != nil {
-			na.Error("Error fetching stock alert", zap.Error(err))
+			na.Error("Error fetching stock alert", zap.String("subject", subj), zap.Error(err))
 			return err
 		} else {
 			var deserialized types.StockAlertEvent
@@ -109,7 +112,63 @@ func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) er
 				)
 				return nil
 			}
+		}
 
+		data, err := json.Marshal(alert)
+		if err != nil {
+			na.Error("Error marshalling alert", zap.Error(err))
+			return err
+		}
+
+		err = na.brk.Nats.PublishMsg(&nats.Msg{Subject: subj, Data: data})
+		if errors.As(err, &apiErr) && apiErr.ErrorCode == jetstream.JSErrCodeStreamWrongLastSequence {
+			na.Debug("Retrying submission, wrong sequence found")
+			continue
+		} else if err != nil {
+			na.Error(
+				"Error publishing alert to NATS",
+				zap.String("ruleId", alert.RuleId),
+				zap.String("status", string(alert.Status)),
+				zap.String("subject", subj),
+				zap.Error(err),
+			)
+			return err
+		} else {
+			return nil
+		}
+	}
+}
+
+func (na *NotificationAdapter) RevokeStockAlert(alert types.StockAlertEvent) error {
+	for {
+		var opts []jetstream.PublishOpt
+
+		var apiErr *jetstream.APIError
+		msg, err := na.str.GetLastMsgForSubject(context.Background(), fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.RuleId))
+		if errors.As(err, &apiErr) && apiErr.ErrorCode == jetstream.JSErrCodeMessageNotFound {
+			na.Debug("Skipping alert, since no previous alert was found", zap.String("rule_id", alert.RuleId))
+			return nil
+		} else if err != nil {
+			na.Error("Error fetching stock alert", zap.Error(err))
+			return err
+		} else {
+			var deserialized types.StockAlertEvent
+			err := json.Unmarshal(msg.Data, &deserialized)
+			if err != nil {
+				na.Error("Error deserializing stock alert", zap.Error(err))
+				return err
+			}
+
+			if deserialized.Status != types.StockRevoked {
+				opts = append(opts, jetstream.WithExpectLastSequence(msg.Sequence))
+			} else {
+				na.Debug(
+					"Skipping alert",
+					zap.String("rule_id", alert.RuleId),
+					zap.String("status", string(deserialized.Status)),
+				)
+				return nil
+			}
 		}
 
 		data, err := json.Marshal(alert)
