@@ -71,7 +71,7 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 		na.writeApi.WritePoint(influxdb2.NewPoint(
 			"stock_measurement",
 			map[string]string{"warehouse_id": cmd.WarehouseID, "good_id": good.ID},
-			map[string]interface{}{"quantity": int64(good.Delta) + resp.GoodMap[good.ID]},
+			map[string]interface{}{"quantity": resp.GoodMap[good.ID]},
 			time.Now(),
 		))
 	}
