@@ -2,6 +2,7 @@ package adapterin
 
 import (
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -47,6 +48,10 @@ func (c *CreateQueryController) Method() string {
 
 func (c *CreateQueryController) RequiresAuth() bool {
 	return true
+}
+
+func (c *CreateQueryController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleGlobalAdmin}
 }
 
 var _ Controller = (*CreateQueryController)(nil)

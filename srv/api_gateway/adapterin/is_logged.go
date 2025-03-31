@@ -2,6 +2,7 @@ package adapterin
 
 import (
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -32,6 +33,10 @@ func (c *AuthHealthCheckController) Method() string {
 
 func (c *AuthHealthCheckController) RequiresAuth() bool {
 	return true
+}
+
+func (c *AuthHealthCheckController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleNone}
 }
 
 var _ Controller = (*AuthHealthCheckController)(nil)

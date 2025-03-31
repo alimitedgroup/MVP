@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -51,6 +52,10 @@ func (c *UpdateGoodController) Method() string {
 
 func (c *UpdateGoodController) RequiresAuth() bool {
 	return true
+}
+
+func (c *UpdateGoodController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleGlobalAdmin}
 }
 
 var _ Controller = (*UpdateGoodController)(nil)
