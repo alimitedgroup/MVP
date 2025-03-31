@@ -51,7 +51,7 @@ curl "${C_PARAMS[@]}" -X POST "$BASE/orders" \
 
 echo "Get orders and goods status"
 
-sleep 1
+sleep 0.1
 
 curl "${C_PARAMS[@]}" -X GET "$BASE/orders" | jq
 

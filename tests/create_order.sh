@@ -36,7 +36,7 @@ echo "Create order"
 curl "${C_PARAMS[@]}" -X POST "$BASE/orders" \
   -d '{"name": "order-1", "full_name": "John Doe", "address": "via roma 12 35012", "goods": {"hat-1": 7}}' | jq
 
-sleep 1
+sleep 0.1
 
 curl "${C_PARAMS[@]}" -X GET "$BASE/orders" | jq
 

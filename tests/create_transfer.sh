@@ -36,7 +36,7 @@ echo "Create transfer"
 curl "${GA_PARAMS[@]}" -X POST "$BASE/transfers" \
   -d '{"receiver_id": "2", "sender_id": "1", "goods": {"hat-1": 5}}' | jq
 
-sleep 1
+sleep 0.1
 
 curl "${GA_PARAMS[@]}" -X GET "$BASE/transfers" | jq
 
