@@ -38,4 +38,4 @@ echo "Get notification queries"
 
 curl "${GA_PARAMS[@]}" -X GET localhost:8080/api/v1/notifications/queries | jq
 
-nats sub "stock.alert.*"
+nats sub "alerts" 

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/common/stream"
@@ -16,7 +18,6 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"go.uber.org/zap"
-	"time"
 )
 
 type NotificationAdapter struct {
@@ -72,7 +73,7 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 
 // =========== StockEventPublisher port-out ===========
 
-func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent, undone bool) error {
+func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
 	s, err := na.brk.Js.CreateStream(context.Background(), stream.AlertConfig)
 	if err != nil {
 		na.Error("Error creating stream", zap.Error(err))
