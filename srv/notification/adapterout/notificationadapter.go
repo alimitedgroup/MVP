@@ -3,15 +3,18 @@ package adapterout
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/stream"
 	"github.com/alimitedgroup/MVP/srv/notification/config"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"go.uber.org/zap"
 	"time"
 )
@@ -23,11 +26,11 @@ type NotificationAdapter struct {
 
 	influx influxdb2.Client
 	brk    *broker.NatsMessageBroker
-	cfg    config.NotificationConfig
+	cfg    *config.NotificationConfig
 	*zap.Logger
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository, logger *zap.Logger, cfg config.NotificationConfig) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository, logger *zap.Logger, cfg *config.NotificationConfig) *NotificationAdapter {
 	return &NotificationAdapter{
 		influx:   influxClient,
 		brk:      brk,
@@ -69,17 +72,63 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 
 // =========== StockEventPublisher port-out ===========
 
-func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
-	data, err := json.Marshal(alert)
+func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent, undone bool) error {
+	s, err := na.brk.Js.CreateStream(context.Background(), stream.AlertConfig)
 	if err != nil {
-		na.Error("Error marshalling alert", zap.Error(err))
-		return err
+		na.Error("Error creating stream", zap.Error(err))
 	}
-	if err = na.brk.Nats.Publish(fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.GoodID), data); err != nil {
-		na.Error("Error publishing alert to NATS", zap.Error(err))
-		return err
+
+	for {
+		var opts []jetstream.PublishOpt
+
+		var apiErr *jetstream.APIError
+		msg, err := s.GetLastMsgForSubject(context.Background(), fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.RuleId))
+		if errors.As(err, &apiErr) && apiErr.ErrorCode == jetstream.JSErrCodeMessageNotFound {
+		} else if err != nil {
+			na.Error("Error fetching stock alert", zap.Error(err))
+			return err
+		} else {
+			var deserialized types.StockAlertEvent
+			err := json.Unmarshal(msg.Data, &deserialized)
+			if err != nil {
+				na.Error("Error deserializing stock alert", zap.Error(err))
+				return err
+			}
+
+			if deserialized.Status != types.StockAcknowledged {
+				opts = append(opts, jetstream.WithExpectLastSequence(msg.Sequence))
+			} else {
+				na.Debug(
+					"Skipping alert",
+					zap.String("rule_id", alert.RuleId),
+					zap.String("status", string(deserialized.Status)),
+				)
+				return nil
+			}
+
+		}
+
+		data, err := json.Marshal(alert)
+		if err != nil {
+			na.Error("Error marshalling alert", zap.Error(err))
+			return err
+		}
+
+		_, err = na.brk.Js.Publish(
+			context.Background(),
+			stream.AlertConfig.Name,
+			data,
+			opts...,
+		)
+		if errors.As(err, &apiErr) && apiErr.ErrorCode == jetstream.JSErrCodeStreamWrongLastSequence {
+			continue
+		} else if err != nil {
+			na.Error("Error publishing alert to NATS", zap.Error(err))
+			return err
+		} else {
+			return nil
+		}
 	}
-	return nil
 }
 
 // =========== RuleQueryRepository port-out ===========

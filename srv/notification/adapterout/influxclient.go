@@ -5,6 +5,6 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
 
-func NewInfluxClient(cfg config.NotificationConfig) influxdb2.Client {
+func NewInfluxClient(cfg *config.NotificationConfig) influxdb2.Client {
 	return influxdb2.NewClient(cfg.InfluxUrl, cfg.InfluxToken)
 }

@@ -120,7 +120,7 @@ func TestPublishStockAlert(t *testing.T) {
 	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
 	err := business.PublishStockAlert(types.StockAlertEvent{
 		Id:              "391d2936-c37b-4294-bfdc-29e2473a5052",
-		Status:          "Pending",
+		Status:          types.StockPending,
 		GoodID:          "1",
 		Operator:        "<",
 		Threshold:       10,

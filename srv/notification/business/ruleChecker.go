@@ -47,8 +47,7 @@ func NewRuleChecker(lc fx.Lifecycle, logger *zap.Logger, rules portin.QueryRules
 		//    o finché non andiamo in timeout (ossia arriva un messaggio sul canale ctx.Done())
 		// 3) Terminiamo
 		OnStop: func(ctx context.Context) error {
-			// NOTE: commentato altrimenti nei test veniva stoppato subito senza eseguire la funzione run
-			// rc.stop <- true
+			rc.stop <- true
 			select {
 			case <-ctx.Done():
 			case <-rc.stop:
@@ -65,6 +64,7 @@ func (rc *RuleChecker) run() {
 	for {
 		select {
 		case <-rc.stop:
+			rc.Debug("RuleChecker stopped")
 			rc.stop <- true
 			return
 		case <-ticker.C:
@@ -84,11 +84,13 @@ func (rc *RuleChecker) checkAllRules() {
 	if len(rules) == 0 {
 		rc.Debug("Nessuna regola trovata")
 		return
+	} else {
+		rc.Debug("Numero regole", zap.Int("numero", len(rules)))
 	}
 
 	// Per ogni regola, interroga Influx e confronta la quantity con la threshold
 	for _, rule := range rules {
-		rc.Debug("Controllo regola", zap.Any("rule", rule))
+		rc.Debug("Controllo regola", zap.String("rule", rule.RuleId.String()))
 
 		// Esempio: se rule è un AddQueryRuleCmd con metodi GetGoodID, GetOperator e GetThreshold
 		goodID := rule.GoodId
@@ -123,7 +125,7 @@ func (rc *RuleChecker) checkAllRules() {
 		if condTrue {
 			err := rc.publishPort.PublishStockAlert(types.StockAlertEvent{
 				Id:              uuid.NewString(),
-				Status:          "Pending",
+				Status:          types.StockPending,
 				GoodID:          goodID,
 				CurrentQuantity: currentQuantity,
 				Operator:        operator,
