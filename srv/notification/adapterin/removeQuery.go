@@ -76,7 +76,7 @@ func (c *RemoveQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 		return nil
 	}
 
-	_ = broker.RespondToMsg(msg, "OK")
+	_ = msg.Respond([]byte("OK"))
 	return nil
 }
 

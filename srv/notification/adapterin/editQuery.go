@@ -61,12 +61,12 @@ func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 		Logger.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())
 	} else {
-		_ = broker.RespondToMsg(msg, "OK")
+		_ = msg.Respond([]byte("OK"))
 	}
 
 	return nil
 }
 
 func (c *EditQueryController) Subject() broker.Subject {
-	return "notification.queries.add"
+	return "notification.queries.edit"
 }

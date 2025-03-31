@@ -2,7 +2,6 @@ package adapterin
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 
 	"github.com/alimitedgroup/MVP/common/dto"
@@ -47,15 +46,7 @@ func (c *GetQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 		GetQueryCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
 
-	var request string
-	err := json.Unmarshal(msg.Data, &request)
-	if err != nil {
-		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
-		_ = broker.RespondToMsg(msg, dto.InvalidJson())
-		return nil
-	}
-
+	request := string(msg.Data)
 	id, err := uuid.Parse(request)
 	if err != nil {
 		verdict = "bad request"

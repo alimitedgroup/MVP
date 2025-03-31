@@ -72,7 +72,7 @@ func (c *AddQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 		Logger.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())
 	} else {
-		_ = broker.RespondToMsg(msg, id.String())
+		_ = msg.Respond([]byte(id.String()))
 	}
 
 	return nil
