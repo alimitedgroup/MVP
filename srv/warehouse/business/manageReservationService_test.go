@@ -100,6 +100,8 @@ func TestManageReservationServiceCreateReservation(t *testing.T) {
 				Quantity: 10,
 			})
 			suite.storeReservationEventPort.EXPECT().StoreReservationEvent(gomock.Any(), gomock.Any()).Return(nil)
+			suite.applyReservationEventPort.EXPECT().ApplyReservationEvent(gomock.Any()).Return(nil)
+			suite.idempotentPortMock.EXPECT().SaveEventID(gomock.Any()).Return()
 		},
 		func() fx.Option { return fx.Options() },
 		func() interface{} {

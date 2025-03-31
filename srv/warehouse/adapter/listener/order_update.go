@@ -49,6 +49,7 @@ func (l *OrderUpdateListener) ListenOrderUpdate(ctx context.Context, msg jetstre
 		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
+	Logger.Debug("Order update event", zap.Any("event", event))
 
 	goods := make([]port.OrderUpdateGood, 0, len(event.Goods))
 	for _, good := range event.Goods {

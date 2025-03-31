@@ -31,6 +31,17 @@ func (s *TransferPersistanceAdapter) IncrementLinkedStockUpdate(transferId model
 }
 
 func (s *TransferPersistanceAdapter) ApplyTransferUpdate(cmd port.ApplyTransferUpdateCmd) {
+	status := cmd.Status
+	linkedStockUpdate := 0
+
+	if old, err := s.transferRepo.GetTransfer(cmd.ID); err == nil {
+		linkedStockUpdate = old.LinkedStockUpdate
+		if old.Status == "Completed" {
+			status = old.Status
+		}
+
+	}
+
 	goods := make([]TransferUpdateGood, 0, len(cmd.Goods))
 	for _, good := range cmd.Goods {
 		goods = append(goods, TransferUpdateGood{
@@ -41,10 +52,10 @@ func (s *TransferPersistanceAdapter) ApplyTransferUpdate(cmd port.ApplyTransferU
 
 	transfer := Transfer{
 		ID:                cmd.ID,
-		Status:            cmd.Status,
+		Status:            status,
 		SenderID:          cmd.SenderID,
 		ReceiverID:        cmd.ReceiverID,
-		LinkedStockUpdate: 0,
+		LinkedStockUpdate: linkedStockUpdate,
 		Goods:             goods,
 		ReservationID:     cmd.ReservationID,
 		UpdateTime:        cmd.UpdateTime,

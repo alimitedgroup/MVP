@@ -56,6 +56,7 @@ func (l *StockUpdateListener) ListenStockUpdate(ctx context.Context, msg jetstre
 		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
+	Logger.Info("Stock update request", zap.Any("event", event))
 
 	cmd := stockUpdateEventToApplyStockUpdateCmd(event)
 	err = l.applyStockUpdateUseCase.ApplyStockUpdate(ctx, cmd)

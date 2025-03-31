@@ -8,6 +8,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/google/uuid"
 	"go.uber.org/fx"
+	"golang.org/x/exp/slog"
 )
 
 type ManageReservationService struct {
@@ -67,6 +68,17 @@ func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd po
 		return port.CreateReservationResponse{}, err
 	}
 
+	err = s.applyReservationEventPort.ApplyReservationEvent(reservation)
+	if err != nil {
+		return port.CreateReservationResponse{}, err
+	}
+
+	idempotentCmd := port.IdempotentCmd{
+		Event: "reservation",
+		ID:    reservationId,
+	}
+	s.idempotentPort.SaveEventID(idempotentCmd)
+
 	resp := port.CreateReservationResponse{
 		ReservationID: reservationId,
 	}
@@ -93,6 +105,7 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 		ID:    cmd.ID,
 	}
 	if s.idempotentPort.IsAlreadyProcessed(idempotentCmd) {
+		slog.Debug("reservation already processed", "cmd", cmd)
 		return nil
 	}
 
@@ -105,6 +118,7 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 }
 
 func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.ConfirmOrderCmd) error {
+	slog.Debug("ConfirmOrder", "cmd", cmd)
 	if cmd.Status == "Filled" {
 		for _, reserv := range cmd.Reservations {
 			reservation, err := s.getReservationPort.GetReservation(model.ReservationID(reserv))

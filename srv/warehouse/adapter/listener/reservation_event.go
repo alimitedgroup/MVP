@@ -47,6 +47,7 @@ func (l *ReservationEventListener) ListenReservationEvent(ctx context.Context, m
 		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
+	Logger.Debug("Reservation event request", zap.Any("event", event))
 
 	goods := make([]port.ReservationGood, 0, len(event.Goods))
 	for _, good := range event.Goods {

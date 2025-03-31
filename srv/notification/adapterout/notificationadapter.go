@@ -104,6 +104,7 @@ func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) er
 
 			if deserialized.Status != types.StockAcknowledged {
 				opts = append(opts, jetstream.WithExpectLastSequence(msg.Sequence))
+				_ = opts
 			} else {
 				na.Debug(
 					"Skipping alert",
