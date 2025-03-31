@@ -2,7 +2,6 @@ package business
 
 import (
 	"context"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -11,13 +10,15 @@ import (
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
 	"github.com/google/uuid"
-
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 const DEFAULT_WAIT_SECONDS = 45
 
 type RuleChecker struct {
+	*zap.Logger
+
 	rulePort    portin.QueryRules
 	queryPort   portout.RuleQueryRepository
 	publishPort portout.StockEventPublisher
@@ -26,12 +27,13 @@ type RuleChecker struct {
 	stop chan bool
 }
 
-func NewRuleChecker(lc fx.Lifecycle, rules portin.QueryRules, queries portout.RuleQueryRepository, publish portout.StockEventPublisher) *RuleChecker {
+func NewRuleChecker(lc fx.Lifecycle, logger *zap.Logger, rules portin.QueryRules, queries portout.RuleQueryRepository, publish portout.StockEventPublisher) *RuleChecker {
 	rc := &RuleChecker{
 		rulePort:    rules,
 		queryPort:   queries,
 		publishPort: publish,
 		stop:        make(chan bool, 1),
+		Logger:      logger.Named("rule-checker"),
 	}
 
 	lc.Append(fx.Hook{
@@ -64,7 +66,7 @@ func (rc *RuleChecker) run() {
 		var err error
 		wait_seconds, err = strconv.Atoi(env_value)
 		if err != nil {
-			log.Printf("Errore nella conversione di RULE_CHECKER_TIMER: %v. Uso valore di default 45.", err)
+			rc.Error("Errore nella conversione di RULE_CHECKER_TIMER: %v. Uso valore di default 45.", zap.Error(err))
 			wait_seconds = DEFAULT_WAIT_SECONDS
 		}
 	} else {
@@ -83,21 +85,21 @@ func (rc *RuleChecker) run() {
 }
 
 func (rc *RuleChecker) checkAllRules() {
-	log.Println("[RuleChecker] Controllo periodico delle regole avviato.")
+	rc.Debug("Controllo periodico delle regole avviato")
 
 	rules, err := rc.rulePort.ListQueryRules() // recupera tutte le regole dal repository in memoria
 	if err != nil {
-		log.Println(err)
+		rc.Error("Error while listing rules", zap.Error(err))
 	}
 
 	if len(rules) == 0 {
-		log.Println("[RuleChecker] Nessuna regola trovata.")
+		rc.Debug("Nessuna regola trovata")
 		return
 	}
 
 	// Per ogni regola, interroga Influx e confronta la quantity con la threshold
 	for _, rule := range rules {
-		log.Printf("[RuleChecker] Controllo regola: %+v", rule)
+		rc.Debug("Controllo regola", zap.Any("rule", rule))
 
 		// Esempio: se rule è un AddQueryRuleCmd con metodi GetGoodID, GetOperator e GetThreshold
 		goodID := rule.GoodId
@@ -107,11 +109,11 @@ func (rc *RuleChecker) checkAllRules() {
 		// Invoca il metodo del service che interroga Influx
 		resp := rc.queryPort.GetCurrentQuantityByGoodID(goodID)
 		if err := resp.GetOperationResult(); err != nil {
-			log.Printf("[RuleChecker] Errore nel recupero quantity per goodID=%s: %v", goodID, err)
+			rc.Error("Errore nel recupero stock", zap.String("goodId", goodID), zap.Error(err))
 			continue
 		}
 
-		currentQuantity := resp.CurrentQuantity // supponendo esista un metodo GetValue() o simile
+		currentQuantity := resp.CurrentQuantity
 
 		// Confronta con l'operatore
 		condTrue := false
@@ -125,14 +127,11 @@ func (rc *RuleChecker) checkAllRules() {
 		case ">=":
 			condTrue = currentQuantity >= threshold
 		default:
-			log.Printf("[RuleChecker] Operatore non valido: %s", operator)
+			rc.Error("Operatore non valido", zap.String("operator", operator))
 			continue
 		}
 
 		if condTrue {
-			log.Printf("[ALERT] good_id=%s quantity=%d %s %d",
-				goodID, currentQuantity, operator, threshold)
-			// INVIO DELLA NOTIFICA
 			err := rc.publishPort.PublishStockAlert(types.StockAlertEvent{
 				Id:              uuid.NewString(),
 				Status:          "Pending",
@@ -143,12 +142,8 @@ func (rc *RuleChecker) checkAllRules() {
 				Timestamp:       time.Now().UnixMilli(),
 			})
 			if err != nil {
-				log.Printf("[RuleChecker] Errore nell'invio della notifica: %v", err)
+				rc.Error("Errore nell'invio della notifica", zap.String("goodId", goodID), zap.Error(err))
 			}
-
-		} else {
-			log.Printf("Nessun alert: good_id=%s (quantity=%d, threshold=%d %s)",
-				goodID, currentQuantity, threshold, operator)
 		}
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"go.uber.org/zap"
 	"os"
 	"time"
 
@@ -23,15 +23,17 @@ type NotificationAdapter struct {
 	ruleRepo     portout.RuleRepository
 	writeApi     api.WriteAPI
 	queryApi     api.QueryAPI
+	*zap.Logger
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository, logger *zap.Logger) *NotificationAdapter {
 	return &NotificationAdapter{
 		influxClient: influxClient,
 		brk:          brk,
 		ruleRepo:     ruleRepo,
 		writeApi:     influxClient.WriteAPI("my-org", "stockdb"),
 		queryApi:     influxClient.QueryAPI("my-org"),
+		Logger:       logger,
 	}
 }
 
@@ -40,14 +42,14 @@ func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessa
 func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) error {
 	respmsg, err := na.brk.Nats.Request("catalog.getGoodsGlobalQuantity", []byte("{}"), nats.DefaultTimeout)
 	if err != nil {
-		fmt.Println("Error querying catalog.getGoodsGlobalQuantity:", err)
+		na.Error("Error querying catalog.getGoodsGlobalQuantity", zap.Error(err))
 		return err
 	}
 
 	var resp dto.GetGoodsQuantityResponseDTO
 	err = json.Unmarshal(respmsg.Data, &resp)
 	if err != nil {
-		fmt.Println("Error querying catalog.getGoodsGlobalQuantity:", err)
+		na.Error("Error querying catalog.getGoodsGlobalQuantity", zap.Error(err))
 		return err
 	}
 
@@ -66,17 +68,17 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 // =========== StockEventPublisher port-out ===========
 
 func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
-	service_id, exist := os.LookupEnv("ENV_SERVICE_ID")
+	serviceId, exist := os.LookupEnv("ENV_SERVICE_ID")
 	if !exist {
-		service_id = "DEFAULT"
+		serviceId = "DEFAULT"
 	}
 	data, err := json.Marshal(alert)
 	if err != nil {
-		log.Printf("Error marshalling alert: %v", err)
+		na.Error("Error marshalling alert", zap.Error(err))
 		return err
 	}
-	if err := na.brk.Nats.Publish(fmt.Sprintf("stock.alert.%s", service_id), data); err != nil {
-		log.Printf("Error publishing alert to NATS: %v", err)
+	if err = na.brk.Nats.Publish(fmt.Sprintf("stock.alert.%s", serviceId), data); err != nil {
+		na.Error("Error publishing alert to NATS", zap.Error(err))
 		return err
 	}
 	return nil
