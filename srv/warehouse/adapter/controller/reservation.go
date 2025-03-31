@@ -48,6 +48,17 @@ func (c *ReservationController) CreateReservationHandler(ctx context.Context, ms
 		return err
 	}
 
+	for _, good := range dto.Goods {
+		if good.Quantity <= 0 {
+			verdict = "bad arguments"
+			Logger.Debug("quantity must be greater than ")
+			resp := response.ResponseDTO[any]{
+				Error: "quantity must be greater than 0",
+			}
+			return broker.RespondToMsg(msg, resp)
+		}
+	}
+
 	goods := make([]port.ReservationGood, 0, len(dto.Goods))
 	for _, good := range dto.Goods {
 		goods = append(goods, port.ReservationGood(good))
