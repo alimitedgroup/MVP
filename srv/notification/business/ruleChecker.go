@@ -2,8 +2,7 @@ package business
 
 import (
 	"context"
-	"os"
-	"strconv"
+	"github.com/alimitedgroup/MVP/srv/notification/config"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
@@ -14,10 +13,9 @@ import (
 	"go.uber.org/zap"
 )
 
-const DEFAULT_WAIT_SECONDS = 45
-
 type RuleChecker struct {
 	*zap.Logger
+	cfg *config.NotificationConfig
 
 	rulePort    portin.QueryRules
 	queryPort   portout.RuleQueryRepository
@@ -27,13 +25,14 @@ type RuleChecker struct {
 	stop chan bool
 }
 
-func NewRuleChecker(lc fx.Lifecycle, logger *zap.Logger, rules portin.QueryRules, queries portout.RuleQueryRepository, publish portout.StockEventPublisher) *RuleChecker {
+func NewRuleChecker(lc fx.Lifecycle, logger *zap.Logger, rules portin.QueryRules, queries portout.RuleQueryRepository, publish portout.StockEventPublisher, cfg *config.NotificationConfig) *RuleChecker {
 	rc := &RuleChecker{
 		rulePort:    rules,
 		queryPort:   queries,
 		publishPort: publish,
 		stop:        make(chan bool, 1),
 		Logger:      logger.Named("rule-checker"),
+		cfg:         cfg,
 	}
 
 	lc.Append(fx.Hook{
@@ -61,18 +60,7 @@ func NewRuleChecker(lc fx.Lifecycle, logger *zap.Logger, rules portin.QueryRules
 }
 
 func (rc *RuleChecker) run() {
-	var wait_seconds int
-	if env_value, exist := os.LookupEnv("RULE_CHECKER_TIMER"); exist {
-		var err error
-		wait_seconds, err = strconv.Atoi(env_value)
-		if err != nil {
-			rc.Error("Errore nella conversione di RULE_CHECKER_TIMER: %v. Uso valore di default 45.", zap.Error(err))
-			wait_seconds = DEFAULT_WAIT_SECONDS
-		}
-	} else {
-		wait_seconds = DEFAULT_WAIT_SECONDS
-	}
-	ticker := time.NewTicker(time.Duration(wait_seconds) * time.Second)
+	ticker := time.NewTicker(rc.cfg.CheckerTimer)
 	for {
 		select {
 		case <-rc.stop:
