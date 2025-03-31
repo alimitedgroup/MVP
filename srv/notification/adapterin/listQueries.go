@@ -2,13 +2,25 @@ package adapterin
 
 import (
 	"context"
+
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	"github.com/nats-io/nats.go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/zap"
 )
 
-func NewListQueriesController(rulesPort portin.QueryRules) *ListQueriesController {
+var (
+	ListQueryCounter metric.Int64Counter
+)
+
+func NewListQueriesController(rulesPort portin.QueryRules, mp MetricParams) *ListQueriesController {
+	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&mp.Meter, mp.Logger, &ListQueryCounter, &MetricMap, "num_notification_list_query_request")
+	Logger = mp.Logger
 	return &ListQueriesController{rulesPort: rulesPort}
 }
 
@@ -20,8 +32,21 @@ type ListQueriesController struct {
 var _ Controller = (*ListQueriesController)(nil)
 
 func (c *ListQueriesController) Handle(_ context.Context, msg *nats.Msg) error {
+
+	Logger.Info("Received new list query request")
+	verdict := "success"
+
+	defer func() {
+		ctx := context.Background()
+		Logger.Info("List query request terminated")
+		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+		ListQueryCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
+	}()
+
 	rules, err := c.rulesPort.ListQueryRules()
 	if err != nil {
+		verdict = "cannot handle request"
+		Logger.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())
 	} else {
 		_ = broker.RespondToMsg(msg, rules)
