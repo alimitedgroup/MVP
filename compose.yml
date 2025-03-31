@@ -101,6 +101,7 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - OTLP_URL=collector:4317
       - ENV_SERVICE_ID=1
+      - RULE_CHECKER_TIMER=45
     depends_on:
       - nats
       - influxdb

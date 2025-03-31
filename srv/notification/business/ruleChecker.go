@@ -3,6 +3,8 @@ package business
 import (
 	"context"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
@@ -12,6 +14,8 @@ import (
 
 	"go.uber.org/fx"
 )
+
+const DEFAULT_WAIT_SECONDS = 45
 
 type RuleChecker struct {
 	rulePort    portin.QueryRules
@@ -55,7 +59,18 @@ func NewRuleChecker(lc fx.Lifecycle, rules portin.QueryRules, queries portout.Ru
 }
 
 func (rc *RuleChecker) run() {
-	ticker := time.NewTicker(5 * time.Second)
+	var wait_seconds int
+	if env_value, exist := os.LookupEnv("RULE_CHECKER_TIMER"); exist {
+		var err error
+		wait_seconds, err = strconv.Atoi(env_value)
+		if err != nil {
+			log.Printf("Errore nella conversione di RULE_CHECKER_TIMER: %v. Uso valore di default 45.", err)
+			wait_seconds = DEFAULT_WAIT_SECONDS
+		}
+	} else {
+		wait_seconds = DEFAULT_WAIT_SECONDS
+	}
+	ticker := time.NewTicker(time.Duration(wait_seconds) * time.Second)
 	for {
 		select {
 		case <-rc.stop:
