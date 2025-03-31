@@ -3,6 +3,7 @@ package adapterin
 import (
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -49,6 +50,10 @@ func (c *LoginController) Method() string {
 
 func (c *LoginController) RequiresAuth() bool {
 	return false
+}
+
+func (c *LoginController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleNone}
 }
 
 var _ Controller = (*LoginController)(nil)

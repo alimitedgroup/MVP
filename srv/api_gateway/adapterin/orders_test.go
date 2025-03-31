@@ -19,7 +19,7 @@ func TestGetOrders(t *testing.T) {
 
 	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
 		Username: "test",
-		Role:     types.RoleGlobalAdmin,
+		Role:     types.RoleClient,
 	}, nil)
 	s.order.EXPECT().GetOrders().Return(
 		[]dto.Order{
@@ -63,7 +63,7 @@ func TestGetOrdersError(t *testing.T) {
 
 	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
 		Username: "test",
-		Role:     types.RoleGlobalAdmin,
+		Role:     types.RoleClient,
 	}, nil)
 
 	s.order.EXPECT().GetOrders().Return([]dto.Order{}, fmt.Errorf("some error"))

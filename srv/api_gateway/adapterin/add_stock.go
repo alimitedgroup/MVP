@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -51,6 +52,10 @@ func (c *AddStockController) Method() string {
 
 func (c *AddStockController) RequiresAuth() bool {
 	return true
+}
+
+func (c *AddStockController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleLocalAdmin}
 }
 
 var _ Controller = (*AddStockController)(nil)
