@@ -4,34 +4,38 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
-	"time"
-
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
+	"github.com/alimitedgroup/MVP/srv/notification/config"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/nats-io/nats.go"
+	"go.uber.org/zap"
+	"time"
 )
 
 type NotificationAdapter struct {
-	influxClient influxdb2.Client
-	brk          *broker.NatsMessageBroker
-	ruleRepo     portout.RuleRepository
-	writeApi     api.WriteAPI
-	queryApi     api.QueryAPI
+	ruleRepo portout.RuleRepository
+	writeApi api.WriteAPI
+	queryApi api.QueryAPI
+
+	influx influxdb2.Client
+	brk    *broker.NatsMessageBroker
+	cfg    config.NotificationConfig
+	*zap.Logger
 }
 
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository) *NotificationAdapter {
+func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository, logger *zap.Logger, cfg config.NotificationConfig) *NotificationAdapter {
 	return &NotificationAdapter{
-		influxClient: influxClient,
-		brk:          brk,
-		ruleRepo:     ruleRepo,
-		writeApi:     influxClient.WriteAPI("my-org", "stockdb"),
-		queryApi:     influxClient.QueryAPI("my-org"),
+		influx:   influxClient,
+		brk:      brk,
+		ruleRepo: ruleRepo,
+		writeApi: influxClient.WriteAPI(cfg.InfluxOrg, cfg.InfluxBucket),
+		queryApi: influxClient.QueryAPI(cfg.InfluxOrg),
+		cfg:      cfg,
+		Logger:   logger,
 	}
 }
 
@@ -40,14 +44,14 @@ func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessa
 func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) error {
 	respmsg, err := na.brk.Nats.Request("catalog.getGoodsGlobalQuantity", []byte("{}"), nats.DefaultTimeout)
 	if err != nil {
-		fmt.Println("Error querying catalog.getGoodsGlobalQuantity:", err)
+		na.Error("Error querying catalog.getGoodsGlobalQuantity", zap.Error(err))
 		return err
 	}
 
 	var resp dto.GetGoodsQuantityResponseDTO
 	err = json.Unmarshal(respmsg.Data, &resp)
 	if err != nil {
-		fmt.Println("Error querying catalog.getGoodsGlobalQuantity:", err)
+		na.Error("Error querying catalog.getGoodsGlobalQuantity", zap.Error(err))
 		return err
 	}
 
@@ -66,17 +70,13 @@ func (na *NotificationAdapter) SaveStockUpdate(cmd *types.AddStockUpdateCmd) err
 // =========== StockEventPublisher port-out ===========
 
 func (na *NotificationAdapter) PublishStockAlert(alert types.StockAlertEvent) error {
-	service_id, exist := os.LookupEnv("ENV_SERVICE_ID")
-	if !exist {
-		service_id = "DEFAULT"
-	}
 	data, err := json.Marshal(alert)
 	if err != nil {
-		log.Printf("Error marshalling alert: %v", err)
+		na.Error("Error marshalling alert", zap.Error(err))
 		return err
 	}
-	if err := na.brk.Nats.Publish(fmt.Sprintf("stock.alert.%s", service_id), data); err != nil {
-		log.Printf("Error publishing alert to NATS: %v", err)
+	if err = na.brk.Nats.Publish(fmt.Sprintf("stock.alert.%s.%s", na.cfg.ServiceId, alert.GoodID), data); err != nil {
+		na.Error("Error publishing alert to NATS", zap.Error(err))
 		return err
 	}
 	return nil
