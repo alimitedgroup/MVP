@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.uber.org/fx"
 
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -17,26 +18,31 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	EditQueryCounter metric.Int64Counter
-)
+var EditQueryCounter metric.Int64Counter
 
-func NewEditQueryController(addQueryRuleUseCase portin.QueryRules, mp MetricParams) *EditQueryController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &EditQueryCounter, &MetricMap, "num_notification_edit_query_request")
-	Logger = mp.Logger
-	return &EditQueryController{rulesPort: addQueryRuleUseCase}
+type EditQueryParams struct {
+	fx.In
+
+	rulesPort portin.QueryRules
+	logger    *zap.Logger
+	meter     metric.Meter
+}
+
+func NewEditQueryController(p EditQueryParams) *EditQueryController {
+	observability.CounterSetup(&p.meter, p.logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&p.meter, p.logger, &EditQueryCounter, &MetricMap, "num_notification_edit_query_request")
+	return &EditQueryController{rulesPort: p.rulesPort, Logger: p.logger}
 }
 
 type EditQueryController struct {
 	rulesPort portin.QueryRules
+	*zap.Logger
 }
 
 // Asserzione a compile-time che EditQueryController implementi Controller
 var _ Controller = (*EditQueryController)(nil)
 
 func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
-
 	Logger.Info("Received new edit query request")
 	verdict := "success"
 
