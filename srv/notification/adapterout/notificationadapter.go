@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.uber.org/fx"
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/dto"
@@ -20,6 +21,35 @@ import (
 	"go.uber.org/zap"
 )
 
+type AdapterParams struct {
+	fx.In
+	*zap.Logger
+
+	InfluxClient influxdb2.Client
+	RuleRepo     portout.RuleRepository
+	Broker       *broker.NatsMessageBroker
+	Config       *config.NotificationConfig
+}
+
+func NewNotificationAdapter(p AdapterParams) (*NotificationAdapter, error) {
+	str, err := p.Broker.Js.CreateStream(context.Background(), stream.AlertConfig)
+	if err != nil {
+		p.Logger.Error("Error creating stream", zap.String("stream", stream.AlertConfig.Name), zap.Error(err))
+		return nil, err
+	}
+
+	return &NotificationAdapter{
+		influx:   p.InfluxClient,
+		brk:      p.Broker,
+		ruleRepo: p.RuleRepo,
+		writeApi: p.InfluxClient.WriteAPI(p.Config.InfluxOrg, p.Config.InfluxBucket),
+		queryApi: p.InfluxClient.QueryAPI(p.Config.InfluxOrg),
+		cfg:      p.Config,
+		Logger:   p.Logger,
+		str:      str,
+	}, nil
+}
+
 type NotificationAdapter struct {
 	ruleRepo portout.RuleRepository
 	writeApi api.WriteAPI
@@ -30,25 +60,6 @@ type NotificationAdapter struct {
 	cfg    *config.NotificationConfig
 	str    jetstream.Stream
 	*zap.Logger
-}
-
-func NewNotificationAdapter(influxClient influxdb2.Client, brk *broker.NatsMessageBroker, ruleRepo portout.RuleRepository, logger *zap.Logger, cfg *config.NotificationConfig) (*NotificationAdapter, error) {
-	str, err := brk.Js.CreateStream(context.Background(), stream.AlertConfig)
-	if err != nil {
-		logger.Error("Error creating stream", zap.String("stream", stream.AlertConfig.Name), zap.Error(err))
-		return nil, err
-	}
-
-	return &NotificationAdapter{
-		influx:   influxClient,
-		brk:      brk,
-		ruleRepo: ruleRepo,
-		writeApi: influxClient.WriteAPI(cfg.InfluxOrg, cfg.InfluxBucket),
-		queryApi: influxClient.QueryAPI(cfg.InfluxOrg),
-		cfg:      cfg,
-		Logger:   logger,
-		str:      str,
-	}, nil
 }
 
 // =========== StockRepository port-out ===========
