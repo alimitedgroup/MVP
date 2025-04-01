@@ -19,8 +19,6 @@ import (
 //go:generate go run go.uber.org/mock/mockgen@latest -destination mock_queryrules.go -package business github.com/alimitedgroup/MVP/srv/notification/portin QueryRules
 
 func TestRuleCheck(t *testing.T) {
-	// TODO: fix this test
-	t.Skip()
 	ctrl := gomock.NewController(t)
 	quantityReaderMock := NewMockRuleQueryRepository(ctrl)
 	alertPublisherMock := NewMockStockEventPublisher(ctrl)
@@ -42,6 +40,7 @@ func TestRuleCheck(t *testing.T) {
 		Err:             nil,
 	}).AnyTimes()
 	alertPublisherMock.EXPECT().PublishStockAlert(gomock.Any()).Return(nil).AnyTimes()
+	alertPublisherMock.EXPECT().RevokeStockAlert(gomock.Any()).Return(nil).AnyTimes()
 
 	module := fx.Options(
 		observability.ModuleTest,
