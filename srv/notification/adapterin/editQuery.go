@@ -23,15 +23,15 @@ var EditQueryCounter metric.Int64Counter
 type EditQueryParams struct {
 	fx.In
 
-	rulesPort portin.QueryRules
-	logger    *zap.Logger
-	meter     metric.Meter
+	RulesPort portin.QueryRules
+	Logger    *zap.Logger
+	Meter     metric.Meter
 }
 
 func NewEditQueryController(p EditQueryParams) *EditQueryController {
-	observability.CounterSetup(&p.meter, p.logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
-	observability.CounterSetup(&p.meter, p.logger, &EditQueryCounter, &MetricMap, "num_notification_edit_query_request")
-	return &EditQueryController{rulesPort: p.rulesPort, Logger: p.logger}
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&p.Meter, p.Logger, &EditQueryCounter, &MetricMap, "num_notification_edit_query_request")
+	return &EditQueryController{rulesPort: p.RulesPort, Logger: p.Logger}
 }
 
 type EditQueryController struct {
