@@ -20,7 +20,7 @@ var (
 	RemoveQueryCounter metric.Int64Counter
 )
 
-func NewRemoveQueryController(addQueryRuleUseCase portin.QueryRules, mp MetricParams) *RemoveQueryController {
+func NewRemoveQueryController(addQueryRuleUseCase portin.QueryRules, mp AddQueryParams) *RemoveQueryController {
 	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&mp.Meter, mp.Logger, &RemoveQueryCounter, &MetricMap, "num_notification_remove_query_request")
 	Logger = mp.Logger

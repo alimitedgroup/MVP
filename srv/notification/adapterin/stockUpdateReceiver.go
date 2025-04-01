@@ -19,7 +19,7 @@ var (
 	StockUpdateCounter metric.Int64Counter
 )
 
-func NewStockUpdateReceiver(addStockUpdateUseCase portin.StockUpdates, mp MetricParams) *StockUpdateReceiver {
+func NewStockUpdateReceiver(addStockUpdateUseCase portin.StockUpdates, mp AddQueryParams) *StockUpdateReceiver {
 	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&mp.Meter, mp.Logger, &StockUpdateCounter, &MetricMap, "num_notification_stock_update_query_request")
 	Logger = mp.Logger

@@ -20,7 +20,7 @@ var (
 	GetQueryCounter metric.Int64Counter
 )
 
-func NewGetQueryController(rulesPort portin.QueryRules, mp MetricParams) *GetQueryController {
+func NewGetQueryController(rulesPort portin.QueryRules, mp AddQueryParams) *GetQueryController {
 	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&mp.Meter, mp.Logger, &GetQueryCounter, &MetricMap, "num_notification_get_query_request")
 	Logger = mp.Logger

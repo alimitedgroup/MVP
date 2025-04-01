@@ -24,21 +24,22 @@ var (
 	AddQueryCounter     metric.Int64Counter
 )
 
-type MetricParams struct {
+type AddQueryParams struct {
 	fx.In
-	Logger *zap.Logger
-	Meter  metric.Meter
+	Logger    *zap.Logger
+	Meter     metric.Meter
+	rulesPort portin.QueryRules
 }
 
-func NewAddQueryController(addQueryRuleUseCase portin.QueryRules, mp MetricParams) *AddQueryController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &AddQueryCounter, &MetricMap, "num_notification_add_query_request")
-	Logger = mp.Logger
-	return &AddQueryController{rulesPort: addQueryRuleUseCase}
+func NewAddQueryController(p AddQueryParams) *AddQueryController {
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&p.Meter, p.Logger, &AddQueryCounter, &MetricMap, "num_notification_add_query_request")
+	return &AddQueryController{rulesPort: p.rulesPort, Logger: p.Logger}
 }
 
 type AddQueryController struct {
 	rulesPort portin.QueryRules
+	*zap.Logger
 }
 
 // Asserzione a compile-time che AddQueryController implementi Controller

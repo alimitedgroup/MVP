@@ -17,7 +17,7 @@ var (
 	ListQueryCounter metric.Int64Counter
 )
 
-func NewListQueriesController(rulesPort portin.QueryRules, mp MetricParams) *ListQueriesController {
+func NewListQueriesController(rulesPort portin.QueryRules, mp AddQueryParams) *ListQueriesController {
 	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&mp.Meter, mp.Logger, &ListQueryCounter, &MetricMap, "num_notification_list_query_request")
 	Logger = mp.Logger
