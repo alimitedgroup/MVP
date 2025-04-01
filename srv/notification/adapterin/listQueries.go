@@ -17,10 +17,10 @@ var (
 	ListQueryCounter metric.Int64Counter
 )
 
-func NewListQueriesController(rulesPort portin.QueryRules, mp AddQueryParams) *ListQueriesController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &ListQueryCounter, &MetricMap, "num_notification_list_query_request")
-	return &ListQueriesController{rulesPort: rulesPort, Logger: mp.Logger}
+func NewListQueriesController(p QueryControllersParams) *ListQueriesController {
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&p.Meter, p.Logger, &ListQueryCounter, &MetricMap, "num_notification_list_query_request")
+	return &ListQueriesController{rulesPort: p.RulesPort, Logger: p.Logger}
 }
 
 type ListQueriesController struct {

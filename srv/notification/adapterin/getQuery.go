@@ -20,10 +20,10 @@ var (
 	GetQueryCounter metric.Int64Counter
 )
 
-func NewGetQueryController(rulesPort portin.QueryRules, mp AddQueryParams) *GetQueryController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &GetQueryCounter, &MetricMap, "num_notification_get_query_request")
-	return &GetQueryController{rulesPort: rulesPort, Logger: mp.Logger}
+func NewGetQueryController(p QueryControllersParams) *GetQueryController {
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetQueryCounter, &MetricMap, "num_notification_get_query_request")
+	return &GetQueryController{rulesPort: p.RulesPort, Logger: p.Logger}
 }
 
 type GetQueryController struct {

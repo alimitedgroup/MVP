@@ -20,7 +20,7 @@ import (
 
 var EditQueryCounter metric.Int64Counter
 
-type EditQueryParams struct {
+type QueryControllersParams struct {
 	fx.In
 
 	RulesPort portin.QueryRules
@@ -28,7 +28,7 @@ type EditQueryParams struct {
 	Meter     metric.Meter
 }
 
-func NewEditQueryController(p EditQueryParams) *EditQueryController {
+func NewEditQueryController(p QueryControllersParams) *EditQueryController {
 	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&p.Meter, p.Logger, &EditQueryCounter, &MetricMap, "num_notification_edit_query_request")
 	return &EditQueryController{rulesPort: p.RulesPort, Logger: p.Logger}

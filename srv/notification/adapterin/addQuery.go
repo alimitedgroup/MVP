@@ -13,7 +13,6 @@ import (
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
@@ -23,14 +22,7 @@ var (
 	AddQueryCounter     metric.Int64Counter
 )
 
-type AddQueryParams struct {
-	fx.In
-	Logger    *zap.Logger
-	Meter     metric.Meter
-	RulesPort portin.QueryRules
-}
-
-func NewAddQueryController(p AddQueryParams) *AddQueryController {
+func NewAddQueryController(p QueryControllersParams) *AddQueryController {
 	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&p.Meter, p.Logger, &AddQueryCounter, &MetricMap, "num_notification_add_query_request")
 	return &AddQueryController{rulesPort: p.RulesPort, Logger: p.Logger}
