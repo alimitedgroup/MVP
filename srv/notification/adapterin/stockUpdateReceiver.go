@@ -22,26 +22,26 @@ var (
 func NewStockUpdateReceiver(addStockUpdateUseCase portin.StockUpdates, mp AddQueryParams) *StockUpdateReceiver {
 	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&mp.Meter, mp.Logger, &StockUpdateCounter, &MetricMap, "num_notification_stock_update_query_request")
-	Logger = mp.Logger
 	return &StockUpdateReceiver{
 		addStockUpdateUseCase: addStockUpdateUseCase,
+		Logger:                mp.Logger,
 	}
 }
 
 type StockUpdateReceiver struct {
 	addStockUpdateUseCase portin.StockUpdates
+	*zap.Logger
 }
 
 var _ JsController = (*StockUpdateReceiver)(nil)
 
 func (s StockUpdateReceiver) Handle(_ context.Context, msg jetstream.Msg) error {
-
-	Logger.Info("Received new stock update query request")
+	s.Info("Received new stock update query request")
 	verdict := "success"
 
 	defer func() {
 		ctx := context.Background()
-		Logger.Info("Stock update query request terminated")
+		s.Info("Stock update query request terminated")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		StockUpdateCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -51,7 +51,7 @@ func (s StockUpdateReceiver) Handle(_ context.Context, msg jetstream.Msg) error 
 	err := json.Unmarshal(msg.Data(), request)
 	if err != nil {
 		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
+		s.Debug("Bad request", zap.Error(err))
 		return err
 	}
 

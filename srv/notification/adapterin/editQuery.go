@@ -43,12 +43,12 @@ type EditQueryController struct {
 var _ Controller = (*EditQueryController)(nil)
 
 func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
-	Logger.Info("Received new edit query request")
+	c.Info("Received new edit query request")
 	verdict := "success"
 
 	defer func() {
 		ctx := context.Background()
-		Logger.Info("Edit query request terminated")
+		c.Info("Edit query request terminated")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		EditQueryCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -57,7 +57,7 @@ func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 	err := json.Unmarshal(msg.Data, &request)
 	if err != nil {
 		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
+		c.Debug("Bad request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InvalidJson())
 		return nil
 	}
@@ -69,7 +69,7 @@ func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 		_ = broker.RespondToMsg(msg, dto.RuleNotFound())
 	} else if err != nil {
 		verdict = "cannot handle request"
-		Logger.Debug("Cannot handle request", zap.Error(err))
+		c.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())
 	} else {
 		_ = msg.Respond([]byte("OK"))

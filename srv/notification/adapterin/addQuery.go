@@ -18,7 +18,6 @@ import (
 )
 
 var (
-	Logger              *zap.Logger
 	MetricMap           sync.Map
 	TotalRequestCounter metric.Int64Counter
 	AddQueryCounter     metric.Int64Counter
@@ -46,13 +45,12 @@ type AddQueryController struct {
 var _ Controller = (*AddQueryController)(nil)
 
 func (c *AddQueryController) Handle(_ context.Context, msg *nats.Msg) error {
-
-	Logger.Info("Received new add query request")
+	c.Info("Received new add query request")
 	verdict := "success"
 
 	defer func() {
 		ctx := context.Background()
-		Logger.Info("Add query request terminated")
+		c.Info("Add query request terminated")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		AddQueryCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -61,7 +59,7 @@ func (c *AddQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 	err := json.Unmarshal(msg.Data, &request)
 	if err != nil {
 		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
+		c.Debug("Bad request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InvalidJson())
 		return nil
 	}
@@ -70,7 +68,7 @@ func (c *AddQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 	id, err := c.rulesPort.AddQueryRule(cmd)
 	if err != nil {
 		verdict = "cannot handle request"
-		Logger.Debug("Cannot handle request", zap.Error(err))
+		c.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())
 	} else {
 		_ = msg.Respond([]byte(id.String()))
