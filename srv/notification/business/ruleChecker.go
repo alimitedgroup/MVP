@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/notification/config"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 type RuleChecker struct {
 	*zap.Logger
 	cfg *config.NotificationConfig
+	brk *broker.NatsMessageBroker
 
 	rulePort    portin.QueryRules
 	queryPort   portout.RuleQueryRepository
@@ -25,7 +27,15 @@ type RuleChecker struct {
 	stop chan bool
 }
 
-func NewRuleChecker(lc fx.Lifecycle, logger *zap.Logger, rules portin.QueryRules, queries portout.RuleQueryRepository, publish portout.StockEventPublisher, cfg *config.NotificationConfig) *RuleChecker {
+func NewRuleChecker(
+	lc fx.Lifecycle,
+	logger *zap.Logger,
+	brk *broker.NatsMessageBroker,
+	rules portin.QueryRules,
+	queries portout.RuleQueryRepository,
+	publish portout.StockEventPublisher,
+	cfg *config.NotificationConfig,
+) *RuleChecker {
 	rc := &RuleChecker{
 		rulePort:    rules,
 		queryPort:   queries,
@@ -33,6 +43,7 @@ func NewRuleChecker(lc fx.Lifecycle, logger *zap.Logger, rules portin.QueryRules
 		stop:        make(chan bool, 1),
 		Logger:      logger.Named("rule-checker"),
 		cfg:         cfg,
+		brk:         brk,
 	}
 
 	lc.Append(fx.Hook{
@@ -141,13 +152,11 @@ func (rc *RuleChecker) checkAllRules() {
 				zap.String("newStatus", string(alert.Status)),
 				zap.Error(err),
 			)
-		} else {
-			rc.Debug(
-				"Inviata notifica (oppure saltata)",
-				zap.String("goodId", goodID),
-				zap.String("ruleId", rule.RuleId.String()),
-				zap.String("newStatus", string(alert.Status)),
-			)
 		}
+	}
+
+	err = rc.brk.Nats.Flush()
+	if err != nil {
+		rc.Error("Error while flushing messages to broker", zap.Error(err))
 	}
 }
