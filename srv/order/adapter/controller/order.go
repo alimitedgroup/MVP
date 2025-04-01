@@ -240,12 +240,15 @@ func orderToGetGoodResponseDTO(order model.Order) response.GetOrderResponseDTO {
 
 	return response.GetOrderResponseDTO{
 		Message: response.OrderInfo{
-			OrderID:  order.ID,
-			Status:   order.Status,
-			Name:     order.Name,
-			FullName: order.FullName,
-			Address:  order.Address,
-			Goods:    goods,
+			OrderID:      order.ID,
+			CreationTime: order.CreationTime,
+			UpdateTime:   order.UpdateTime,
+			Status:       order.Status,
+			Name:         order.Name,
+			FullName:     order.FullName,
+			Reservations: order.Reservations,
+			Address:      order.Address,
+			Goods:        goods,
 		},
 	}
 }
@@ -269,6 +272,8 @@ func ordersToGetAllGoodResponseDTO(model []model.Order) response.GetAllOrderResp
 			FullName:     order.FullName,
 			Address:      order.Address,
 			Reservations: order.Reservations,
+			CreationTime: order.CreationTime,
+			UpdateTime:   order.UpdateTime,
 			Goods:        goods,
 		})
 	}

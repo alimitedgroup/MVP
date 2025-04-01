@@ -97,7 +97,6 @@ func (cc *catalogController) getGoodsRequest(ctx context.Context, msg *nats.Msg)
 }
 
 func (cc *catalogController) getWarehouseRequest(ctx context.Context, msg *nats.Msg) error { //GetWarehouses
-
 	Logger.Info("Received getWarehouse Request")
 	verdict := "success"
 	defer func() {

@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"log"
+
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
 )
@@ -41,11 +43,15 @@ func (s *OrderPersistanceAdapter) SetComplete(orderId model.OrderID) error {
 }
 
 func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd) {
-	var warehouses []OrderWarehouseUsed
+	warehouses := []OrderWarehouseUsed{}
+	status := cmd.Status
+
 	if old, err := s.orderRepo.GetOrder(cmd.ID); err == nil {
+		log.Printf("old order in applyorderupdate: %v\n", old)
 		warehouses = old.Warehouses
-	} else {
-		warehouses = []OrderWarehouseUsed{}
+		if old.Status == "Completed" {
+			status = old.Status
+		}
 	}
 
 	goods := make([]OrderUpdateGood, 0, len(cmd.Goods))
@@ -58,7 +64,7 @@ func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd)
 
 	order := Order{
 		ID:           cmd.ID,
-		Status:       cmd.Status,
+		Status:       status,
 		Name:         cmd.Name,
 		FullName:     cmd.FullName,
 		Address:      cmd.Address,
@@ -68,6 +74,7 @@ func (s *OrderPersistanceAdapter) ApplyOrderUpdate(cmd port.ApplyOrderUpdateCmd)
 		UpdateTime:   cmd.UpdateTime,
 		CreationTime: cmd.CreationTime,
 	}
+	log.Printf("order from applyorderupdate: %v\n", order)
 
 	s.orderRepo.SetOrder(cmd.ID, order)
 }

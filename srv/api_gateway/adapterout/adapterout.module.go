@@ -11,4 +11,5 @@ var Module = fx.Module(
 	fx.Provide(NewAuthenticationAdapter),
 	fx.Provide(NewCatalogAdapter),
 	fx.Provide(NewOrderAdapter),
+	fx.Provide(NewNotificationsAdapter),
 )

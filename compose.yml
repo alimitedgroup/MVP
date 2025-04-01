@@ -1,16 +1,18 @@
 volumes:
   nats_data:
   grafana_data:
+  influxdb_data:
 
 
 services:
   nats:
-    image: nats:2.10-alpine3.21
+    image: nats:alpine
     ports:
       - "4222:4222"
     command:
       - "--jetstream"
       - "--store_dir=/data/jetstream"
+      - "--http_port=8222"
     volumes:
       - nats_data:/data/jetstream
     healthcheck:
@@ -25,6 +27,7 @@ services:
       - "8080:8080"
     environment:
       - ENV_BROKER_URL=nats://nats:4222
+      - ENV_API_PORT=8080
       - OTLP_URL=collector:4317
       - HTTP_HOST=0.0.0.0
       - HTTP_PORT=8080
@@ -38,8 +41,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_SERVICE_ID=1
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
 
@@ -49,8 +50,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_SERVICE_ID=2
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
 
@@ -60,8 +59,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_SERVICE_ID=1
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
 
@@ -71,8 +68,6 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - ENV_SERVICE_ID=1
       - OTLP_URL=collector:4317
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
 
@@ -82,10 +77,37 @@ services:
       - ENV_BROKER_URL=nats://nats:4222
       - OTLP_URL=collector:4317
       - ENV_SERVICE_ID=1
-    volumes:
-      - ./config.yml:/data/config.yml
     depends_on:
       - nats
+
+  influxdb:
+    image: influxdb:alpine
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin1234
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=stockdb
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-token
+  notification:
+    build: { args: { SERVICE: notification } }
+    environment:
+      - INFLUXDB_TOKEN=my-token
+      - INFLUXDB_ORG=my-org
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_BUCKET=stockdb
+      - ENV_BROKER_URL=nats://nats:4222
+      - OTLP_URL=collector:4317
+      - ENV_SERVICE_ID=1
+      - RULE_CHECKER_TIMER=5s
+    depends_on:
+      - nats
+      - influxdb
+      - catalog
 
   collector:
     image: otel/opentelemetry-collector-contrib

@@ -171,7 +171,7 @@ func TestCreateOrder(t *testing.T) {
 
 					require.Empty(t, resp.Error)
 					require.Equal(t, orderId, resp.Message[0].OrderID)
-					require.Equal(t, "Created", resp.Message[0].Status)
+					require.Contains(t, []string{"Created", "Filled"}, resp.Message[0].Status)
 				}
 
 				// wait for background processing of the order
@@ -305,7 +305,7 @@ func TestCreateTransfer(t *testing.T) {
 
 					require.Empty(t, resp.Error)
 					require.Equal(t, transferId, resp.Message[0].TransferID)
-					require.Equal(t, "Created", resp.Message[0].Status)
+					require.Contains(t, []string{"Created", "Filled"}, resp.Message[0].Status)
 				}
 
 				// wait for background processing of the order

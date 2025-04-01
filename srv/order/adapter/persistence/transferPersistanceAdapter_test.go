@@ -15,6 +15,26 @@ func TestTransferPersistenceAdapterApplyTransferUpdate(t *testing.T) {
 	mock := NewMockITransferRepository(ctrl)
 
 	mock.EXPECT().SetTransfer(gomock.Any(), gomock.Any()).Return(false)
+	mock.EXPECT().GetTransfer(gomock.Any()).Return(Transfer{
+		ID:                "1",
+		Status:            "Created",
+		SenderID:          "1",
+		ReceiverID:        "2",
+		LinkedStockUpdate: 0,
+		Goods: []TransferUpdateGood{
+			{
+				GoodID:   "1",
+				Quantity: 10,
+			},
+			{
+				GoodID:   "2",
+				Quantity: 10,
+			},
+		},
+		ReservationID: "",
+		UpdateTime:    time.Now().UnixMilli(),
+		CreationTime:  time.Now().UnixMilli(),
+	}, nil)
 
 	adapter := NewTransferPersistanceAdapter(mock)
 

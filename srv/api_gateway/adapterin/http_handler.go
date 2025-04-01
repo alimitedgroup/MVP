@@ -4,8 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/lib/observability"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -13,17 +23,12 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"net"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var (
 	NumRequests     metric.Int64Counter
 	Authentications metric.Int64Counter
+	CounterMap      sync.Map
 )
 
 type HttpConfig struct {
@@ -57,9 +62,8 @@ func ConfigFromEnv(l *zap.Logger) (*HttpConfig, error) {
 }
 
 type HTTPHandler struct {
-	Engine             *gin.Engine
-	ApiGroup           *gin.RouterGroup
-	AuthenticatedGroup *gin.RouterGroup
+	Engine       *gin.Engine
+	Authenticate gin.HandlerFunc
 }
 
 func NewListener(lc fx.Lifecycle, cfg *HttpConfig, logger *zap.Logger) (*net.TCPListener, error) {
@@ -97,14 +101,6 @@ type HttpParams struct {
 	Meter     metric.Meter
 }
 
-func counter(p HttpParams, name string, options ...metric.Int64CounterOption) metric.Int64Counter {
-	ctr, err := p.Meter.Int64Counter(name, options...)
-	if err != nil {
-		p.Logger.Fatal("Failed to setup OpenTelemetry counter", zap.String("name", name), zap.Error(err))
-	}
-	return ctr
-}
-
 func NewHTTPHandler(p HttpParams) *HTTPHandler {
 	logger := p.Logger.Named("gin")
 	gin.DebugPrintFunc = func(format string, values ...interface{}) {
@@ -119,6 +115,9 @@ func NewHTTPHandler(p HttpParams) *HTTPHandler {
 		logger.Info(fmt.Sprintf("%s %s -> %s", httpMethod, absolutePath, handlerName))
 	}
 
+	observability.CounterSetup(&p.Meter, p.Logger, &Authentications, &CounterMap, "num_api_gateway_authentications")
+	observability.CounterSetup(&p.Meter, p.Logger, &NumRequests, &CounterMap, "num_api_gateway_total_requests")
+
 	r := gin.New()
 	_ = r.SetTrustedProxies(nil)
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
@@ -130,9 +129,8 @@ func NewHTTPHandler(p HttpParams) *HTTPHandler {
 		))
 		c.Next()
 	})
-	api := r.Group("/api/v1")
-	authenticated := r.Group("/api/v1")
-	authenticated.Use(Authentication(p.Auth, p.Logger))
+
+	authenticated := Authentication(p.Auth, p.Logger)
 
 	srv := &http.Server{Handler: r}
 	p.Lifecycle.Append(fx.Hook{
@@ -157,10 +155,7 @@ func NewHTTPHandler(p HttpParams) *HTTPHandler {
 		},
 	})
 
-	Authentications = counter(p, "authentications")
-	NumRequests = counter(p, "num_requests")
-
-	return &HTTPHandler{r, api, authenticated}
+	return &HTTPHandler{r, authenticated}
 }
 
 func Authentication(b portin.Auth, logger *zap.Logger) gin.HandlerFunc {
@@ -196,13 +191,44 @@ func Authentication(b portin.Auth, logger *zap.Logger) gin.HandlerFunc {
 	}
 }
 
-func RegisterRoutes(http *HTTPHandler, controllers []Controller) {
+func CheckRole(roles []types.UserRole, logger *zap.Logger) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user_data, exist := ctx.Get("user_data")
+		if !exist {
+			logger.Debug("User data not found in context")
+			ctx.AbortWithStatusJSON(401, dto.MissingToken())
+			return
+		}
+
+		userData, ok := user_data.(portin.UserData)
+		if !ok {
+			logger.Debug("User data in context is not of type UserData")
+			ctx.AbortWithStatusJSON(401, dto.MissingToken())
+			return
+		}
+
+		for _, role := range roles {
+			// check if the user has the required role or if the role is RoleNone
+			// RoleNone is used to allow access to all users, regardless of their role
+			if role == userData.Role || role == types.RoleNone {
+				ctx.Next()
+				return
+			}
+		}
+		logger.Debug("User does not have the required role", zap.String("user_role", userData.Role.String()))
+		ctx.AbortWithStatusJSON(403, dto.AuthFailed())
+	}
+}
+
+func RegisterRoutes(http *HTTPHandler, logger *zap.Logger, controllers []Controller) {
 	for _, controller := range controllers {
 		var group *gin.RouterGroup
 		if controller.RequiresAuth() {
-			group = http.AuthenticatedGroup
+			group = http.Engine.Group("/api/v1")
+			group.Use(http.Authenticate)
+			group.Use(CheckRole(controller.AllowedRoles(), logger))
 		} else {
-			group = http.ApiGroup
+			group = http.Engine.Group("/api/v1")
 		}
 		group.Handle(controller.Method(), controller.Pattern(), controller.Handler())
 	}

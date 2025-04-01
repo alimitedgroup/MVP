@@ -24,10 +24,12 @@ var (
 	ErrorGetStock           = errors.New("error getting global stock")
 	ErrorGetTransfers       = errors.New("error getting transfers")
 	ErrorGetOrders          = errors.New("error getting orders")
+	ErrorGetQueries         = errors.New("error getting queries")
 	ErrorAddStock           = errors.New("error adding stock")
 	ErrorRemoveStock        = errors.New("error adding stock")
 	ErrorCreateOrder        = errors.New("error creating order")
 	ErrorCreateTransfer     = errors.New("error creating transfer")
+	ErrorCreateQuery        = errors.New("error creating query")
 	ErrorCreateGood         = errors.New("error creating good")
 	ErrorUpdateGood         = errors.New("error updating good")
 	ErrorInvalidCredentials = errors.New("invalid credentials")
@@ -42,24 +44,56 @@ var Module = fx.Module(
 		fx.As(new(portin.Auth)),
 		fx.As(new(portin.Warehouses)),
 		fx.As(new(portin.Order)),
+		fx.As(new(portin.Notifications)),
 	)),
 	fx.Decorate(observability.WrapLogger("business")),
 )
 
-func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, order portout.OrderPortOut, logger *zap.Logger) *Business {
-	return &Business{auth: auth, catalog: catalog, order: order, Logger: logger}
+func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, order portout.OrderPortOut, notfication portout.NotificationPortOut, logger *zap.Logger) *Business {
+	return &Business{auth: auth, catalog: catalog, order: order, notification: notfication, Logger: logger}
 }
 
 type Business struct {
-	auth    portout.AuthenticationPortOut
-	catalog portout.CatalogPortOut
-	order   portout.OrderPortOut
+	auth         portout.AuthenticationPortOut
+	catalog      portout.CatalogPortOut
+	order        portout.OrderPortOut
+	notification portout.NotificationPortOut
 	*zap.Logger
 }
 
 func (b *Business) GetWarehouseByID(_ int64) (dto.Warehouse, error) {
 	//TODO da implementare quando catalog supporta questa query
 	panic("implement me")
+}
+
+func (b *Business) CreateQuery(goodId string, operator string, threshold int) (string, error) {
+	queryId, err := b.notification.CreateQuery(dto.Rule{
+		GoodId:    goodId,
+		Operator:  operator,
+		Threshold: threshold,
+	})
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrorCreateQuery, err)
+	}
+	return queryId, nil
+
+}
+
+func (b *Business) GetQueries() ([]dto.Query, error) {
+	queries, err := b.notification.GetQueries()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrorGetQueries, err)
+	}
+	resp := make([]dto.Query, 0, len(queries))
+	for _, query := range queries {
+		resp = append(resp, dto.Query{
+			QueryID:   query.RuleId.String(),
+			GoodID:    query.GoodId,
+			Operator:  query.Operator,
+			Threshold: query.Threshold,
+		})
+	}
+	return resp, nil
 }
 
 func (b *Business) AddStock(warehouseId string, goodId string, quantity int64) error {
@@ -115,6 +149,8 @@ func (b *Business) GetOrders() ([]dto.Order, error) {
 
 		resp = append(resp, dto.Order{
 			Status:       order.Status,
+			CreationTime: order.CreationTime,
+			UpdateTime:   order.UpdateTime,
 			OrderID:      order.OrderID,
 			Name:         order.Name,
 			FullName:     order.FullName,
@@ -162,11 +198,13 @@ func (b *Business) GetTransfers() ([]dto.Transfer, error) {
 		}
 
 		resp = append(resp, dto.Transfer{
-			Status:     transfer.Status,
-			TransferID: transfer.TransferID,
-			SenderID:   transfer.SenderID,
-			ReceiverID: transfer.ReceiverID,
-			Goods:      goods,
+			Status:       transfer.Status,
+			CreationTime: transfer.CreationTime,
+			UpdateTime:   transfer.UpdateTime,
+			TransferID:   transfer.TransferID,
+			SenderID:     transfer.SenderID,
+			ReceiverID:   transfer.ReceiverID,
+			Goods:        goods,
 		})
 	}
 
@@ -317,3 +355,4 @@ func (b *Business) ValidateToken(token string) (portin.UserData, error) {
 var _ portin.Auth = (*Business)(nil)
 var _ portin.Warehouses = (*Business)(nil)
 var _ portin.Order = (*Business)(nil)
+var _ portin.Notifications = (*Business)(nil)

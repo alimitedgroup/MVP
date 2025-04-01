@@ -15,15 +15,17 @@ import (
 )
 
 type startResult struct {
-	base       string
-	auth       *MockAuth
-	warehouses *MockWarehouses
-	order      *MockOrder
+	base          string
+	auth          *MockAuth
+	warehouses    *MockWarehouses
+	order         *MockOrder
+	notifications *MockNotifications
 }
 
 //go:generate go run go.uber.org/mock/mockgen@latest -destination business_auth_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Auth
 //go:generate go run go.uber.org/mock/mockgen@latest -destination business_warehouses_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Warehouses
 //go:generate go run go.uber.org/mock/mockgen@latest -destination business_order_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Order
+//go:generate go run go.uber.org/mock/mockgen@latest -destination business_notifications_mock.go -package adapterin github.com/alimitedgroup/MVP/srv/api_gateway/portin Notifications
 
 // start starts the application with a mock business login,
 // and returns it, along with the base url that can be used to send requests
@@ -32,6 +34,7 @@ func start(t *testing.T) startResult {
 	mock := NewMockAuth(ctrl)
 	wMock := NewMockWarehouses(ctrl)
 	orderMock := NewMockOrder(ctrl)
+	notificationsMock := NewMockNotifications(ctrl)
 
 	nc, _ := broker.NewInProcessNATSServer(t)
 
@@ -47,6 +50,7 @@ func start(t *testing.T) startResult {
 			fx.Annotate(mock, fx.As(new(portin.Auth))),
 			fx.Annotate(wMock, fx.As(new(portin.Warehouses))),
 			fx.Annotate(orderMock, fx.As(new(portin.Order))),
+			fx.Annotate(notificationsMock, fx.As(new(portin.Notifications))),
 			ln, nc, t,
 		),
 	)
@@ -64,9 +68,10 @@ func start(t *testing.T) startResult {
 	})
 
 	return startResult{
-		auth:       mock,
-		warehouses: wMock,
-		order:      orderMock,
-		base:       "http://" + ln.Addr().String(),
+		auth:          mock,
+		warehouses:    wMock,
+		order:         orderMock,
+		notifications: notificationsMock,
+		base:          "http://" + ln.Addr().String(),
 	}
 }

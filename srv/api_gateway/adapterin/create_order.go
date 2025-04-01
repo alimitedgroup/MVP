@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/gin-gonic/gin"
 )
@@ -47,6 +48,10 @@ func (c *CreateOrderController) Method() string {
 
 func (c *CreateOrderController) RequiresAuth() bool {
 	return true
+}
+
+func (c *CreateOrderController) AllowedRoles() []types.UserRole {
+	return []types.UserRole{types.RoleClient}
 }
 
 var _ Controller = (*CreateOrderController)(nil)

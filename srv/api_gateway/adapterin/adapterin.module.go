@@ -2,6 +2,7 @@ package adapterin
 
 import (
 	"github.com/alimitedgroup/MVP/common/lib/observability"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -23,7 +24,9 @@ var ModuleTest = fx.Module(
 	fx.Provide(AsController(NewCreateTransferController)),
 	fx.Provide(AsController(NewAddStockController)),
 	fx.Provide(AsController(NewRemoveStockController)),
-	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
+	fx.Provide(AsController(NewCreateQueryController)),
+	fx.Provide(AsController(NewGetQueriesController)),
+	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", "", `group:"routes"`))),
 )
 
 var Module = fx.Module(
@@ -43,7 +46,9 @@ var Module = fx.Module(
 	fx.Provide(AsController(NewCreateTransferController)),
 	fx.Provide(AsController(NewAddStockController)),
 	fx.Provide(AsController(NewRemoveStockController)),
-	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", `group:"routes"`))),
+	fx.Provide(AsController(NewCreateQueryController)),
+	fx.Provide(AsController(NewGetQueriesController)),
+	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags("", "", `group:"routes"`))),
 )
 
 type Controller interface {
@@ -51,6 +56,7 @@ type Controller interface {
 	Pattern() string
 	Method() string
 	RequiresAuth() bool
+	AllowedRoles() []types.UserRole
 }
 
 func AsController(f any) any {

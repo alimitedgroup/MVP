@@ -8,6 +8,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/google/uuid"
 	"go.uber.org/fx"
+	"golang.org/x/exp/slog"
 )
 
 type ManageReservationService struct {
@@ -67,6 +68,17 @@ func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd po
 		return port.CreateReservationResponse{}, err
 	}
 
+	err = s.applyReservationEventPort.ApplyReservationEvent(reservation)
+	if err != nil {
+		return port.CreateReservationResponse{}, err
+	}
+
+	idempotentCmd := port.IdempotentCmd{
+		Event: "reservation",
+		ID:    reservationId,
+	}
+	s.idempotentPort.SaveEventID(idempotentCmd)
+
 	resp := port.CreateReservationResponse{
 		ReservationID: reservationId,
 	}
@@ -93,6 +105,7 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 		ID:    cmd.ID,
 	}
 	if s.idempotentPort.IsAlreadyProcessed(idempotentCmd) {
+		slog.Debug("reservation already processed", "cmd", cmd)
 		return nil
 	}
 
@@ -105,113 +118,129 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 }
 
 func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.ConfirmOrderCmd) error {
-	if cmd.Status != "Filled" {
-		return nil
+	slog.Debug("ConfirmOrder", "cmd", cmd)
+	if cmd.Status == "Filled" {
+		for _, reserv := range cmd.Reservations {
+			reservation, err := s.getReservationPort.GetReservation(model.ReservationID(reserv))
+			if err != nil {
+				continue
+			}
+
+			goods := make([]port.CreateStockUpdateGood, 0, len(reservation.Goods))
+			for _, reservGood := range reservation.Goods {
+				goodStock := s.getStockPort.GetStock(model.GoodID(reservGood.GoodID))
+
+				goods = append(goods, port.CreateStockUpdateGood{
+					Good: model.GoodStock{
+						ID:       reservGood.GoodID,
+						Quantity: goodStock.Quantity - reservGood.Quantity,
+					},
+					QuantityDiff: reservGood.Quantity,
+				})
+			}
+
+			createCmd := port.CreateStockUpdateCmd{
+				Type:          port.CreateStockUpdateCmdTypeOrder,
+				Goods:         goods,
+				OrderID:       cmd.OrderID,
+				TransferID:    "",
+				ReservationID: reserv,
+			}
+			err = s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
+			if err != nil {
+				return err
+			}
+
+			if err := s.applyReservationEventPort.ApplyOrderFilled(reservation); err != nil {
+				return err
+			}
+		}
+
+	} else if cmd.Status == "Cancelled" {
+		for _, reserv := range cmd.Reservations {
+			reservation, err := s.getReservationPort.GetReservation(model.ReservationID(reserv))
+			if err != nil {
+				continue
+			}
+			if err := s.applyReservationEventPort.ApplyOrderFilled(reservation); err != nil {
+				return err
+			}
+		}
 	}
-
-	for _, reserv := range cmd.Reservations {
-		reservation, err := s.getReservationPort.GetReservation(model.ReservationID(reserv))
-		if err != nil {
-			continue
-		}
-
-		goods := make([]port.CreateStockUpdateGood, 0, len(reservation.Goods))
-		for _, reservGood := range reservation.Goods {
-			goodStock := s.getStockPort.GetStock(model.GoodID(reservGood.GoodID))
-
-			goods = append(goods, port.CreateStockUpdateGood{
-				Good: model.GoodStock{
-					ID:       reservGood.GoodID,
-					Quantity: goodStock.Quantity - reservGood.Quantity,
-				},
-				QuantityDiff: reservGood.Quantity,
-			})
-		}
-
-		createCmd := port.CreateStockUpdateCmd{
-			Type:          port.CreateStockUpdateCmdTypeOrder,
-			Goods:         goods,
-			OrderID:       cmd.OrderID,
-			TransferID:    "",
-			ReservationID: reserv,
-		}
-		err = s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
-		if err != nil {
-			return err
-		}
-
-		if err := s.applyReservationEventPort.ApplyOrderFilled(reservation); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
 func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port.ConfirmTransferCmd) error {
-	if cmd.Status != "Filled" {
-		return nil
-	}
+	if cmd.Status == "Filled" {
+		if cmd.SenderID == s.cfg.ID {
+			reservation, err := s.getReservationPort.GetReservation(model.ReservationID(cmd.ReservationID))
+			if err != nil {
+				// TODO: handle other errors
+				return nil
+			}
 
-	if cmd.SenderID == s.cfg.ID {
+			goods := make([]port.CreateStockUpdateGood, 0, len(reservation.Goods))
+			for _, reservGood := range reservation.Goods {
+				goodStock := s.getStockPort.GetStock(model.GoodID(reservGood.GoodID))
+
+				goods = append(goods, port.CreateStockUpdateGood{
+					Good: model.GoodStock{
+						ID:       reservGood.GoodID,
+						Quantity: goodStock.Quantity - reservGood.Quantity,
+					},
+					QuantityDiff: reservGood.Quantity,
+				})
+			}
+
+			createCmd := port.CreateStockUpdateCmd{
+				Type:          port.CreateStockUpdateCmdTypeTransfer,
+				Goods:         goods,
+				OrderID:       "",
+				TransferID:    cmd.TransferID,
+				ReservationID: reservation.ID,
+			}
+			err = s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
+			if err != nil {
+				return err
+			}
+
+			if err := s.applyReservationEventPort.ApplyOrderFilled(reservation); err != nil {
+				return err
+			}
+		} else if cmd.ReceiverID == s.cfg.ID {
+			goods := make([]port.CreateStockUpdateGood, 0, len(cmd.Goods))
+
+			for _, toAdd := range cmd.Goods {
+				goodStock := s.getStockPort.GetStock(model.GoodID(toAdd.GoodID))
+
+				goods = append(goods, port.CreateStockUpdateGood{
+					Good: model.GoodStock{
+						ID:       toAdd.GoodID,
+						Quantity: goodStock.Quantity + toAdd.Quantity,
+					},
+					QuantityDiff: toAdd.Quantity,
+				})
+			}
+
+			createCmd := port.CreateStockUpdateCmd{
+				Type:          port.CreateStockUpdateCmdTypeTransfer,
+				Goods:         goods,
+				OrderID:       "",
+				TransferID:    cmd.TransferID,
+				ReservationID: cmd.ReservationID,
+			}
+			err := s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
+			if err != nil {
+				return err
+			}
+		}
+	} else if cmd.Status == "Cancelled" {
 		reservation, err := s.getReservationPort.GetReservation(model.ReservationID(cmd.ReservationID))
 		if err != nil {
 			// TODO: handle other errors
 			return nil
 		}
-
-		goods := make([]port.CreateStockUpdateGood, 0, len(reservation.Goods))
-		for _, reservGood := range reservation.Goods {
-			goodStock := s.getStockPort.GetStock(model.GoodID(reservGood.GoodID))
-
-			goods = append(goods, port.CreateStockUpdateGood{
-				Good: model.GoodStock{
-					ID:       reservGood.GoodID,
-					Quantity: goodStock.Quantity - reservGood.Quantity,
-				},
-				QuantityDiff: reservGood.Quantity,
-			})
-		}
-
-		createCmd := port.CreateStockUpdateCmd{
-			Type:          port.CreateStockUpdateCmdTypeTransfer,
-			Goods:         goods,
-			OrderID:       "",
-			TransferID:    cmd.TransferID,
-			ReservationID: reservation.ID,
-		}
-		err = s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
-		if err != nil {
-			return err
-		}
-
 		if err := s.applyReservationEventPort.ApplyOrderFilled(reservation); err != nil {
-			return err
-		}
-	} else if cmd.ReceiverID == s.cfg.ID {
-		goods := make([]port.CreateStockUpdateGood, 0, len(cmd.Goods))
-
-		for _, toAdd := range cmd.Goods {
-			goodStock := s.getStockPort.GetStock(model.GoodID(toAdd.GoodID))
-
-			goods = append(goods, port.CreateStockUpdateGood{
-				Good: model.GoodStock{
-					ID:       toAdd.GoodID,
-					Quantity: goodStock.Quantity + toAdd.Quantity,
-				},
-				QuantityDiff: toAdd.Quantity,
-			})
-		}
-
-		createCmd := port.CreateStockUpdateCmd{
-			Type:          port.CreateStockUpdateCmdTypeTransfer,
-			Goods:         goods,
-			OrderID:       "",
-			TransferID:    cmd.TransferID,
-			ReservationID: cmd.ReservationID,
-		}
-		err := s.createStockUpdatePort.CreateStockUpdate(ctx, createCmd)
-		if err != nil {
 			return err
 		}
 	}

@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"log"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
 	"github.com/alimitedgroup/MVP/srv/order/business/port"
@@ -73,14 +74,15 @@ func (s *ApplyStockUpdateService) applyStockUpdateFromTransfer(cmd port.StockUpd
 		return err
 	}
 
-	if transfer.ReservationID == cmd.ReservationID {
-		if err := s.setCompleteTransferPort.IncrementLinkedStockUpdate(model.TransferID(transfer.ID)); err != nil {
-			return err
-		}
-		transfer, err = s.getTransferPort.GetTransfer(model.TransferID(transfer.ID))
-		if err != nil {
-			return err
-		}
+	// if transfer.ReservationID == cmd.ReservationID {
+
+	// }
+	if err := s.setCompleteTransferPort.IncrementLinkedStockUpdate(model.TransferID(transfer.ID)); err != nil {
+		return err
+	}
+	transfer, err = s.getTransferPort.GetTransfer(model.TransferID(transfer.ID))
+	if err != nil {
+		return err
 	}
 
 	if transfer.LinkedStockUpdate == 2 {
@@ -96,40 +98,42 @@ func (s *ApplyStockUpdateService) applyStockUpdateFromOrder(cmd port.StockUpdate
 	if err != nil {
 		return err
 	}
+	log.Printf("order in applystock: %v\n", order)
 
-	isRelatedToReserv := false
-	for _, reserv := range order.Reservations {
-		if reserv == cmd.ReservationID {
-			isRelatedToReserv = true
-			break
-		}
+	goods := make([]model.GoodStock, 0, len(cmd.Goods))
+
+	for _, good := range cmd.Goods {
+		goods = append(goods, model.GoodStock{
+			GoodID:   good.GoodID,
+			Quantity: good.Delta,
+		})
 	}
 
-	if isRelatedToReserv {
-		goods := make([]model.GoodStock, 0, len(cmd.Goods))
+	completedCmd := port.SetCompletedWarehouseCmd{
+		WarehouseID: cmd.WarehouseID,
+		OrderID:     cmd.OrderID,
+		Goods:       goods,
+	}
+	order, err = s.setCompletedWarehousePort.SetCompletedWarehouse(completedCmd)
+	if err != nil {
+		return err
+	}
+	log.Printf("order in applystock after set: %v\n", order)
 
-		for _, good := range cmd.Goods {
-			goods = append(goods, model.GoodStock{
-				GoodID:   good.GoodID,
-				Quantity: good.Delta,
-			})
+	completed := order.IsCompleted()
+	log.Printf("is completed: %v\n", completed)
+	if completed {
+		if err := s.setCompletedWarehousePort.SetComplete(model.OrderID(cmd.OrderID)); err != nil {
+			return err
 		}
-
-		completedCmd := port.SetCompletedWarehouseCmd{
-			WarehouseID: cmd.WarehouseID,
-			OrderID:     cmd.OrderID,
-			Goods:       goods,
-		}
-		order, err := s.setCompletedWarehousePort.SetCompletedWarehouse(completedCmd)
+		order, err = s.getOrderPort.GetOrder(model.OrderID(cmd.OrderID))
 		if err != nil {
 			return err
 		}
-
-		if order.IsCompleted() {
-			if err := s.setCompletedWarehousePort.SetComplete(model.OrderID(cmd.OrderID)); err != nil {
-				return err
-			}
+		if order.Status != "Completed" {
+			log.Printf("error didn't set order to completed: %v\n", order)
 		}
 	}
+
 	return nil
 }

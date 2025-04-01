@@ -11,6 +11,8 @@ type GetAllOrderResponseDTO ResponseDTO[[]OrderInfo]
 
 type OrderInfo struct {
 	OrderID      string          `json:"order_id"`
+	CreationTime int64           `json:"creation_time"`
+	UpdateTime   int64           `json:"update_time"`
 	Status       string          `json:"status"`
 	Name         string          `json:"name"`
 	FullName     string          `json:"full_name"`
@@ -33,11 +35,13 @@ type TransferCreateInfo struct {
 }
 
 type TransferInfo struct {
-	Status     string             `json:"status"`
-	TransferID string             `json:"transfer_id"`
-	SenderID   string             `json:"sender_id"`
-	ReceiverID string             `json:"receiver_id"`
-	Goods      []TransferInfoGood `json:"goods"`
+	Status       string             `json:"status"`
+	TransferID   string             `json:"transfer_id"`
+	SenderID     string             `json:"sender_id"`
+	ReceiverID   string             `json:"receiver_id"`
+	CreationTime int64              `json:"creation_time"`
+	UpdateTime   int64              `json:"update_time"`
+	Goods        []TransferInfoGood `json:"goods"`
 }
 
 type TransferInfoGood struct {

@@ -2,11 +2,15 @@ package broker
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
-	"os"
-	"testing"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
@@ -80,6 +84,31 @@ func (n *NatsMessageBroker) RegisterRequest(ctx context.Context, subject Subject
 	sub, err := n.Nats.QueueSubscribe(subject.String(), queue.String(), func(msg *nats.Msg) {
 		err := handler(ctx, msg)
 		if err != nil {
+			var syntaxErr *json.SyntaxError
+			var unmarshalErr *json.UnmarshalTypeError
+
+			if errors.As(err, &syntaxErr) {
+				err := RespondToMsg(msg, map[string]any{"error": fmt.Sprintf("JSON syntax error at offset: %v", syntaxErr.Offset)})
+				if err != nil {
+					n.Fatal("Error responding to the request", zap.Error(err), zap.String("subject", subject.String()))
+				}
+				return
+			}
+			if errors.As(err, &unmarshalErr) {
+				err := RespondToMsg(msg, map[string]any{"error": "JSON type mismatch error"})
+				if err != nil {
+					n.Fatal("Error responding to the request", zap.Error(err), zap.String("subject", subject.String()))
+				}
+				return
+			}
+			if strings.Contains(err.Error(), "unexpected end of JSON input") {
+				err := RespondToMsg(msg, map[string]any{"error": "JSON error"})
+				if err != nil {
+					n.Fatal("Error responding to the request", zap.Error(err), zap.String("subject", subject.String()))
+				}
+				return
+			}
+
 			if errUnsub := sub.Unsubscribe(); errUnsub != nil {
 				n.Fatal(
 					"Error unsubscribing after another error",

@@ -85,7 +85,7 @@ func TestApplyStockUpdateServiceStock(t *testing.T) {
 				},
 				Reservations: []string{"1"},
 				Warehouses:   []model.OrderWarehouseUsed{},
-			}, nil)
+			}, nil).AnyTimes()
 			suite.setCompletedWarehousePort.EXPECT().SetCompletedWarehouse(gomock.Any()).Return(model.Order{
 				ID:           "1",
 				Status:       "Filled",

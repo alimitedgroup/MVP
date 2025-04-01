@@ -50,11 +50,11 @@ func NewOrderListener(p OrderListenerParams) *OrderListener {
 
 func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg) error {
 
-	Logger.Info("Received good update request")
+	Logger.Info("Received order update request")
 	verdict := "success"
 
 	defer func() {
-		Logger.Info("Good update request terminated")
+		Logger.Info("Good order update terminated")
 		OrderUpdateRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		controller.TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -65,6 +65,7 @@ func (l *OrderListener) ListenOrderUpdate(ctx context.Context, msg jetstream.Msg
 		Logger.Debug("Bad request", zap.Error(err))
 		return err
 	}
+	Logger.Debug("order update event", zap.Any("event", event))
 
 	cmd := orderUpdateEventToApplyOrderUpdateCmd(event)
 	l.applyOrderUpdateUseCase.ApplyOrderUpdate(ctx, cmd)

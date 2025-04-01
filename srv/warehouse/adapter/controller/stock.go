@@ -63,6 +63,15 @@ func (c *StockController) AddStockHandler(ctx context.Context, msg *nats.Msg) er
 		return err
 	}
 
+	if dto.Quantity <= 0 {
+		verdict = "bad arguments"
+		Logger.Debug("quantity must be greater than ")
+		resp := response.ResponseDTO[any]{
+			Error: "quantity must be greater than 0",
+		}
+		return broker.RespondToMsg(msg, resp)
+	}
+
 	cmd := port.AddStockCmd(dto)
 	err = c.addStockUseCase.AddStock(ctx, cmd)
 	if err != nil {
@@ -111,6 +120,14 @@ func (c *StockController) RemoveStockHandler(ctx context.Context, msg *nats.Msg)
 		verdict = "bad request"
 		Logger.Debug("Bad request", zap.Error(err))
 		return err
+	}
+
+	if dto.Quantity <= 0 {
+		verdict = "bad arguments"
+		resp := response.ResponseDTO[any]{
+			Error: "quantity must be greater than 0",
+		}
+		return broker.RespondToMsg(msg, resp)
 	}
 
 	cmd := port.RemoveStockCmd(dto)

@@ -17,6 +17,7 @@ type SendOrderUpdateCmd struct {
 	FullName     string
 	Address      string
 	CreationTime int64
+	UpdateTime   int64
 	Goods        []SendOrderUpdateGood
 	Reservations []string
 }

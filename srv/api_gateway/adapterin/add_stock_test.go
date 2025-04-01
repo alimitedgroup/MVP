@@ -20,7 +20,7 @@ func TestAddStock(t *testing.T) {
 
 	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
 		Username: "test",
-		Role:     types.RoleGlobalAdmin,
+		Role:     types.RoleLocalAdmin,
 	}, nil)
 	s.warehouses.EXPECT().AddStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
@@ -45,7 +45,7 @@ func TestAddStockError(t *testing.T) {
 
 	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
 		Username: "test",
-		Role:     types.RoleGlobalAdmin,
+		Role:     types.RoleLocalAdmin,
 	}, nil)
 	s.warehouses.EXPECT().AddStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
 
@@ -71,7 +71,7 @@ func TestAddStockMalformedInput(t *testing.T) {
 
 	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
 		Username: "test",
-		Role:     types.RoleGlobalAdmin,
+		Role:     types.RoleLocalAdmin,
 	}, nil)
 
 	payload := bytes.NewReader([]byte(`"quantity": 10`))

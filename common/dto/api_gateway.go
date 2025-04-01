@@ -76,6 +76,8 @@ type GetOrdersResponse struct {
 
 type Order struct {
 	OrderID      string           `json:"order_id"`
+	CreationTime int64            `json:"creation_time"`
+	UpdateTime   int64            `json:"update_time"`
 	Status       string           `json:"status"`
 	Name         string           `json:"name"`
 	FullName     string           `json:"full_name"`
@@ -93,11 +95,13 @@ type GetTransfersResponse struct {
 }
 
 type Transfer struct {
-	Status     string           `json:"status"`
-	TransferID string           `json:"transfer_id"`
-	SenderID   string           `json:"sender_id"`
-	ReceiverID string           `json:"receiver_id"`
-	Goods      map[string]int64 `json:"goods"`
+	Status       string           `json:"status"`
+	CreationTime int64            `json:"creation_time"`
+	UpdateTime   int64            `json:"update_time"`
+	TransferID   string           `json:"transfer_id"`
+	SenderID     string           `json:"sender_id"`
+	ReceiverID   string           `json:"receiver_id"`
+	Goods        map[string]int64 `json:"goods"`
 }
 
 type CreateOrderRequest struct {
@@ -111,6 +115,27 @@ type CreateTransferRequest struct {
 	SenderID   string           `json:"sender_id"`
 	ReceiverID string           `json:"receiver_id"`
 	Goods      map[string]int64 `json:"goods"`
+}
+
+type CreateQueryRequest struct {
+	GoodID    string `json:"good_id"`
+	Operator  string `json:"operator"`
+	Threshold int    `json:"threshold"`
+}
+
+type CreateQueryResponse struct {
+	QueryID string `json:"query_id"`
+}
+
+type GetQueriesResponse struct {
+	Queries []Query `json:"queries"`
+}
+
+type Query struct {
+	QueryID   string `json:"query_id"`
+	GoodID    string `json:"good_id"`
+	Operator  string `json:"operator"`
+	Threshold int    `json:"threshold"`
 }
 
 func FieldIsRequired(fieldName string) response.ResponseDTO[MissingRequiredFieldError] {

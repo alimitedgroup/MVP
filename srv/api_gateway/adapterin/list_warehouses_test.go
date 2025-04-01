@@ -3,12 +3,14 @@ package adapterin
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/alimitedgroup/MVP/common/dto"
-	"github.com/alimitedgroup/MVP/common/dto/response"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
+
+	"github.com/alimitedgroup/MVP/common/dto"
+	"github.com/alimitedgroup/MVP/common/dto/response"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetWarehouses(t *testing.T) {
@@ -19,8 +21,15 @@ func TestGetWarehouses(t *testing.T) {
 		[]portin.WarehouseOverview{{ID: "id1"}, {ID: "id2"}, {ID: "id3"}},
 		nil,
 	)
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+		Username: "test",
+		Role:     types.RoleGlobalAdmin,
+	}, nil)
 
-	resp, err := client.Get(s.base + "/api/v1/warehouses")
+	req, err := http.NewRequest(http.MethodGet, s.base+"/api/v1/warehouses", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", "Bearer some.secure.jwt")
+	resp, err := client.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -38,8 +47,15 @@ func TestGetWarehousesError(t *testing.T) {
 		nil,
 		fmt.Errorf("some error"),
 	)
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+		Username: "test",
+		Role:     types.RoleGlobalAdmin,
+	}, nil)
 
-	resp, err := client.Get(s.base + "/api/v1/warehouses")
+	req, err := http.NewRequest(http.MethodGet, s.base+"/api/v1/warehouses", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", "Bearer some.secure.jwt")
+	resp, err := client.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 
