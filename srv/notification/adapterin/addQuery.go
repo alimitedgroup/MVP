@@ -27,13 +27,13 @@ type AddQueryParams struct {
 	fx.In
 	Logger    *zap.Logger
 	Meter     metric.Meter
-	rulesPort portin.QueryRules
+	RulesPort portin.QueryRules
 }
 
 func NewAddQueryController(p AddQueryParams) *AddQueryController {
 	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&p.Meter, p.Logger, &AddQueryCounter, &MetricMap, "num_notification_add_query_request")
-	return &AddQueryController{rulesPort: p.rulesPort, Logger: p.Logger}
+	return &AddQueryController{rulesPort: p.RulesPort, Logger: p.Logger}
 }
 
 type AddQueryController struct {
