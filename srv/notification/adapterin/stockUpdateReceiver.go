@@ -73,8 +73,14 @@ func (s StockUpdateReceiver) Handle(_ context.Context, msg jetstream.Msg) error 
 		}
 	}
 
-	cmd := servicecmd.NewAddStockUpdateCmd(request.WarehouseID, string(request.Type), request.OrderID, request.TransferID, goods, time.Now().Unix())
-	return s.stockPort.RecordStockUpdate(cmd)
+	return s.stockPort.RecordStockUpdate(&servicecmd.AddStockUpdateCmd{
+		WarehouseID: request.WarehouseID,
+		Type:        string(request.Type),
+		OrderID:     request.OrderID,
+		TransferID:  request.TransferID,
+		Goods:       goods,
+		Timestamp:   time.Now().Unix(),
+	})
 }
 
 func (s StockUpdateReceiver) Stream() jetstream.StreamConfig {

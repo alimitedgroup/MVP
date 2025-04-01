@@ -113,7 +113,7 @@ func (rc *RuleChecker) checkAllRules() {
 
 		// Invoca il metodo del service che interroga Influx
 		resp := rc.queryPort.GetCurrentQuantityByGoodID(goodID)
-		if err := resp.GetOperationResult(); err != nil {
+		if resp.Err != nil {
 			rc.Error("Errore nel recupero stock", zap.String("goodId", goodID), zap.Error(err))
 			continue
 		}

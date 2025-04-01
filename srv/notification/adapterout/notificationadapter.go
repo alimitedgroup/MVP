@@ -217,17 +217,17 @@ func (na *NotificationAdapter) GetCurrentQuantityByGoodID(goodID string) *types.
 		|> last()`
 	result, err := na.queryApi.Query(context.Background(), fluxQuery)
 	if err != nil {
-		return types.NewGetRuleResultResponse(goodID, 0, err)
+		return &types.GetRuleResultResponse{GoodID: goodID, Err: err}
 	}
 	for result.Next() {
 		val, ok := result.Record().Value().(int64)
 		if !ok {
 			continue
 		}
-		return types.NewGetRuleResultResponse(goodID, int(val), nil)
+		return &types.GetRuleResultResponse{GoodID: goodID, CurrentQuantity: int(val)}
 	}
 	if result.Err() != nil {
-		return types.NewGetRuleResultResponse(goodID, 0, result.Err())
+		return &types.GetRuleResultResponse{GoodID: goodID, Err: result.Err()}
 	}
-	return types.NewGetRuleResultResponse(goodID, 0, nil)
+	return &types.GetRuleResultResponse{GoodID: goodID}
 }
