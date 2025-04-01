@@ -5,19 +5,24 @@ import (
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
 	"github.com/google/uuid"
+	"go.uber.org/fx"
 )
 
-func NewBusiness(
-	ruleRepo portout.RuleRepository,
-	alertPublisher portout.StockEventPublisher,
-	quantityReader portout.RuleQueryRepository,
-	stockRepo portout.StockRepository,
-) *Business {
+type BusinessParams struct {
+	fx.In
+
+	RuleRepo       portout.RuleRepository
+	AlertPublisher portout.StockEventPublisher
+	QuantityReader portout.RuleQueryRepository
+	StockRepo      portout.StockRepository
+}
+
+func NewBusiness(p BusinessParams) *Business {
 	return &Business{
-		ruleRepo:       ruleRepo,
-		alertPublisher: alertPublisher,
-		quantityReader: quantityReader,
-		stockRepo:      stockRepo,
+		ruleRepo:       p.RuleRepo,
+		alertPublisher: p.AlertPublisher,
+		quantityReader: p.QuantityReader,
+		stockRepo:      p.StockRepo,
 	}
 }
 

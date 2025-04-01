@@ -4,52 +4,43 @@ import (
 	"context"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
 	"github.com/alimitedgroup/MVP/srv/notification/config"
+	"go.uber.org/fx"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/notification/portin"
 	"github.com/alimitedgroup/MVP/srv/notification/portout"
 	"github.com/alimitedgroup/MVP/srv/notification/types"
 	"github.com/google/uuid"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-type RuleChecker struct {
-	*zap.Logger
-	cfg *config.NotificationConfig
-	brk *broker.NatsMessageBroker
+type RuleCheckerParams struct {
+	fx.In
+	Lc fx.Lifecycle
 
-	rulePort    portin.QueryRules
-	queryPort   portout.RuleQueryRepository
-	publishPort portout.StockEventPublisher
-
-	// stop e stopOk sono canali su cui verrà mandato al massimo un messaggio
-	// Per la logica che ci sta dietro, fare riferimento al commento all'interno di NewRuleChecker.
-	stop   chan bool
-	stopOk chan bool
+	Logger  *zap.Logger
+	Brk     *broker.NatsMessageBroker
+	Rules   portin.QueryRules
+	Queries portout.RuleQueryRepository
+	Publish portout.StockEventPublisher
+	Cfg     *config.NotificationConfig
 }
 
 func NewRuleChecker(
-	lc fx.Lifecycle,
-	logger *zap.Logger,
-	brk *broker.NatsMessageBroker,
-	rules portin.QueryRules,
-	queries portout.RuleQueryRepository,
-	publish portout.StockEventPublisher,
-	cfg *config.NotificationConfig,
+	p RuleCheckerParams,
 ) *RuleChecker {
 	rc := &RuleChecker{
-		rulePort:    rules,
-		queryPort:   queries,
-		publishPort: publish,
+		rulePort:    p.Rules,
+		queryPort:   p.Queries,
+		publishPort: p.Publish,
+		Logger:      p.Logger.Named("rule-checker"),
+		cfg:         p.Cfg,
+		brk:         p.Brk,
 		stop:        make(chan bool, 1),
 		stopOk:      make(chan bool, 1),
-		Logger:      logger.Named("rule-checker"),
-		cfg:         cfg,
-		brk:         brk,
 	}
 
-	lc.Append(fx.Hook{
+	p.Lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go rc.run()
 			return nil
@@ -71,6 +62,21 @@ func NewRuleChecker(
 	})
 
 	return rc
+}
+
+type RuleChecker struct {
+	*zap.Logger
+	cfg *config.NotificationConfig
+	brk *broker.NatsMessageBroker
+
+	rulePort    portin.QueryRules
+	queryPort   portout.RuleQueryRepository
+	publishPort portout.StockEventPublisher
+
+	// stop e stopOk sono canali su cui verrà mandato al massimo un messaggio
+	// Per la logica che ci sta dietro, fare riferimento al commento all'interno di NewRuleChecker.
+	stop   chan bool
+	stopOk chan bool
 }
 
 func (rc *RuleChecker) run() {
