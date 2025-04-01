@@ -22,9 +22,11 @@ type RuleChecker struct {
 	rulePort    portin.QueryRules
 	queryPort   portout.RuleQueryRepository
 	publishPort portout.StockEventPublisher
-	// stop è un canale su cui verranno mandati al massimo due messaggi.
+
+	// stop e stopOk sono canali su cui verrà mandato al massimo un messaggio
 	// Per la logica che ci sta dietro, fare riferimento al commento all'interno di NewRuleChecker.
-	stop chan bool
+	stop   chan bool
+	stopOk chan bool
 }
 
 func NewRuleChecker(
@@ -41,6 +43,7 @@ func NewRuleChecker(
 		queryPort:   queries,
 		publishPort: publish,
 		stop:        make(chan bool, 1),
+		stopOk:      make(chan bool, 1),
 		Logger:      logger.Named("rule-checker"),
 		cfg:         cfg,
 		brk:         brk,
@@ -54,14 +57,14 @@ func NewRuleChecker(
 		// Questo blocco si occupa di fermare la goroutine che gestisce il controllo delle regole.
 		// La logica è semplice:
 		// 1) Quando l'applicazione si sta fermando, mandiamo un messaggio sul canale stop
-		// 2) Attendiamo finché non arriva una risposta, sempre nel canale stop,
+		// 2) Attendiamo finché non arriva una risposta, all'interno del canale stopOk,
 		//    o finché non andiamo in timeout (ossia arriva un messaggio sul canale ctx.Done())
 		// 3) Terminiamo
 		OnStop: func(ctx context.Context) error {
 			rc.stop <- true
 			select {
 			case <-ctx.Done():
-			case <-rc.stop:
+			case <-rc.stopOk:
 			}
 			return nil
 		},
@@ -76,7 +79,7 @@ func (rc *RuleChecker) run() {
 		select {
 		case <-rc.stop:
 			rc.Debug("RuleChecker stopped")
-			rc.stop <- true
+			rc.stopOk <- true
 			return
 		case <-ticker.C:
 			rc.checkAllRules()
