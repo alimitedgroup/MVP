@@ -17,6 +17,7 @@ type ApplyStockUpdateService struct {
 	applyTransferUpdatePort   port.IApplyTransferUpdatePort
 	setCompleteTransferPort   port.ISetCompleteTransferPort
 	setCompletedWarehousePort port.ISetCompletedWarehouseOrderPort
+	transactionPort           port.ITransactionPort
 }
 
 type ApplyStockUpdateServiceParams struct {
@@ -29,15 +30,19 @@ type ApplyStockUpdateServiceParams struct {
 	ApplyTransferUpdatePort   port.IApplyTransferUpdatePort
 	SetCompleteTransferPort   port.ISetCompleteTransferPort
 	SetCompletedWarehousePort port.ISetCompletedWarehouseOrderPort
+	TransactionPort           port.ITransactionPort
 }
 
 func NewApplyStockUpdateService(
 	p ApplyStockUpdateServiceParams,
 ) *ApplyStockUpdateService {
-	return &ApplyStockUpdateService{p.ApplyStockUpdatePort, p.ApplyOrderUpdatePort, p.GetOrderPort, p.GetTransferPort, p.ApplyTransferUpdatePort, p.SetCompleteTransferPort, p.SetCompletedWarehousePort}
+	return &ApplyStockUpdateService{p.ApplyStockUpdatePort, p.ApplyOrderUpdatePort, p.GetOrderPort, p.GetTransferPort, p.ApplyTransferUpdatePort, p.SetCompleteTransferPort, p.SetCompletedWarehousePort, p.TransactionPort}
 }
 
 func (s *ApplyStockUpdateService) ApplyStockUpdate(ctx context.Context, cmd port.StockUpdateCmd) error {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	// check if the stock update is related to an order
 	if cmd.Type == port.StockUpdateCmdTypeOrder {
 		err := s.applyStockUpdateFromOrder(cmd)

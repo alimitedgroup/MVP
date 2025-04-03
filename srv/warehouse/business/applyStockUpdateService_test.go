@@ -20,9 +20,14 @@ func TestApplyStockUpdateService(t *testing.T) {
 	applyStockUpdatePortmock := NewMockIApplyStockUpdatePort(ctrl)
 	applyStockUpdatePortmock.EXPECT().ApplyStockUpdate(gomock.Any())
 
+	transactionPort := NewMockITransactionPort(ctrl)
+	transactionPort.EXPECT().Lock()
+	transactionPort.EXPECT().Unlock()
+
 	app := fx.New(
 		fx.Supply(fx.Annotate(idempotentPortMock, fx.As(new(port.IIdempotentPort)))),
 		fx.Supply(fx.Annotate(applyStockUpdatePortmock, fx.As(new(port.IApplyStockUpdatePort)))),
+		fx.Supply(fx.Annotate(transactionPort, fx.As(new(port.ITransactionPort)))),
 		fx.Provide(NewApplyStockUpdateService),
 		fx.Invoke(func(service *ApplyStockUpdateService) {
 			cmd := port.StockUpdateCmd{

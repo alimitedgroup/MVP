@@ -19,6 +19,7 @@ type manageReservationServiceMockSuite struct {
 	getReservationPort        *MockIGetReservationPort
 	applyReservationEventPort *MockIApplyReservationEventPort
 	idempotentPortMock        *MockIIdempotentPort
+	transactionPortMock       *MockITransactionPort
 }
 
 func newManageReservationServiceMockSuite(t *testing.T) *manageReservationServiceMockSuite {
@@ -31,6 +32,7 @@ func newManageReservationServiceMockSuite(t *testing.T) *manageReservationServic
 		getReservationPort:        NewMockIGetReservationPort(ctrl),
 		applyReservationEventPort: NewMockIApplyReservationEventPort(ctrl),
 		idempotentPortMock:        NewMockIIdempotentPort(ctrl),
+		transactionPortMock:       NewMockITransactionPort(ctrl),
 	}
 }
 
@@ -41,6 +43,8 @@ func runTestManageReservationService(t *testing.T, build func(*manageReservation
 	cfg := config.WarehouseConfig{ID: "1"}
 
 	build(suite)
+	suite.transactionPortMock.EXPECT().Lock()
+	suite.transactionPortMock.EXPECT().Unlock()
 
 	app := fx.New(
 		fx.Supply(&cfg),
@@ -50,6 +54,7 @@ func runTestManageReservationService(t *testing.T, build func(*manageReservation
 		fx.Supply(fx.Annotate(suite.idempotentPortMock, fx.As(new(port.IIdempotentPort)))),
 		fx.Supply(fx.Annotate(suite.applyReservationEventPort, fx.As(new(port.IApplyReservationEventPort)))),
 		fx.Supply(fx.Annotate(suite.getReservationPort, fx.As(new(port.IGetReservationPort)))),
+		fx.Supply(fx.Annotate(suite.transactionPortMock, fx.As(new(port.ITransactionPort)))),
 		fx.Provide(NewManageReservationService),
 		fx.Invoke(runLifeCycle()),
 		buildOptions(),

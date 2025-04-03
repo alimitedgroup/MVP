@@ -62,10 +62,12 @@ func (s *SimpleCalculateAvailabilityService) GetAvailable(ctx context.Context, c
 			}
 
 			toReserveQty := min(stock.Quantity, quantity)
-			toReserveGoods[goodID] = toReserveQty
-			reqGoods[goodID] -= toReserveQty
-			total -= toReserveQty
-			warehouseTotal += toReserveQty
+			if toReserveQty > 0 {
+				toReserveGoods[goodID] = toReserveQty
+				reqGoods[goodID] -= toReserveQty
+				total -= toReserveQty
+				warehouseTotal += toReserveQty
+			}
 		}
 
 		if warehouseTotal > 0 {

@@ -13,6 +13,7 @@ type ManageStockService struct {
 	createStockUpdatePort port.ICreateStockUpdatePort
 	getStockPort          port.IGetStockPort
 	getGoodPort           port.IGetGoodPort
+	transactionPort       port.ITransactionPort
 }
 
 type ManageStockServiceParams struct {
@@ -21,13 +22,17 @@ type ManageStockServiceParams struct {
 	CreateStockUpdatePort port.ICreateStockUpdatePort
 	GetStockPort          port.IGetStockPort
 	GetGoodPort           port.IGetGoodPort
+	TransactionPort       port.ITransactionPort
 }
 
 func NewManageStockService(p ManageStockServiceParams) *ManageStockService {
-	return &ManageStockService{p.CreateStockUpdatePort, p.GetStockPort, p.GetGoodPort}
+	return &ManageStockService{p.CreateStockUpdatePort, p.GetStockPort, p.GetGoodPort, p.TransactionPort}
 }
 
 func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd) error {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	if s.getGoodPort.GetGood(model.GoodID(cmd.GoodID)) == nil {
 		return fmt.Errorf("good %s not found", cmd.GoodID)
 	}
@@ -57,6 +62,9 @@ func (s *ManageStockService) AddStock(ctx context.Context, cmd port.AddStockCmd)
 }
 
 func (s *ManageStockService) RemoveStock(ctx context.Context, cmd port.RemoveStockCmd) error {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	if s.getGoodPort.GetGood(model.GoodID(cmd.GoodID)) == nil {
 		return fmt.Errorf("good %s not found", cmd.GoodID)
 	}

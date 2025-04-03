@@ -20,6 +20,7 @@ type managerOrderServiceMockSuite struct {
 	sendContactWarehousePort     *MockISendContactWarehousePort
 	requestReservationPort       *MockIRequestReservationPort
 	calculateAvailabilityUseCase *MockICalculateAvailabilityUseCase
+	transactionPort              *MockITransactionPort
 }
 
 func newManagerOrderServiceMockSuite(t *testing.T) *managerOrderServiceMockSuite {
@@ -33,6 +34,7 @@ func newManagerOrderServiceMockSuite(t *testing.T) *managerOrderServiceMockSuite
 		sendContactWarehousePort:     NewMockISendContactWarehousePort(ctrl),
 		requestReservationPort:       NewMockIRequestReservationPort(ctrl),
 		calculateAvailabilityUseCase: NewMockICalculateAvailabilityUseCase(ctrl),
+		transactionPort:              NewMockITransactionPort(ctrl),
 	}
 }
 
@@ -41,6 +43,8 @@ func runTestManagerOrderService(t *testing.T, build func(*managerOrderServiceMoc
 	suite := newManagerOrderServiceMockSuite(t)
 
 	build(suite)
+	suite.transactionPort.EXPECT().Lock()
+	suite.transactionPort.EXPECT().Unlock()
 
 	app := fx.New(
 		fx.Supply(fx.Annotate(suite.getOrderPort, fx.As(new(port.IGetOrderPort)))),
@@ -50,6 +54,7 @@ func runTestManagerOrderService(t *testing.T, build func(*managerOrderServiceMoc
 		fx.Supply(fx.Annotate(suite.sendContactWarehousePort, fx.As(new(port.ISendContactWarehousePort)))),
 		fx.Supply(fx.Annotate(suite.requestReservationPort, fx.As(new(port.IRequestReservationPort)))),
 		fx.Supply(fx.Annotate(suite.calculateAvailabilityUseCase, fx.As(new(port.ICalculateAvailabilityUseCase)))),
+		fx.Supply(fx.Annotate(suite.transactionPort, fx.As(new(port.ITransactionPort)))),
 		fx.Provide(NewManageOrderService),
 		fx.Invoke(runLifeCycle()),
 		buildOptions(),

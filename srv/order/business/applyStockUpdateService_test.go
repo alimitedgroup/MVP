@@ -19,6 +19,7 @@ type applyStockUpdateServiceMockSuite struct {
 	applyTransferUpdatePort   *MockIApplyTransferUpdatePort
 	setCompleteTransferPort   *MockISetCompleteTransferPort
 	setCompletedWarehousePort *MockISetCompletedWarehouseOrderPort
+	transactionPort           *MockITransactionPort
 }
 
 func newApplyStockUpdateServiceMockSuite(t *testing.T) *applyStockUpdateServiceMockSuite {
@@ -32,6 +33,7 @@ func newApplyStockUpdateServiceMockSuite(t *testing.T) *applyStockUpdateServiceM
 		applyTransferUpdatePort:   NewMockIApplyTransferUpdatePort(ctrl),
 		setCompleteTransferPort:   NewMockISetCompleteTransferPort(ctrl),
 		setCompletedWarehousePort: NewMockISetCompletedWarehouseOrderPort(ctrl),
+		transactionPort:           NewMockITransactionPort(ctrl),
 	}
 }
 
@@ -40,6 +42,8 @@ func runTestApplyStockUpdateService(t *testing.T, build func(*applyStockUpdateSe
 	suite := newApplyStockUpdateServiceMockSuite(t)
 
 	build(suite)
+	suite.transactionPort.EXPECT().Lock()
+	suite.transactionPort.EXPECT().Unlock()
 
 	app := fx.New(
 		fx.Supply(fx.Annotate(suite.applyStockUpdatePort, fx.As(new(port.IApplyStockUpdatePort)))),
@@ -49,6 +53,7 @@ func runTestApplyStockUpdateService(t *testing.T, build func(*applyStockUpdateSe
 		fx.Supply(fx.Annotate(suite.applyTransferUpdatePort, fx.As(new(port.IApplyTransferUpdatePort)))),
 		fx.Supply(fx.Annotate(suite.setCompleteTransferPort, fx.As(new(port.ISetCompleteTransferPort)))),
 		fx.Supply(fx.Annotate(suite.setCompletedWarehousePort, fx.As(new(port.ISetCompletedWarehouseOrderPort)))),
+		fx.Supply(fx.Annotate(suite.transactionPort, fx.As(new(port.ITransactionPort)))),
 		fx.Provide(NewApplyStockUpdateService),
 		fx.Invoke(runLifeCycle()),
 		buildOptions(),
