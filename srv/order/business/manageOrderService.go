@@ -19,7 +19,7 @@ type ManageOrderService struct {
 	sendContactWarehousePort     port.ISendContactWarehousePort
 	requestReservationPort       port.IRequestReservationPort
 	calculateAvailabilityUseCase port.ICalculateAvailabilityUseCase
-	transactionPort              port.TransactionPort
+	transactionPort              port.ITransactionPort
 }
 
 type ManageOrderServiceParams struct {
@@ -31,7 +31,7 @@ type ManageOrderServiceParams struct {
 	SendContactWarehousePort     port.ISendContactWarehousePort
 	RequestReservationPort       port.IRequestReservationPort
 	CalculateAvailabilityUseCase port.ICalculateAvailabilityUseCase
-	TransactionPort              port.TransactionPort
+	TransactionPort              port.ITransactionPort
 }
 
 func NewManageOrderService(p ManageOrderServiceParams) *ManageOrderService {

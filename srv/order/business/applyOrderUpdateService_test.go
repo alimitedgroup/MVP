@@ -13,6 +13,7 @@ import (
 type applyOrderUpdateServiceMockSuite struct {
 	applyOrderUpdatePort    *MockIApplyOrderUpdatePort
 	applyTransferUpdatePort *MockIApplyTransferUpdatePort
+	transactionPort         *MockITransactionPort
 }
 
 func newApplyOrderUpdateServiceMockSuite(t *testing.T) *applyOrderUpdateServiceMockSuite {
@@ -21,6 +22,7 @@ func newApplyOrderUpdateServiceMockSuite(t *testing.T) *applyOrderUpdateServiceM
 	return &applyOrderUpdateServiceMockSuite{
 		applyOrderUpdatePort:    NewMockIApplyOrderUpdatePort(ctrl),
 		applyTransferUpdatePort: NewMockIApplyTransferUpdatePort(ctrl),
+		transactionPort:         NewMockITransactionPort(ctrl),
 	}
 }
 
@@ -29,10 +31,13 @@ func runTestapplyOrderUpdateService(t *testing.T, build func(*applyOrderUpdateSe
 	suite := newApplyOrderUpdateServiceMockSuite(t)
 
 	build(suite)
+	suite.transactionPort.EXPECT().Lock()
+	suite.transactionPort.EXPECT().Unlock()
 
 	app := fx.New(
 		fx.Supply(fx.Annotate(suite.applyOrderUpdatePort, fx.As(new(port.IApplyOrderUpdatePort)))),
 		fx.Supply(fx.Annotate(suite.applyTransferUpdatePort, fx.As(new(port.IApplyTransferUpdatePort)))),
+		fx.Supply(fx.Annotate(suite.transactionPort, fx.As(new(port.ITransactionPort)))),
 		fx.Provide(NewApplyOrderUpdateService),
 		fx.Invoke(runLifeCycle()),
 		buildOptions(),

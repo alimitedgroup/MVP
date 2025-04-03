@@ -11,7 +11,7 @@ import (
 type ApplyOrderUpdateService struct {
 	applyOrderUpdatePort    port.IApplyOrderUpdatePort
 	applyTransferUpdatePort port.IApplyTransferUpdatePort
-	transactionPort         port.TransactionPort
+	transactionPort         port.ITransactionPort
 }
 
 type ApplyOrderUpdateServiceParams struct {
@@ -19,7 +19,7 @@ type ApplyOrderUpdateServiceParams struct {
 
 	ApplyOrderUpdatePort    port.IApplyOrderUpdatePort
 	ApplyTransferUpdatePort port.IApplyTransferUpdatePort
-	TransactionPort         port.TransactionPort
+	TransactionPort         port.ITransactionPort
 }
 
 func NewApplyOrderUpdateService(p ApplyOrderUpdateServiceParams) *ApplyOrderUpdateService {

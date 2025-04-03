@@ -9,6 +9,7 @@ import (
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/magiconair/properties/assert"
 	"go.uber.org/fx"
+	"go.uber.org/mock/gomock"
 )
 
 type mockGood struct {
@@ -72,10 +73,15 @@ func (m *mockPortsImpl) CreateStockUpdate(ctx context.Context, cmd port.CreateSt
 
 func TestManageStockService(t *testing.T) {
 	ctx := t.Context()
+	ctrl := gomock.NewController(t)
 	mock := newMockPortsImpl()
+	transactionPort := NewMockITransactionPort(ctrl)
+	transactionPort.EXPECT().Lock().Times(2)
+	transactionPort.EXPECT().Unlock().Times(2)
 
 	app := fx.New(
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.ICreateStockUpdatePort)), fx.As(new(port.IGetStockPort)), fx.As(new(port.IGetGoodPort)))),
+		fx.Supply(fx.Annotate(transactionPort, fx.As(new(port.ITransactionPort)))),
 		fx.Provide(fx.Annotate(NewManageStockService, fx.As(new(port.IAddStockUseCase)), fx.As(new(port.IRemoveStockUseCase)))),
 		fx.Invoke(func(lc fx.Lifecycle, addStockUseCase port.IAddStockUseCase, removeStockUseCase port.IRemoveStockUseCase) {
 			lc.Append(fx.Hook{OnStart: func(ctx context.Context) error {

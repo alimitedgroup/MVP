@@ -8,10 +8,10 @@ import (
 type ApplyStockUpdateService struct {
 	applyStockUpdatePort port.IApplyStockUpdatePort
 	idempotentPort       port.IIdempotentPort
-	transactionPort      port.TransactionPort
+	transactionPort      port.ITransactionPort
 }
 
-func NewApplyStockUpdateService(applyStockUpdatePort port.IApplyStockUpdatePort, idempotentPort port.IIdempotentPort, transactionPort port.TransactionPort) *ApplyStockUpdateService {
+func NewApplyStockUpdateService(applyStockUpdatePort port.IApplyStockUpdatePort, idempotentPort port.IIdempotentPort, transactionPort port.ITransactionPort) *ApplyStockUpdateService {
 	return &ApplyStockUpdateService{applyStockUpdatePort, idempotentPort, transactionPort}
 }
 

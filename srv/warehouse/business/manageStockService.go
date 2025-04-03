@@ -13,7 +13,7 @@ type ManageStockService struct {
 	createStockUpdatePort port.ICreateStockUpdatePort
 	getStockPort          port.IGetStockPort
 	getGoodPort           port.IGetGoodPort
-	transactionPort       port.TransactionPort
+	transactionPort       port.ITransactionPort
 }
 
 type ManageStockServiceParams struct {
@@ -22,7 +22,7 @@ type ManageStockServiceParams struct {
 	CreateStockUpdatePort port.ICreateStockUpdatePort
 	GetStockPort          port.IGetStockPort
 	GetGoodPort           port.IGetGoodPort
-	TransactionPort       port.TransactionPort
+	TransactionPort       port.ITransactionPort
 }
 
 func NewManageStockService(p ManageStockServiceParams) *ManageStockService {

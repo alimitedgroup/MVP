@@ -17,7 +17,7 @@ type ApplyStockUpdateService struct {
 	applyTransferUpdatePort   port.IApplyTransferUpdatePort
 	setCompleteTransferPort   port.ISetCompleteTransferPort
 	setCompletedWarehousePort port.ISetCompletedWarehouseOrderPort
-	transactionPort           port.TransactionPort
+	transactionPort           port.ITransactionPort
 }
 
 type ApplyStockUpdateServiceParams struct {
@@ -30,7 +30,7 @@ type ApplyStockUpdateServiceParams struct {
 	ApplyTransferUpdatePort   port.IApplyTransferUpdatePort
 	SetCompleteTransferPort   port.ISetCompleteTransferPort
 	SetCompletedWarehousePort port.ISetCompletedWarehouseOrderPort
-	TransactionPort           port.TransactionPort
+	TransactionPort           port.ITransactionPort
 }
 
 func NewApplyStockUpdateService(

@@ -19,7 +19,7 @@ type ManageReservationService struct {
 	createStockUpdatePort      port.ICreateStockUpdatePort
 	idempotentPort             port.IIdempotentPort
 	cfg                        *config.WarehouseConfig
-	transactionPort            port.TransactionPort
+	transactionPort            port.ITransactionPort
 }
 
 type ManageReservationServiceParams struct {
@@ -32,7 +32,7 @@ type ManageReservationServiceParams struct {
 	CreateStockUpdatePort      port.ICreateStockUpdatePort
 	IdempotentPort             port.IIdempotentPort
 	Cfg                        *config.WarehouseConfig
-	TransactionPort            port.TransactionPort
+	TransactionPort            port.ITransactionPort
 }
 
 func NewManageReservationService(p ManageReservationServiceParams) *ManageReservationService {

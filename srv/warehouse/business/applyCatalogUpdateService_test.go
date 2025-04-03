@@ -8,6 +8,7 @@ import (
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
+	"go.uber.org/mock/gomock"
 )
 
 type applyCatalogUpdatePortMock struct {
@@ -26,10 +27,15 @@ func TestApplyCatalogUpdateService(t *testing.T) {
 	ctx := t.Context()
 
 	mock := newApplyCatalogUpdatePortMock()
+	ctrl := gomock.NewController(t)
+	transactionMock := NewMockITransactionPort(ctrl)
+	transactionMock.EXPECT().Lock()
+	transactionMock.EXPECT().Unlock()
 
 	app := fx.New(
 		fx.Supply(fx.Annotate(mock, fx.As(new(port.IApplyCatalogUpdatePort)))),
 		fx.Provide(fx.Annotate(NewApplyCatalogUpdateService, fx.As(new(port.IApplyCatalogUpdateUseCase)))),
+		fx.Supply(fx.Annotate(transactionMock, fx.As(new(port.ITransactionPort)))),
 		fx.Invoke(func(useCase port.IApplyCatalogUpdateUseCase) {
 			cmd := port.CatalogUpdateCmd{
 				GoodID:      "1",

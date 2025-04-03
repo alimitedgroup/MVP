@@ -19,5 +19,5 @@ var Module = fx.Options(
 
 	fx.Provide(fx.Annotate(NewIdempotentRepositoryImpl, fx.As(new(IIdempotentRepository)))),
 	fx.Provide(fx.Annotate(NewIDempotentAdapter, fx.As(new(port.IIdempotentPort)))),
-	fx.Provide(fx.Annotate(NewTransactionImpl, fx.As(new(port.TransactionPort)))),
+	fx.Provide(fx.Annotate(NewTransactionImpl, fx.As(new(port.ITransactionPort)))),
 )

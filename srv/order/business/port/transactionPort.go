@@ -1,6 +1,6 @@
 package port
 
-type TransactionPort interface {
+type ITransactionPort interface {
 	Lock()
 	Unlock()
 }
