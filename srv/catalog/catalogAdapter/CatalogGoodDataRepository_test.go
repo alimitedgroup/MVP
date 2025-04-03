@@ -20,13 +20,13 @@ func NewFakeGoodRepo() *fakeGoodRepo {
 	return &fakeGoodRepo{}
 }
 
-func (fr *fakeRepo) GetGoods() map[string]dto.Good {
+func (fr *fakeGoodRepo) GetGoods() map[string]dto.Good {
 	goods := make(map[string]dto.Good)
 	goods["test-ID"] = *dto.NewGood("test-ID", "test-name", "test-description")
 	return goods
 }
 
-func (fr *fakeRepo) AddGood(goodID string, name string, description string) error {
+func (fr *fakeGoodRepo) AddGood(goodID string, name string, description string) error {
 	if goodID == "test-wrong-ID" {
 		return catalogCommon.ErrGoodIdNotValid
 	}
@@ -41,7 +41,7 @@ func TestAddChangeGoodData(t *testing.T) {
 			fx.Annotate(NewFakeGoodRepo,
 				fx.As(new(persistence.ICatalogGoodDataRepository))),
 		),
-		fx.Provide(NewCatalogRepositoryAdapter),
+		fx.Provide(NewCatalogGoodDataRepositoryAdapter),
 		fx.Invoke(func(a *CatalogGoodDataRepositoryAdapter) {
 			cmd := servicecmd.NewAddChangeGoodCmd("test-ID", "test-name", "test-desc")
 			response := a.AddOrChangeGoodData(cmd)
@@ -56,7 +56,7 @@ func TestAddChangeGoodDataWithWrongID(t *testing.T) {
 			fx.Annotate(NewFakeGoodRepo,
 				fx.As(new(persistence.ICatalogGoodDataRepository))),
 		),
-		fx.Provide(NewCatalogRepositoryAdapter),
+		fx.Provide(NewCatalogGoodDataRepositoryAdapter),
 		fx.Invoke(func(a *CatalogGoodDataRepositoryAdapter) {
 			cmd := servicecmd.NewAddChangeGoodCmd("test-wrong-ID", "test-name", "test-desc")
 			response := a.AddOrChangeGoodData(cmd)
@@ -71,7 +71,7 @@ func TestGetGoodsInfo(t *testing.T) {
 			fx.Annotate(NewFakeGoodRepo,
 				fx.As(new(persistence.ICatalogGoodDataRepository))),
 		),
-		fx.Provide(NewCatalogRepositoryAdapter),
+		fx.Provide(NewCatalogGoodDataRepositoryAdapter),
 		fx.Invoke(func(a *CatalogGoodDataRepositoryAdapter) {
 			cmd := servicecmd.NewGetGoodsInfoCmd()
 			response := a.GetGoodsInfo(cmd)
