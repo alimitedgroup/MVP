@@ -2,13 +2,13 @@ package business
 
 import (
 	"context"
+	"log"
 
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/model"
 	"github.com/alimitedgroup/MVP/srv/warehouse/business/port"
 	"github.com/alimitedgroup/MVP/srv/warehouse/config"
 	"github.com/google/uuid"
 	"go.uber.org/fx"
-	"golang.org/x/exp/slog"
 )
 
 type ManageReservationService struct {
@@ -19,6 +19,7 @@ type ManageReservationService struct {
 	createStockUpdatePort      port.ICreateStockUpdatePort
 	idempotentPort             port.IIdempotentPort
 	cfg                        *config.WarehouseConfig
+	transactionPort            port.TransactionPort
 }
 
 type ManageReservationServiceParams struct {
@@ -31,19 +32,24 @@ type ManageReservationServiceParams struct {
 	CreateStockUpdatePort      port.ICreateStockUpdatePort
 	IdempotentPort             port.IIdempotentPort
 	Cfg                        *config.WarehouseConfig
+	TransactionPort            port.TransactionPort
 }
 
 func NewManageReservationService(p ManageReservationServiceParams) *ManageReservationService {
 	return &ManageReservationService{
 		p.CreateReservationEventPort, p.ApplyReservationEventPort, p.GetReservationPort,
-		p.GetStockPort, p.CreateStockUpdatePort, p.IdempotentPort, p.Cfg,
+		p.GetStockPort, p.CreateStockUpdatePort, p.IdempotentPort, p.Cfg, p.TransactionPort,
 	}
 }
 
 func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd port.CreateReservationCmd) (port.CreateReservationResponse, error) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	validStock := true
 	for _, good := range cmd.Goods {
 		stock := s.getStockPort.GetFreeStock(model.GoodID(good.GoodID))
+		log.Printf("free stock: good: %v stock: %v", good.GoodID, stock)
 		if stock.Quantity < good.Quantity {
 			validStock = false
 			break
@@ -86,6 +92,9 @@ func (s *ManageReservationService) CreateReservation(ctx context.Context, cmd po
 }
 
 func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservationEventCmd) error {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	goods := make([]model.ReservationGood, 0, len(cmd.Goods))
 
 	for _, good := range cmd.Goods {
@@ -105,7 +114,7 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 		ID:    cmd.ID,
 	}
 	if s.idempotentPort.IsAlreadyProcessed(idempotentCmd) {
-		slog.Debug("reservation already processed", "cmd", cmd)
+		log.Printf("reservation already processed %v\n", cmd)
 		return nil
 	}
 
@@ -118,7 +127,10 @@ func (s *ManageReservationService) ApplyReservationEvent(cmd port.ApplyReservati
 }
 
 func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.ConfirmOrderCmd) error {
-	slog.Debug("ConfirmOrder", "cmd", cmd)
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
+	log.Printf("ConfirmOrder: %v\n", cmd)
 	if cmd.Status == "Filled" {
 		for _, reserv := range cmd.Reservations {
 			reservation, err := s.getReservationPort.GetReservation(model.ReservationID(reserv))
@@ -171,6 +183,9 @@ func (s *ManageReservationService) ConfirmOrder(ctx context.Context, cmd port.Co
 }
 
 func (s *ManageReservationService) ConfirmTransfer(ctx context.Context, cmd port.ConfirmTransferCmd) error {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	if cmd.Status == "Filled" {
 		if cmd.SenderID == s.cfg.ID {
 			reservation, err := s.getReservationPort.GetReservation(model.ReservationID(cmd.ReservationID))

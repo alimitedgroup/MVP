@@ -24,6 +24,8 @@ echo "Add stock for good hat-1"
 curl "${LA_PARAMS[@]}" -X POST "$BASE/goods/hat-1/warehouse/1/stock" \
   -d '{"quantity": 6}' | jq
 
+sleep 0.5
+
 echo "Get goods status"
 
 curl "${GA_PARAMS[@]}" -X GET "$BASE/goods" | jq

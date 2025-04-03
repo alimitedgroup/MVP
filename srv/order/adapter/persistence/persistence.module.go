@@ -18,4 +18,5 @@ var Module = fx.Options(
 	)),
 	fx.Provide(fx.Annotate(NewOrderRepositoryImpl, fx.As(new(IOrderRepository)))),
 	fx.Provide(fx.Annotate(NewStockPersistanceAdapter, fx.As(new(port.IGetStockPort)), fx.As(new(port.IApplyStockUpdatePort)))),
+	fx.Provide(fx.Annotate(NewTransactionImpl, fx.As(new(port.TransactionPort)))),
 )

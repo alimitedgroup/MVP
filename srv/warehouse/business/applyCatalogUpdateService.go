@@ -7,13 +7,17 @@ import (
 
 type ApplyCatalogUpdateService struct {
 	applyCatalogUpdatePort port.IApplyCatalogUpdatePort
+	transactionPort        port.TransactionPort
 }
 
-func NewApplyCatalogUpdateService(applyGoodUpdatePort port.IApplyCatalogUpdatePort) *ApplyCatalogUpdateService {
-	return &ApplyCatalogUpdateService{applyGoodUpdatePort}
+func NewApplyCatalogUpdateService(applyGoodUpdatePort port.IApplyCatalogUpdatePort, transactionPort port.TransactionPort) *ApplyCatalogUpdateService {
+	return &ApplyCatalogUpdateService{applyGoodUpdatePort, transactionPort}
 }
 
 func (s *ApplyCatalogUpdateService) ApplyCatalogUpdate(cmd port.CatalogUpdateCmd) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	good := model.GoodInfo{
 		ID:          cmd.GoodID,
 		Name:        cmd.Name,

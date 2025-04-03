@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/alimitedgroup/MVP/srv/order/business/model"
@@ -18,6 +19,7 @@ type ManageOrderService struct {
 	sendContactWarehousePort     port.ISendContactWarehousePort
 	requestReservationPort       port.IRequestReservationPort
 	calculateAvailabilityUseCase port.ICalculateAvailabilityUseCase
+	transactionPort              port.TransactionPort
 }
 
 type ManageOrderServiceParams struct {
@@ -29,13 +31,17 @@ type ManageOrderServiceParams struct {
 	SendContactWarehousePort     port.ISendContactWarehousePort
 	RequestReservationPort       port.IRequestReservationPort
 	CalculateAvailabilityUseCase port.ICalculateAvailabilityUseCase
+	TransactionPort              port.TransactionPort
 }
 
 func NewManageOrderService(p ManageOrderServiceParams) *ManageOrderService {
-	return &ManageOrderService{p.GetOrderPort, p.GetTransferPort, p.SendOrderUpdatePort, p.SendTransferUpdatePort, p.SendContactWarehousePort, p.RequestReservationPort, p.CalculateAvailabilityUseCase}
+	return &ManageOrderService{p.GetOrderPort, p.GetTransferPort, p.SendOrderUpdatePort, p.SendTransferUpdatePort, p.SendContactWarehousePort, p.RequestReservationPort, p.CalculateAvailabilityUseCase, p.TransactionPort}
 }
 
 func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.CreateTransferCmd) (port.CreateTransferResponse, error) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	transferId := uuid.New().String()
 
 	goods := make([]port.SendTransferUpdateGood, 0, len(cmd.Goods))
@@ -74,6 +80,9 @@ func (s *ManageOrderService) CreateTransfer(ctx context.Context, cmd port.Create
 }
 
 func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrderCmd) (port.CreateOrderResponse, error) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	orderId := uuid.New().String()
 	saveCmd := createOrderCmdToSendOrderUpdateCmd(orderId, cmd)
 
@@ -104,6 +113,9 @@ func (s *ManageOrderService) CreateOrder(ctx context.Context, cmd port.CreateOrd
 }
 
 func (s *ManageOrderService) GetOrder(ctx context.Context, orderId port.GetOrderCmd) (model.Order, error) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	order, err := s.getOrderPort.GetOrder(model.OrderID(orderId))
 	if err != nil {
 		return model.Order{}, err
@@ -113,11 +125,17 @@ func (s *ManageOrderService) GetOrder(ctx context.Context, orderId port.GetOrder
 }
 
 func (s *ManageOrderService) GetAllOrders(ctx context.Context) []model.Order {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	orders := s.getOrderPort.GetAllOrder()
 	return orders
 }
 
 func (s *ManageOrderService) GetTransfer(ctx context.Context, transferId port.GetTransferCmd) (model.Transfer, error) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	transfer, err := s.getTransferPort.GetTransfer(model.TransferID(transferId))
 	if err != nil {
 		return model.Transfer{}, err
@@ -127,11 +145,17 @@ func (s *ManageOrderService) GetTransfer(ctx context.Context, transferId port.Ge
 }
 
 func (s *ManageOrderService) GetAllTransfers(ctx context.Context) []model.Transfer {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	transfers := s.getTransferPort.GetAllTransfer()
 	return transfers
 }
 
 func (s *ManageOrderService) ContactWarehouses(ctx context.Context, cmd port.ContactWarehousesCmd) (port.ContactWarehousesResponse, error) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	var err error
 	var resp port.ContactWarehousesResponse
 
@@ -247,6 +271,7 @@ func (s *ManageOrderService) contactWarehouseForOrder(ctx context.Context, cmd p
 	errWarehouses := make([]string, 0, len(cmd.ExcludeWarehouses))
 
 	for _, warehouse := range availResp.Warehouses {
+		log.Printf("Warehouse %s items available: %v\n", warehouse.WarehouseID, warehouse.Goods)
 		reservCmd := warehouseAvailabilityToReservationCmd(warehouse)
 		reservResp, err := s.requestReservationPort.RequestReservation(ctx, reservCmd)
 		if err != nil {

@@ -27,6 +27,8 @@ curl "${LA_PARAMS[@]}" -X POST "$BASE/goods/hat-1/warehouse/1/stock" \
 curl "${LA_PARAMS[@]}" -X POST "$BASE/goods/hat-1/warehouse/2/stock" \
   -d '{"quantity": 4}' | jq
 
+sleep 0.5
+
 echo "Get warehouses list"
 
 curl "${GA_PARAMS[@]}" -X GET "$BASE/warehouses" | jq

@@ -11,6 +11,7 @@ import (
 type ApplyOrderUpdateService struct {
 	applyOrderUpdatePort    port.IApplyOrderUpdatePort
 	applyTransferUpdatePort port.IApplyTransferUpdatePort
+	transactionPort         port.TransactionPort
 }
 
 type ApplyOrderUpdateServiceParams struct {
@@ -18,18 +19,25 @@ type ApplyOrderUpdateServiceParams struct {
 
 	ApplyOrderUpdatePort    port.IApplyOrderUpdatePort
 	ApplyTransferUpdatePort port.IApplyTransferUpdatePort
+	TransactionPort         port.TransactionPort
 }
 
 func NewApplyOrderUpdateService(p ApplyOrderUpdateServiceParams) *ApplyOrderUpdateService {
-	return &ApplyOrderUpdateService{p.ApplyOrderUpdatePort, p.ApplyTransferUpdatePort}
+	return &ApplyOrderUpdateService{p.ApplyOrderUpdatePort, p.ApplyTransferUpdatePort, p.TransactionPort}
 }
 
 func (s *ApplyOrderUpdateService) ApplyOrderUpdate(ctx context.Context, cmd port.OrderUpdateCmd) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	portCmd := orderUpdateCmdToApplyOrderUpdateCmd(cmd)
 	s.applyOrderUpdatePort.ApplyOrderUpdate(portCmd)
 }
 
 func (s *ApplyOrderUpdateService) ApplyTransferUpdate(ctx context.Context, cmd port.TransferUpdateCmd) {
+	s.transactionPort.Lock()
+	defer s.transactionPort.Unlock()
+
 	portCmd := transferUpdateCmdToApplyTransferUpdateCmd(cmd)
 	s.applyTransferUpdatePort.ApplyTransferUpdate(portCmd)
 }
