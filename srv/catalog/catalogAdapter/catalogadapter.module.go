@@ -8,9 +8,11 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(NewCatalogRepositoryAdapter,
-			fx.As(new(serviceportout.IAddOrChangeGoodDataPort)),
 			fx.As(new(serviceportout.ISetGoodQuantityPort)),
 			fx.As(new(serviceportout.IGetGoodsQuantityPort)),
+			fx.As(new(serviceportout.IGetWarehousesInfoPort))),
+		fx.Annotate(NewCatalogGoodDataRepositoryAdapter,
+			fx.As(new(serviceportout.IAddOrChangeGoodDataPort)),
 			fx.As(new(serviceportout.IGetGoodsInfoPort)),
-			fx.As(new(serviceportout.IGetWarehousesInfoPort)))),
-)
+		),
+	))
