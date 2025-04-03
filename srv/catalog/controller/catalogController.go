@@ -22,16 +22,14 @@ import (
 )
 
 var (
-	TotalRequestCounter        metric.Int64Counter
-	GoodsGlobalQuantityCounter metric.Int64Counter
-	WarehouseRequestCounter    metric.Int64Counter
-	SetGoodQuantityCounter     metric.Int64Counter
-	Logger                     *zap.Logger
-	metricMap                  sync.Map
+	TotalRequestCounter     metric.Int64Counter
+	WarehouseRequestCounter metric.Int64Counter
+	SetGoodQuantityCounter  metric.Int64Counter
+	Logger                  *zap.Logger
+	metricMap               sync.Map
 )
 
 type catalogController struct {
-	getGoodsQuantityUseCase         serviceportin.IGetGoodsQuantityUseCase
 	getWarehouseInfoUseCase         serviceportin.IGetWarehousesUseCase
 	setMultipleGoodsQuantityUseCase serviceportin.ISetMultipleGoodsQuantityUseCase
 }
@@ -49,12 +47,11 @@ type CatalogControllerParams struct {
 
 func NewCatalogController(p CatalogControllerParams) *catalogController {
 	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &metricMap, "num_catalog_requests")
-	observability.CounterSetup(&p.Meter, p.Logger, &GoodsGlobalQuantityCounter, &metricMap, "num_goods_quantity_requests")
 	observability.CounterSetup(&p.Meter, p.Logger, &WarehouseRequestCounter, &metricMap, "num_warehouse_requests")
 	observability.CounterSetup(&p.Meter, p.Logger, &SetGoodDataCounter, &metricMap, "num_good_data_requests")
 	observability.CounterSetup(&p.Meter, p.Logger, &SetGoodQuantityCounter, &metricMap, "num_good_quantity_requests")
 	Logger = p.Logger
-	return &catalogController{getGoodsQuantityUseCase: p.GetGoodsQuantityUseCase, getWarehouseInfoUseCase: p.GetWarehouseInfoUseCase, setMultipleGoodsQuantityUseCase: p.SetMultipleGoodsQuantityUseCase}
+	return &catalogController{getWarehouseInfoUseCase: p.GetWarehouseInfoUseCase, setMultipleGoodsQuantityUseCase: p.SetMultipleGoodsQuantityUseCase}
 }
 
 func (cc *catalogController) GetWarehouseRequest(ctx context.Context, msg *nats.Msg) error { //GetWarehouses
@@ -83,43 +80,6 @@ func (cc *catalogController) GetWarehouseRequest(ctx context.Context, msg *nats.
 	responseFromService := cc.getWarehouseInfoUseCase.GetWarehouses(servicecmd.NewGetWarehousesCmd())
 
 	err = broker.RespondToMsg(msg, dto.GetWarehouseResponseDTO{WarehouseMap: responseFromService.GetWarehouseMap(), Err: ""})
-
-	if err != nil {
-		Logger.Debug("Cannot send response", zap.Error(err))
-		return err
-	}
-
-	return nil
-}
-
-func (cc *catalogController) GetGoodsGlobalQuantityRequest(ctx context.Context, msg *nats.Msg) error { //GetGoodsQuantity
-
-	Logger.Info("Received GetGoodsGlobalQuantity Request")
-	verdict := "success"
-	defer func() {
-		Logger.Info("Completed GetGoodsGlobalQuantity request")
-		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
-		GoodsGlobalQuantityCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
-	}()
-
-	request := &request.GetGoodsQuantityDTO{}
-
-	err := json.Unmarshal(msg.Data, request)
-
-	if err != nil {
-		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
-		Logger.Debug("Bad request", zap.Error(err))
-		err = broker.RespondToMsg(msg, dto.GetGoodsQuantityResponseDTO{GoodMap: make(map[string]int64), Err: err.Error()})
-		if err != nil {
-			Logger.Debug("Cannot send response", zap.Error(err))
-		}
-		return err
-	}
-
-	responseFromService := cc.getGoodsQuantityUseCase.GetGoodsQuantity(servicecmd.NewGetGoodsQuantityCmd())
-
-	err = broker.RespondToMsg(msg, dto.GetGoodsQuantityResponseDTO{GoodMap: responseFromService.GetMap(), Err: ""})
 
 	if err != nil {
 		Logger.Debug("Cannot send response", zap.Error(err))

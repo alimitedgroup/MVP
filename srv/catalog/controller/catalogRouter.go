@@ -11,11 +11,12 @@ type catalogRouter struct {
 	mb             *broker.NatsMessageBroker
 	controller     *catalogController
 	goodController *CatalogGoodInfoController
+	qtController   *CatalogGlobalQuantityController
 	rsc            *broker.RestoreStreamControl
 }
 
-func NewCatalogRouter(mb *broker.NatsMessageBroker, cc *catalogController, gc *CatalogGoodInfoController, rsc *broker.RestoreStreamControl) *catalogRouter {
-	return &catalogRouter{mb, cc, gc, rsc}
+func NewCatalogRouter(mb *broker.NatsMessageBroker, cc *catalogController, gc *CatalogGoodInfoController, qt *CatalogGlobalQuantityController, rsc *broker.RestoreStreamControl) *catalogRouter {
+	return &catalogRouter{mb, cc, gc, qt, rsc}
 }
 
 func (cr *catalogRouter) Setup(ctx context.Context) error {
@@ -36,7 +37,7 @@ func (cr *catalogRouter) Setup(ctx context.Context) error {
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterRequest(ctx, "catalog.getGoodsGlobalQuantity", "catalog", cr.controller.GetGoodsGlobalQuantityRequest) //GetGoodsQuantity
+	err = cr.mb.RegisterRequest(ctx, "catalog.getGoodsGlobalQuantity", "catalog", cr.qtController.GetGoodsGlobalQuantityRequest) //GetGoodsQuantity
 	if err != nil {
 		return nil
 	}
