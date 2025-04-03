@@ -2,10 +2,10 @@ package business
 
 import (
 	"fmt"
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
 	"testing"
 
 	"github.com/alimitedgroup/MVP/common/dto"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap/zaptest"
@@ -29,7 +29,7 @@ func TestGetWarehouses(t *testing.T) {
 	warehouses, err := business.GetWarehouses()
 	require.NoError(t, err)
 	require.Len(t, warehouses, 2)
-	require.ElementsMatch(t, []portin.WarehouseOverview{{ID: "abc"}, {ID: "def"}}, warehouses)
+	require.ElementsMatch(t, []types.WarehouseOverview{{ID: "abc"}, {ID: "def"}}, warehouses)
 }
 
 func TestGetWarehousesError(t *testing.T) {

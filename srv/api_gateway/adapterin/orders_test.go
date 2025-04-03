@@ -9,7 +9,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +16,7 @@ func TestGetOrders(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleClient,
 	}, nil)
@@ -61,7 +60,7 @@ func TestGetOrdersError(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleClient,
 	}, nil)

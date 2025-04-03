@@ -6,7 +6,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/url"
@@ -17,7 +16,7 @@ import (
 func TestLoginOk(t *testing.T) {
 	s := start(t)
 
-	s.auth.EXPECT().Login("user").Return(portin.LoginResult{
+	s.auth.EXPECT().Login("user").Return(types.LoginResult{
 		Token: "some.secure.token",
 		Role:  types.RoleClient,
 	}, nil)
@@ -64,7 +63,7 @@ func TestLoginMissingUsername(t *testing.T) {
 func TestLoginInternalError(t *testing.T) {
 	s := start(t)
 
-	s.auth.EXPECT().Login("user").Return(portin.LoginResult{}, fmt.Errorf("some error"))
+	s.auth.EXPECT().Login("user").Return(types.LoginResult{}, fmt.Errorf("some error"))
 
 	req, err := http.NewRequest(
 		"POST",
@@ -87,7 +86,7 @@ func TestLoginInternalError(t *testing.T) {
 func TestLoginAuthFailed(t *testing.T) {
 	s := start(t)
 
-	s.auth.EXPECT().Login("user").Return(portin.LoginResult{
+	s.auth.EXPECT().Login("user").Return(types.LoginResult{
 		Token: "",
 		Role:  types.RoleNone,
 	}, nil)

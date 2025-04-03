@@ -42,3 +42,21 @@ func RoleFromString(s string) UserRole {
 		return RoleNone
 	}
 }
+
+// LoginResult è il risultato di un login avvenuto con successo.
+type LoginResult struct {
+	// Token è una stringa opaca che il client dovrà fornire per autenticarsi.
+	Token UserToken
+	// Role è il ruolo che è assegnato all'utente.
+	Role UserRole
+}
+
+type UserData struct {
+	Username string
+	// Role è il ruolo che è assegnato all'utente.
+	Role UserRole
+}
+
+type WarehouseOverview struct {
+	ID string
+}

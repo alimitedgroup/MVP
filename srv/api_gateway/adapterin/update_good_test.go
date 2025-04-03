@@ -9,7 +9,6 @@ import (
 
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -18,7 +17,7 @@ func TestUpdateGood(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
@@ -45,7 +44,7 @@ func TestUpdateGoodError(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
@@ -72,7 +71,7 @@ func TestUpdateGoodMalformedInput(t *testing.T) {
 	s := start(t)
 	client := &http.Client{}
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)

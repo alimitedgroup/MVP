@@ -18,7 +18,7 @@ func NewAuthHealthCheckController(business portin.Auth) *AuthHealthCheckControll
 func (c *AuthHealthCheckController) Handler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(200, dto.IsLoggedResponse{
-			Role: c.MustGet("user_data").(portin.UserData).Role.String(),
+			Role: c.MustGet("user_data").(types.UserData).Role.String(),
 		})
 	}
 }
