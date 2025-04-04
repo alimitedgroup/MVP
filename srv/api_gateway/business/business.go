@@ -71,11 +71,6 @@ type Business struct {
 	*zap.Logger
 }
 
-func (b *Business) GetWarehouseByID(_ int64) (dto.Warehouse, error) {
-	//TODO da implementare quando catalog supporta questa query
-	panic("implement me")
-}
-
 func (b *Business) CreateQuery(goodId string, operator string, threshold int) (string, error) {
 	queryId, err := b.notification.CreateQuery(dto.Rule{
 		GoodId:    goodId,
