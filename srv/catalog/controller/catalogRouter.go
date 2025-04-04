@@ -8,34 +8,36 @@ import (
 )
 
 type catalogRouter struct {
-	mb         *broker.NatsMessageBroker
-	controller *catalogController
-	rsc        *broker.RestoreStreamControl
+	mb             *broker.NatsMessageBroker
+	controller     *catalogController
+	goodController *CatalogGoodInfoController
+	qtController   *CatalogGlobalQuantityController
+	rsc            *broker.RestoreStreamControl
 }
 
-func NewCatalogRouter(mb *broker.NatsMessageBroker, cc *catalogController, rsc *broker.RestoreStreamControl) *catalogRouter {
-	return &catalogRouter{mb, cc, rsc}
+func NewCatalogRouter(mb *broker.NatsMessageBroker, cc *catalogController, gc *CatalogGoodInfoController, qt *CatalogGlobalQuantityController, rsc *broker.RestoreStreamControl) *catalogRouter {
+	return &catalogRouter{mb, cc, gc, qt, rsc}
 }
 
 func (cr *catalogRouter) Setup(ctx context.Context) error {
-	err := cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.setGoodQuantityRequest) //SetMultipleGoodsQuantity
+	err := cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.StockUpdateStreamConfig, cr.controller.SetGoodQuantityRequest) //SetMultipleGoodsQuantity
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.AddOrChangeGoodDataStream, cr.controller.setGoodDataRequest) //AddOrChangeGoodData
+	err = cr.mb.RegisterJsHandler(ctx, cr.rsc, stream.AddOrChangeGoodDataStream, cr.goodController.SetGoodDataRequest) //AddOrChangeGoodData
 	if err != nil {
 		return nil
 	}
 	cr.rsc.Wait()
-	err = cr.mb.RegisterRequest(ctx, "catalog.getGoods", "catalog", cr.controller.getGoodsRequest) //GetGoodsInfo
+	err = cr.mb.RegisterRequest(ctx, "catalog.getGoods", "catalog", cr.goodController.GetGoodsRequest) //GetGoodsInfo
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterRequest(ctx, "catalog.getWarehouses", "catalog", cr.controller.getWarehouseRequest) //GetWarehouses
+	err = cr.mb.RegisterRequest(ctx, "catalog.getWarehouses", "catalog", cr.controller.GetWarehouseRequest) //GetWarehouses
 	if err != nil {
 		return nil
 	}
-	err = cr.mb.RegisterRequest(ctx, "catalog.getGoodsGlobalQuantity", "catalog", cr.controller.getGoodsGlobalQuantityRequest) //GetGoodsQuantity
+	err = cr.mb.RegisterRequest(ctx, "catalog.getGoodsGlobalQuantity", "catalog", cr.qtController.GetGoodsGlobalQuantityRequest) //GetGoodsQuantity
 	if err != nil {
 		return nil
 	}

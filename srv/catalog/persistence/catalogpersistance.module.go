@@ -9,5 +9,8 @@ var Module = fx.Options(
 		fx.Annotate(NewCatalogRepository,
 			fx.As(new(IGoodRepository)),
 		),
+		fx.Annotate(NewCatalogGoodDataRepository,
+			fx.As(new(ICatalogGoodDataRepository)),
+		),
 	),
 )

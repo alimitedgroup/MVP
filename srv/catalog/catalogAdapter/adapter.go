@@ -14,14 +14,6 @@ func NewCatalogRepositoryAdapter(repo persistence.IGoodRepository) *CatalogRepos
 	return &CatalogRepositoryAdapter{repo: repo}
 }
 
-func (cra *CatalogRepositoryAdapter) AddOrChangeGoodData(agc *servicecmd.AddChangeGoodCmd) *serviceresponse.AddOrChangeResponse {
-	err := cra.repo.AddGood(agc.GetId(), agc.GetName(), agc.GetDescription())
-	if err != nil {
-		return serviceresponse.NewAddOrChangeResponse(err)
-	}
-	return serviceresponse.NewAddOrChangeResponse(nil)
-}
-
 func (cra *CatalogRepositoryAdapter) SetGoodQuantity(agqc *servicecmd.SetGoodQuantityCmd) *serviceresponse.SetGoodQuantityResponse {
 	err := cra.repo.SetGoodQuantity(agqc.GetWarehouseId(), agqc.GetGoodId(), agqc.GetNewQuantity())
 	if err != nil {
@@ -32,10 +24,6 @@ func (cra *CatalogRepositoryAdapter) SetGoodQuantity(agqc *servicecmd.SetGoodQua
 
 func (cra *CatalogRepositoryAdapter) GetGoodsQuantity(ggqc *servicecmd.GetGoodsQuantityCmd) *serviceresponse.GetGoodsQuantityResponse {
 	return serviceresponse.NewGetGoodsQuantityResponse(cra.repo.GetGoodsGlobalQuantity())
-}
-
-func (cra *CatalogRepositoryAdapter) GetGoodsInfo(ggqc *servicecmd.GetGoodsInfoCmd) *serviceresponse.GetGoodsInfoResponse {
-	return serviceresponse.NewGetGoodsInfoResponse(cra.repo.GetGoods())
 }
 
 func (cra *CatalogRepositoryAdapter) GetWarehouses(*servicecmd.GetWarehousesCmd) *serviceresponse.GetWarehousesResponse {

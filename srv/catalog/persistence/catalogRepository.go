@@ -4,29 +4,16 @@ import (
 	"sync"
 
 	"github.com/alimitedgroup/MVP/common/dto"
-
-	"github.com/alimitedgroup/MVP/srv/catalog/catalogCommon"
 )
 
 type CatalogRepository struct {
 	warehouseMap map[string]*dto.Warehouse
-	goodMap      map[string]*dto.Good
 	goodStockMap map[string]int64
 	mutex        sync.Mutex
 }
 
 func NewCatalogRepository() *CatalogRepository {
-	return &CatalogRepository{warehouseMap: make(map[string]*dto.Warehouse), goodMap: make(map[string]*dto.Good), goodStockMap: make(map[string]int64)}
-}
-
-func (cr *CatalogRepository) GetGoods() map[string]dto.Good {
-	cr.mutex.Lock()
-	defer cr.mutex.Unlock()
-	result := make(map[string]dto.Good)
-	for key := range cr.goodMap {
-		result[key] = *cr.goodMap[key]
-	}
-	return result
+	return &CatalogRepository{warehouseMap: make(map[string]*dto.Warehouse), goodStockMap: make(map[string]int64)}
 }
 
 func (cr *CatalogRepository) GetGoodsGlobalQuantity() map[string]int64 {
@@ -80,37 +67,4 @@ func (cr *CatalogRepository) addWarehouse(warehouseID string) {
 	}
 	cr.warehouseMap[warehouseID] = dto.NewWarehouse(warehouseID)
 	cr.mutex.Unlock()
-}
-
-func (cr *CatalogRepository) AddGood(goodID string, name string, description string) error {
-	cr.mutex.Lock()
-	_, presence := cr.goodMap[goodID]
-	if presence {
-		cr.mutex.Unlock()
-		return cr.changeGoodData(goodID, name, description)
-	}
-	cr.goodMap[goodID] = dto.NewGood(goodID, name, description)
-	cr.mutex.Unlock()
-	return nil
-}
-
-func (cr *CatalogRepository) changeGoodData(goodID string, newName string, newDescription string) error {
-	cr.mutex.Lock()
-	_, presence := cr.goodMap[goodID]
-	if !presence {
-		cr.mutex.Unlock()
-		return catalogCommon.ErrGoodIdNotValid
-	}
-	err := cr.goodMap[goodID].SetName(newName)
-	if err != nil {
-		cr.mutex.Unlock()
-		return err
-	}
-	err = cr.goodMap[goodID].SetDescription(newDescription)
-	if err != nil {
-		cr.mutex.Unlock()
-		return err
-	}
-	cr.mutex.Unlock()
-	return nil
 }
