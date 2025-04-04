@@ -15,7 +15,7 @@ var Module = fx.Options(
 		AsController(NewListQueriesController),
 		AsController(NewEditQueryController),
 		AsController(NewRemoveQueryController),
-		AsJsController(NewStockUpdateReceiver),
+		AsJsController(NewStockReceiver),
 	),
 	fx.Invoke(fx.Annotate(RegisterRoutes, fx.ParamTags(`group:"routes"`, `group:"js_routes"`))),
 )

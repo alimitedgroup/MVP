@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
+
 	"github.com/alimitedgroup/MVP/common/dto"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap/zaptest"
@@ -25,11 +26,18 @@ func TestGetWarehouses(t *testing.T) {
 		"def": {ID: "def", Stock: map[string]int64{"id1": 10, "id2": 20}},
 	}, nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	warehouses, err := business.GetWarehouses()
 	require.NoError(t, err)
 	require.Len(t, warehouses, 2)
-	require.ElementsMatch(t, []portin.WarehouseOverview{{ID: "abc"}, {ID: "def"}}, warehouses)
+	require.ElementsMatch(t, []types.WarehouseOverview{{ID: "abc"}, {ID: "def"}}, warehouses)
 }
 
 func TestGetWarehousesError(t *testing.T) {
@@ -41,7 +49,14 @@ func TestGetWarehousesError(t *testing.T) {
 
 	catalog.EXPECT().ListWarehouses().Return(nil, fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	warehouses, err := business.GetWarehouses()
 	require.Nil(t, warehouses)
 	require.ErrorIs(t, err, ErrorGetWarehouses)
@@ -69,7 +84,14 @@ func TestGetGoods(t *testing.T) {
 		nil,
 	)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	goods, err := business.GetGoods()
 	require.NoError(t, err)
 	require.Len(t, goods, 2)
@@ -88,7 +110,14 @@ func TestGetGoodsError(t *testing.T) {
 
 	catalog.EXPECT().ListGoods().Return(nil, fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	goods, err := business.GetGoods()
 	require.Nil(t, goods)
 	require.ErrorIs(t, err, ErrorGetGoods)
@@ -107,7 +136,14 @@ func TestGetGoodsStockError(t *testing.T) {
 	}, nil)
 	catalog.EXPECT().ListStock().Return(nil, fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	goods, err := business.GetGoods()
 	require.Nil(t, goods)
 	require.ErrorIs(t, err, ErrorGetStock)
@@ -133,7 +169,14 @@ func TestGetGoodsMissingStock(t *testing.T) {
 		"warehouse2": {ID: "warehouse2", Stock: map[string]int64{"id1": 5}},
 	}, nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	goods, err := business.GetGoods()
 	require.ElementsMatch(t, goods, []dto.GoodAndAmount{
 		{Name: "abc", Description: "abcdesc", ID: "id1", Amount: 20, Amounts: map[string]int64{"warehouse1": 15, "warehouse2": 5}},
@@ -151,7 +194,14 @@ func TestCreateGood(t *testing.T) {
 
 	catalog.EXPECT().CreateGood(gomock.Any(), gomock.Any(), gomock.Any()).Return("1", nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	goodId, err := business.CreateGood(t.Context(), "test name", "test description")
 	require.NoError(t, err)
 	require.Equal(t, "1", goodId)
@@ -166,7 +216,14 @@ func TestUpdateGood(t *testing.T) {
 
 	catalog.EXPECT().UpdateGood(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	err := business.UpdateGood(t.Context(), "1", "test name", "test description")
 	require.NoError(t, err)
 }
@@ -180,7 +237,14 @@ func TestCreateGoodError(t *testing.T) {
 
 	catalog.EXPECT().CreateGood(gomock.Any(), gomock.Any(), gomock.Any()).Return("", fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	goodId, err := business.CreateGood(t.Context(), "test name", "test description")
 	require.Empty(t, goodId)
 	require.ErrorIs(t, err, ErrorCreateGood)
@@ -195,7 +259,14 @@ func TestUpdateGoodError(t *testing.T) {
 
 	catalog.EXPECT().UpdateGood(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	err := business.UpdateGood(t.Context(), "1", "test name", "test description")
 	require.ErrorIs(t, err, ErrorUpdateGood)
 }
@@ -209,7 +280,14 @@ func TestAddStock(t *testing.T) {
 
 	catalog.EXPECT().AddStock(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         auth,
+		Catalog:      catalog,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	err := business.AddStock("1", "hat-1", 10)
 	require.NoError(t, err)
 }

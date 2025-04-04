@@ -20,15 +20,15 @@ var (
 	GetQueryCounter metric.Int64Counter
 )
 
-func NewGetQueryController(rulesPort portin.QueryRules, mp MetricParams) *GetQueryController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &GetQueryCounter, &MetricMap, "num_notification_get_query_request")
-	Logger = mp.Logger
-	return &GetQueryController{rulesPort: rulesPort}
+func NewGetQueryController(p QueryControllersParams) *GetQueryController {
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&p.Meter, p.Logger, &GetQueryCounter, &MetricMap, "num_notification_get_query_request")
+	return &GetQueryController{rulesPort: p.RulesPort, Logger: p.Logger}
 }
 
 type GetQueryController struct {
 	rulesPort portin.QueryRules
+	*zap.Logger
 }
 
 // Asserzione a compile-time che GetQueryController implementi Controller
@@ -36,12 +36,12 @@ var _ Controller = (*GetQueryController)(nil)
 
 func (c *GetQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 
-	Logger.Info("Received new get query request")
+	c.Info("Received new get query request")
 	verdict := "success"
 
 	defer func() {
 		ctx := context.Background()
-		Logger.Info("Get query request terminated")
+		c.Info("Get query request terminated")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		GetQueryCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -50,7 +50,7 @@ func (c *GetQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 	id, err := uuid.Parse(request)
 	if err != nil {
 		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
+		c.Debug("Bad request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InvalidJson())
 		return nil
 	}
@@ -58,11 +58,11 @@ func (c *GetQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 	rule, err := c.rulesPort.GetQueryRule(id)
 	if errors.Is(err, types.ErrRuleNotExists) {
 		verdict = "cannot handle request"
-		Logger.Debug("Cannot handle request", zap.Error(err))
+		c.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.RuleNotFound())
 	} else if err != nil {
 		verdict = "cannot handle request"
-		Logger.Debug("Cannot handle request", zap.Error(err))
+		c.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())
 	} else {
 		_ = broker.RespondToMsg(msg, rule)

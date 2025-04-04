@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.uber.org/fx"
 
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/lib/broker"
@@ -17,32 +18,37 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	EditQueryCounter metric.Int64Counter
-)
+var EditQueryCounter metric.Int64Counter
 
-func NewEditQueryController(addQueryRuleUseCase portin.QueryRules, mp MetricParams) *EditQueryController {
-	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
-	observability.CounterSetup(&mp.Meter, mp.Logger, &EditQueryCounter, &MetricMap, "num_notification_edit_query_request")
-	Logger = mp.Logger
-	return &EditQueryController{rulesPort: addQueryRuleUseCase}
+type QueryControllersParams struct {
+	fx.In
+
+	RulesPort portin.QueryRules
+	Logger    *zap.Logger
+	Meter     metric.Meter
+}
+
+func NewEditQueryController(p QueryControllersParams) *EditQueryController {
+	observability.CounterSetup(&p.Meter, p.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
+	observability.CounterSetup(&p.Meter, p.Logger, &EditQueryCounter, &MetricMap, "num_notification_edit_query_request")
+	return &EditQueryController{rulesPort: p.RulesPort, Logger: p.Logger}
 }
 
 type EditQueryController struct {
 	rulesPort portin.QueryRules
+	*zap.Logger
 }
 
 // Asserzione a compile-time che EditQueryController implementi Controller
 var _ Controller = (*EditQueryController)(nil)
 
 func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
-
-	Logger.Info("Received new edit query request")
+	c.Info("Received new edit query request")
 	verdict := "success"
 
 	defer func() {
 		ctx := context.Background()
-		Logger.Info("Edit query request terminated")
+		c.Info("Edit query request terminated")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		EditQueryCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -51,7 +57,7 @@ func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 	err := json.Unmarshal(msg.Data, &request)
 	if err != nil {
 		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
+		c.Debug("Bad request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InvalidJson())
 		return nil
 	}
@@ -63,7 +69,7 @@ func (c *EditQueryController) Handle(_ context.Context, msg *nats.Msg) error {
 		_ = broker.RespondToMsg(msg, dto.RuleNotFound())
 	} else if err != nil {
 		verdict = "cannot handle request"
-		Logger.Debug("Cannot handle request", zap.Error(err))
+		c.Debug("Cannot handle request", zap.Error(err))
 		_ = broker.RespondToMsg(msg, dto.InternalError())
 	} else {
 		_ = msg.Respond([]byte("OK"))

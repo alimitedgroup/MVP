@@ -3,6 +3,7 @@ package adapterin
 import (
 	"context"
 	"encoding/json"
+	"go.uber.org/fx"
 	"time"
 
 	"github.com/alimitedgroup/MVP/common/lib/observability"
@@ -19,29 +20,37 @@ var (
 	StockUpdateCounter metric.Int64Counter
 )
 
-func NewStockUpdateReceiver(addStockUpdateUseCase portin.StockUpdates, mp MetricParams) *StockUpdateReceiver {
+type StockReceiverParams struct {
+	fx.In
+
+	StockPort portin.StockUpdates
+	Logger    *zap.Logger
+	Meter     metric.Meter
+}
+
+func NewStockReceiver(mp StockReceiverParams) *StockUpdateReceiver {
 	observability.CounterSetup(&mp.Meter, mp.Logger, &TotalRequestCounter, &MetricMap, "num_notification_total_request")
 	observability.CounterSetup(&mp.Meter, mp.Logger, &StockUpdateCounter, &MetricMap, "num_notification_stock_update_query_request")
-	Logger = mp.Logger
 	return &StockUpdateReceiver{
-		addStockUpdateUseCase: addStockUpdateUseCase,
+		stockPort: mp.StockPort,
+		Logger:    mp.Logger,
 	}
 }
 
 type StockUpdateReceiver struct {
-	addStockUpdateUseCase portin.StockUpdates
+	stockPort portin.StockUpdates
+	*zap.Logger
 }
 
 var _ JsController = (*StockUpdateReceiver)(nil)
 
 func (s StockUpdateReceiver) Handle(_ context.Context, msg jetstream.Msg) error {
-
-	Logger.Info("Received new stock update query request")
+	s.Info("Received new stock update query request")
 	verdict := "success"
 
 	defer func() {
 		ctx := context.Background()
-		Logger.Info("Stock update query request terminated")
+		s.Info("Stock update query request terminated")
 		TotalRequestCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 		StockUpdateCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("verdict", verdict)))
 	}()
@@ -51,7 +60,7 @@ func (s StockUpdateReceiver) Handle(_ context.Context, msg jetstream.Msg) error 
 	err := json.Unmarshal(msg.Data(), request)
 	if err != nil {
 		verdict = "bad request"
-		Logger.Debug("Bad request", zap.Error(err))
+		s.Debug("Bad request", zap.Error(err))
 		return err
 	}
 
@@ -64,8 +73,14 @@ func (s StockUpdateReceiver) Handle(_ context.Context, msg jetstream.Msg) error 
 		}
 	}
 
-	cmd := servicecmd.NewAddStockUpdateCmd(request.WarehouseID, string(request.Type), request.OrderID, request.TransferID, goods, time.Now().Unix())
-	return s.addStockUpdateUseCase.RecordStockUpdate(cmd)
+	return s.stockPort.RecordStockUpdate(&servicecmd.AddStockUpdateCmd{
+		WarehouseID: request.WarehouseID,
+		Type:        string(request.Type),
+		OrderID:     request.OrderID,
+		TransferID:  request.TransferID,
+		Goods:       goods,
+		Timestamp:   time.Now().Unix(),
+	})
 }
 
 func (s StockUpdateReceiver) Stream() jetstream.StreamConfig {

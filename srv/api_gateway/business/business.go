@@ -49,8 +49,18 @@ var Module = fx.Module(
 	fx.Decorate(observability.WrapLogger("business")),
 )
 
-func NewBusiness(auth portout.AuthenticationPortOut, catalog portout.CatalogPortOut, order portout.OrderPortOut, notfication portout.NotificationPortOut, logger *zap.Logger) *Business {
-	return &Business{auth: auth, catalog: catalog, order: order, notification: notfication, Logger: logger}
+type BusinessParams struct {
+	fx.In
+
+	Auth         portout.AuthenticationPortOut
+	Catalog      portout.CatalogPortOut
+	Order        portout.OrderPortOut
+	Notification portout.NotificationPortOut
+	Logger       *zap.Logger
+}
+
+func NewBusiness(p BusinessParams) *Business {
+	return &Business{auth: p.Auth, catalog: p.Catalog, order: p.Order, notification: p.Notification, Logger: p.Logger}
 }
 
 type Business struct {
@@ -59,11 +69,6 @@ type Business struct {
 	order        portout.OrderPortOut
 	notification portout.NotificationPortOut
 	*zap.Logger
-}
-
-func (b *Business) GetWarehouseByID(_ int64) (dto.Warehouse, error) {
-	//TODO da implementare quando catalog supporta questa query
-	panic("implement me")
 }
 
 func (b *Business) CreateQuery(goodId string, operator string, threshold int) (string, error) {
@@ -227,15 +232,15 @@ func (b *Business) UpdateGood(ctx context.Context, goodId string, name string, d
 	return nil
 }
 
-func (b *Business) GetWarehouses() ([]portin.WarehouseOverview, error) {
+func (b *Business) GetWarehouses() ([]types.WarehouseOverview, error) {
 	warehouses, err := b.catalog.ListWarehouses()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrorGetWarehouses, err)
 	}
 
-	result := make([]portin.WarehouseOverview, 0, len(warehouses))
+	result := make([]types.WarehouseOverview, 0, len(warehouses))
 	for _, warehouse := range warehouses {
-		result = append(result, portin.WarehouseOverview{ID: warehouse.ID})
+		result = append(result, types.WarehouseOverview{ID: warehouse.ID})
 	}
 	return result, nil
 }
@@ -283,72 +288,72 @@ func (b *Business) GetGoods() ([]dto.GoodAndAmount, error) {
 	return result, nil
 }
 
-func (b *Business) Login(username string) (portin.LoginResult, error) {
+func (b *Business) Login(username string) (types.LoginResult, error) {
 	token, err := b.auth.GetToken(username)
 	if err != nil {
 		b.Error("Failed to get JWT token for given username", zap.Error(err))
-		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+		return types.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 	}
 	if token == "" {
-		return portin.LoginResult{}, ErrorInvalidCredentials
+		return types.LoginResult{}, ErrorInvalidCredentials
 	}
 
 	parsed, err := b.auth.VerifyToken(token)
 	if err != nil {
 		b.Error("Failed to parse JWT returned by authentication microservice", zap.Error(err))
-		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+		return types.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 	}
 
 	role, err := b.auth.GetRole(parsed)
 	if err != nil {
 		b.Error("Failed to get role from JWT returned by authentication microservice", zap.Error(err))
-		return portin.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
+		return types.LoginResult{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 	}
 
-	return portin.LoginResult{
+	return types.LoginResult{
 		Token: token,
 		Role:  role,
 	}, nil
 }
 
-func (b *Business) ValidateToken(token string) (portin.UserData, error) {
+func (b *Business) ValidateToken(token string) (types.UserData, error) {
 	tok, err := b.auth.VerifyToken(types.UserToken(token))
 	if err != nil {
 		if errors.Is(err, portout.ErrTokenExpired) {
-			return portin.UserData{}, ErrorTokenExpired
+			return types.UserData{}, ErrorTokenExpired
 		} else if errors.Is(err, portout.ErrTokenInvalid) {
-			return portin.UserData{}, ErrorTokenInvalid
+			return types.UserData{}, ErrorTokenInvalid
 		} else {
 			b.Error("Failed to validate JWT token", zap.Error(err))
-			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
+			return types.UserData{}, fmt.Errorf("%w: %w", ErrorGetToken, err)
 		}
 	}
 
 	username, err := b.auth.GetUsername(tok)
 	if err != nil {
 		if errors.Is(err, portout.ErrTokenInvalid) {
-			return portin.UserData{}, ErrorTokenInvalid
+			return types.UserData{}, ErrorTokenInvalid
 		} else if errors.Is(err, portout.ErrTokenExpired) {
-			return portin.UserData{}, ErrorTokenExpired
+			return types.UserData{}, ErrorTokenExpired
 		} else {
 			b.Error("Failed to get username from valid JWT token", zap.Error(err))
-			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetUsername, err)
+			return types.UserData{}, fmt.Errorf("%w: %w", ErrorGetUsername, err)
 		}
 	}
 
 	role, err := b.auth.GetRole(tok)
 	if err != nil {
 		if errors.Is(err, portout.ErrTokenInvalid) {
-			return portin.UserData{}, ErrorTokenInvalid
+			return types.UserData{}, ErrorTokenInvalid
 		} else if errors.Is(err, portout.ErrTokenExpired) {
-			return portin.UserData{}, ErrorTokenExpired
+			return types.UserData{}, ErrorTokenExpired
 		} else {
 			b.Error("Failed to get role from valid JWT token", zap.Error(err))
-			return portin.UserData{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
+			return types.UserData{}, fmt.Errorf("%w: %w", ErrorGetRole, err)
 		}
 	}
 
-	return portin.UserData{Username: username, Role: role}, err
+	return types.UserData{Username: username, Role: role}, err
 }
 
 // Asserzione a compile time che Business implementi le interfaccie delle porte di input

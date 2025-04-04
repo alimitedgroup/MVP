@@ -36,7 +36,7 @@ type HttpConfig struct {
 	Port int
 }
 
-func ConfigFromEnv(l *zap.Logger) (*HttpConfig, error) {
+func ConfigFromEnv() (*HttpConfig, error) {
 	config := &HttpConfig{}
 
 	var (
@@ -200,7 +200,7 @@ func CheckRole(roles []types.UserRole, logger *zap.Logger) gin.HandlerFunc {
 			return
 		}
 
-		userData, ok := user_data.(portin.UserData)
+		userData, ok := user_data.(types.UserData)
 		if !ok {
 			logger.Debug("User data in context is not of type UserData")
 			ctx.AbortWithStatusJSON(401, dto.MissingToken())

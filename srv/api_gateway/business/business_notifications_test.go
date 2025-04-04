@@ -15,8 +15,8 @@ import (
 
 func TestGetQueries(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
@@ -39,7 +39,14 @@ func TestGetQueries(t *testing.T) {
 		},
 	}, nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	queries, err := business.GetQueries()
 	require.NoError(t, err)
 	require.Len(t, queries, 2)
@@ -61,14 +68,21 @@ func TestGetQueries(t *testing.T) {
 
 func TestCreateQuery(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
 	notificationsMock.EXPECT().CreateQuery(gomock.Any()).Return("1", nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	queryId, err := business.CreateQuery("1", ">", 10)
 	require.NoError(t, err)
 	require.Equal(t, "1", queryId)

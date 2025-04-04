@@ -36,7 +36,7 @@ func (c *ListWarehousesController) Handler() gin.HandlerFunc {
 		ctx.JSON(200, dto.GetWarehousesResponse{
 			Ids: Map(
 				warehouses,
-				func(w portin.WarehouseOverview) string { return w.ID },
+				func(w types.WarehouseOverview) string { return w.ID },
 			),
 		})
 	}

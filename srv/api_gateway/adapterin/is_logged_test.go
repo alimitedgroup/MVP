@@ -6,7 +6,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
@@ -15,7 +14,7 @@ import (
 func TestIsLoggedOk(t *testing.T) {
 	s := start(t)
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
@@ -51,7 +50,7 @@ func TestIsLoggedMissingToken(t *testing.T) {
 func TestIsLoggedInvalidToken(t *testing.T) {
 	s := start(t)
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{}, business.ErrorTokenInvalid)
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{}, business.ErrorTokenInvalid)
 
 	req, _ := http.NewRequest("GET", s.base+"/api/v1/is_logged", nil)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")
@@ -69,7 +68,7 @@ func TestIsLoggedInvalidToken(t *testing.T) {
 func TestIsLoggedExpiredToken(t *testing.T) {
 	s := start(t)
 
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{}, business.ErrorTokenExpired)
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{}, business.ErrorTokenExpired)
 
 	req, _ := http.NewRequest("GET", s.base+"/api/v1/is_logged", nil)
 	req.Header.Add("Authorization", "Bearer some.secure.jwt")

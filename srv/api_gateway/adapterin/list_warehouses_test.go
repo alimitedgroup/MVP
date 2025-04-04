@@ -9,7 +9,6 @@ import (
 	"github.com/alimitedgroup/MVP/common/dto"
 	"github.com/alimitedgroup/MVP/common/dto/response"
 	"github.com/alimitedgroup/MVP/srv/api_gateway/business/types"
-	"github.com/alimitedgroup/MVP/srv/api_gateway/portin"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,10 +17,10 @@ func TestGetWarehouses(t *testing.T) {
 	client := &http.Client{}
 
 	s.warehouses.EXPECT().GetWarehouses().Return(
-		[]portin.WarehouseOverview{{ID: "id1"}, {ID: "id2"}, {ID: "id3"}},
+		[]types.WarehouseOverview{{ID: "id1"}, {ID: "id2"}, {ID: "id3"}},
 		nil,
 	)
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
@@ -47,7 +46,7 @@ func TestGetWarehousesError(t *testing.T) {
 		nil,
 		fmt.Errorf("some error"),
 	)
-	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(portin.UserData{
+	s.auth.EXPECT().ValidateToken("some.secure.jwt").Return(types.UserData{
 		Username: "test",
 		Role:     types.RoleGlobalAdmin,
 	}, nil)
