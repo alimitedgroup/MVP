@@ -21,7 +21,13 @@ func TestAddQueryRule(t *testing.T) {
 
 	ruleRepoMock.EXPECT().AddRule(gomock.Any()).Return(uuid.MustParse("391d2936-c37b-4294-bfdc-29e2473a5052"), nil)
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	uuid, err := business.AddQueryRule(types.QueryRule{
 		GoodId:    "1",
 		Operator:  "<",
@@ -44,7 +50,13 @@ func TestGetQueryRule(t *testing.T) {
 		Threshold: 10,
 	}, nil)
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	rule, err := business.GetQueryRule(uuid.MustParse("391d2936-c37b-4294-bfdc-29e2473a5052"))
 	require.NoError(t, err)
 	require.Equal(t, "1", rule.GoodId)
@@ -68,7 +80,13 @@ func TestListRules(t *testing.T) {
 		},
 	}, nil)
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	rules, err := business.ListQueryRules()
 	require.NoError(t, err)
 	require.Len(t, rules, 1)
@@ -85,7 +103,13 @@ func TestEditQueryRule(t *testing.T) {
 
 	ruleRepoMock.EXPECT().EditRule(gomock.Any(), gomock.Any()).Return(nil)
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	err := business.EditQueryRule(uuid.MustParse("391d2936-c37b-4294-bfdc-29e2473a5052"), types.EditRule{
 		GoodId:    nil,
 		Operator:  nil,
@@ -103,7 +127,13 @@ func TestRemoveQueryRule(t *testing.T) {
 
 	ruleRepoMock.EXPECT().RemoveRule(gomock.Any()).Return(nil)
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	err := business.RemoveQueryRule(uuid.MustParse("391d2936-c37b-4294-bfdc-29e2473a5052"))
 	require.NoError(t, err)
 }
@@ -117,7 +147,13 @@ func TestPublishStockAlert(t *testing.T) {
 
 	alertPublisherMock.EXPECT().PublishStockAlert(gomock.Any()).Return(nil)
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	err := business.PublishStockAlert(types.StockAlertEvent{
 		Id:              "391d2936-c37b-4294-bfdc-29e2473a5052",
 		Status:          types.StockPending,
@@ -143,7 +179,13 @@ func TestGetCurrentQuantityByGoodID(t *testing.T) {
 		Err:             nil,
 	})
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	resp := business.GetCurrentQuantityByGoodID("1")
 	require.NoError(t, resp.Err)
 	require.Equal(t, "1", resp.GoodID)
@@ -158,7 +200,13 @@ func TestRecordStockUpdate(t *testing.T) {
 
 	stockRepoMock.EXPECT().SaveStockUpdate(gomock.Any()).Return(nil)
 
-	business := NewBusiness(ruleRepoMock, alertPublisherMock, quantityReaderMock, stockRepoMock)
+	p := BusinessParams{
+		RuleRepo:       ruleRepoMock,
+		AlertPublisher: alertPublisherMock,
+		QuantityReader: quantityReaderMock,
+		StockRepo:      stockRepoMock,
+	}
+	business := NewBusiness(p)
 	err := business.RecordStockUpdate(&types.AddStockUpdateCmd{
 		WarehouseID: "1",
 		Type:        "add",

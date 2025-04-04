@@ -52,15 +52,15 @@ var Module = fx.Module(
 type BusinessParams struct {
 	fx.In
 
-	Auth        portout.AuthenticationPortOut
-	Catalog     portout.CatalogPortOut
-	Order       portout.OrderPortOut
-	Notfication portout.NotificationPortOut
-	Logger      *zap.Logger
+	Auth         portout.AuthenticationPortOut
+	Catalog      portout.CatalogPortOut
+	Order        portout.OrderPortOut
+	Notification portout.NotificationPortOut
+	Logger       *zap.Logger
 }
 
 func NewBusiness(p BusinessParams) *Business {
-	return &Business{auth: p.Auth, catalog: p.Catalog, order: p.Order, notification: p.Notfication, Logger: p.Logger}
+	return &Business{auth: p.Auth, catalog: p.Catalog, order: p.Order, notification: p.Notification, Logger: p.Logger}
 }
 
 type Business struct {

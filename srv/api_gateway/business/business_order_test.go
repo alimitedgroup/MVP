@@ -15,8 +15,8 @@ import (
 
 func TestGetTransfers(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
@@ -47,7 +47,14 @@ func TestGetTransfers(t *testing.T) {
 		},
 	}, nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	transfers, err := business.GetTransfers()
 	require.NoError(t, err)
 	require.Len(t, transfers, 2)
@@ -75,14 +82,21 @@ func TestGetTransfers(t *testing.T) {
 
 func TestGetTransfersError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
 	orderMock.EXPECT().GetAllTransfers().Return(nil, fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	transfers, err := business.GetTransfers()
 	require.Nil(t, transfers)
 	require.ErrorIs(t, err, ErrorGetTransfers)
@@ -90,8 +104,8 @@ func TestGetTransfersError(t *testing.T) {
 
 func TestGetOrders(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
@@ -124,7 +138,14 @@ func TestGetOrders(t *testing.T) {
 		},
 	}, nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	orders, err := business.GetOrders()
 	require.NoError(t, err)
 	require.Len(t, orders, 2)
@@ -154,14 +175,21 @@ func TestGetOrders(t *testing.T) {
 
 func TestGetOrdersError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
 	orderMock.EXPECT().GetAllOrders().Return(nil, fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	orders, err := business.GetOrders()
 	require.Nil(t, orders)
 	require.ErrorIs(t, err, ErrorGetOrders)
@@ -169,14 +197,21 @@ func TestGetOrdersError(t *testing.T) {
 
 func TestCreateOrder(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
 	orderMock.EXPECT().CreateOrder(gomock.Any()).Return(response.OrderCreateInfo{OrderID: "1"}, nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	orderId, err := business.CreateOrder("1", "Mario Rossi", "Via Roma 1", map[string]int64{"id1": 1})
 	require.NoError(t, err)
 	require.Equal(t, "1", orderId)
@@ -184,14 +219,21 @@ func TestCreateOrder(t *testing.T) {
 
 func TestCreateTransfer(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
 	orderMock.EXPECT().CreateTransfer(gomock.Any()).Return(response.TransferCreateInfo{TransferID: "1"}, nil)
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	transferId, err := business.CreateTransfer("1", "2", map[string]int64{"id1": 1})
 	require.NoError(t, err)
 	require.Equal(t, "1", transferId)
@@ -199,14 +241,21 @@ func TestCreateTransfer(t *testing.T) {
 
 func TestCreateTransferError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
 	orderMock.EXPECT().CreateTransfer(gomock.Any()).Return(response.TransferCreateInfo{}, fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	transferId, err := business.CreateTransfer("1", "2", map[string]int64{"id1": 1})
 	require.Empty(t, transferId)
 	require.ErrorIs(t, err, ErrorCreateTransfer)
@@ -214,14 +263,21 @@ func TestCreateTransferError(t *testing.T) {
 
 func TestCreateOrderError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	auth := NewMockAuthenticationPortOut(ctrl)
-	catalog := NewMockCatalogPortOut(ctrl)
+	authMock := NewMockAuthenticationPortOut(ctrl)
+	catalogMock := NewMockCatalogPortOut(ctrl)
 	orderMock := NewMockOrderPortOut(ctrl)
 	notificationsMock := NewMockNotificationPortOut(ctrl)
 
 	orderMock.EXPECT().CreateOrder(gomock.Any()).Return(response.OrderCreateInfo{}, fmt.Errorf("some error"))
 
-	business := NewBusiness(auth, catalog, orderMock, notificationsMock, zaptest.NewLogger(t))
+	p := BusinessParams{
+		Auth:         authMock,
+		Catalog:      catalogMock,
+		Order:        orderMock,
+		Notification: notificationsMock,
+		Logger:       zaptest.NewLogger(t),
+	}
+	business := NewBusiness(p)
 	orderId, err := business.CreateOrder("1", "Mario Rossi", "Via Roma 1", map[string]int64{"id1": 1})
 	require.Empty(t, orderId)
 	require.ErrorIs(t, err, ErrorCreateOrder)
